@@ -1,0 +1,28 @@
+# dependencies
+node_modules/
+
+# next.js
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# env — KHÔNG commit secrets
+.env
+.env*.local
+!.env.example
+
+# dữ liệu cục bộ (email outbox dev, file tạm)
+.data/
+
+# test
+coverage/
+playwright-report/
+test-results/
+blob-report/
+
+# misc
+.DS_Store
+Thumbs.db
+*.log
+.vercel

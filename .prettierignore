@@ -1,0 +1,7 @@
+node_modules
+.next
+pnpm-lock.yaml
+PROMPT_CLAUDE_LMS_NEXTJS.md
+docs
+playwright-report
+test-results
