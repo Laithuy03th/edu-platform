@@ -70,7 +70,7 @@ export default async function LearnPage({ params }: Props) {
   }
   const [notes, qa] = await Promise.all([
     viewer && canTrack ? lessonNotes(viewer, id) : Promise.resolve([]),
-    viewer && canTrack ? listQuestions(viewer, id).catch(() => null) : Promise.resolve(null),
+    viewer ? listQuestions(viewer, id).catch(() => null) : Promise.resolve(null),
   ]);
 
   const topBar = (
@@ -212,11 +212,12 @@ export default async function LearnPage({ params }: Props) {
             ) : null}
           </nav>
 
-          {viewer && canTrack ? (
+          {viewer && (canTrack || qa) ? (
             <section aria-label="Ghi chú và hỏi đáp" className="rounded-[var(--radius-xl)] border border-line bg-surface p-4 shadow-sm sm:p-6">
               <Tabs
+                initial={canTrack ? "notes" : "qa"}
                 tabs={[
-                  {
+                  ...(canTrack ? [{
                     id: "notes",
                     label: (
                       <span className="inline-flex items-center gap-1.5">
@@ -224,7 +225,7 @@ export default async function LearnPage({ params }: Props) {
                       </span>
                     ),
                     content: <NotesPanel lessonId={lesson.id} isVideo={isVideo} initial={notes} />,
-                  },
+                  }] : []),
                   {
                     id: "qa",
                     label: (

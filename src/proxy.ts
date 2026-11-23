@@ -4,7 +4,7 @@ import { NextResponse, type NextRequest } from "next/server";
  * Proxy (Next 16, thay middleware): requestId, CSP có nonce, và redirect LẠC QUAN khi thiếu cookie phiên.
  * Không truy vấn DB, không phải lớp bảo vệ — mọi page/action/route tự kiểm tra quyền ở server.
  */
-const PROTECTED = ["/dashboard", "/my-courses", "/notes", "/review", "/settings", "/instructor", "/admin", "/projects", "/my-paths", "/achievements"];
+const PROTECTED = ["/dashboard", "/my-courses", "/notes", "/review", "/settings", "/instructor", "/admin", "/projects", "/my-paths", "/achievements", "/quiz"];
 
 function hasSessionCookie(req: NextRequest): boolean {
   return req.cookies.getAll().some((c) => /^(__Secure-)?authjs\.session-token(\.\d+)?$/.test(c.name));

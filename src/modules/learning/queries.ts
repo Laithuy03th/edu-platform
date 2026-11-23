@@ -89,3 +89,15 @@ export async function getLearnPageData(viewer: Viewer | null, slug: string, less
   };
 }
 export type LearnPageData = Awaited<ReturnType<typeof getLearnPageData>>;
+
+/** Số bài hoàn thành từ thứ Hai tuần này (giờ địa phương) — cho "mục tiêu tuần". */
+export async function weeklyCompleted(userId: ObjectId, tz: string) {
+  const { startOfLocalDayPlus, localDateParts } = await import("@/lib/time");
+  const now = new Date();
+  const { y, m, d } = localDateParts(now, tz);
+  const dow = new Date(Date.UTC(y, m - 1, d)).getUTCDay(); // 0 = CN
+  const sinceMonday = (dow + 6) % 7;
+  const start = startOfLocalDayPlus(now, -sinceMonday, tz);
+  const c = await cols();
+  return c.lessonProgress.countDocuments({ userId, completedAt: { $gte: start } });
+}
