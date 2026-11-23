@@ -8,7 +8,10 @@ import { getEnrollment } from "@/modules/enrollments/service";
 import { courseProgressFor } from "@/modules/learning/queries";
 import { listCourseReviews, myCourseReview, canReviewCourse } from "@/modules/reviews/service";
 import { Markdown } from "@/components/markdown";
-import { Stars } from "@/components/course-card";
+import { CourseCover, Stars } from "@/components/course-card";
+import { Avatar } from "@/components/avatar";
+import { Reveal } from "@/components/motion";
+import { IconBook, IconCheck, IconChevronDown, IconClock, IconLock, IconPlay, IconTarget } from "@/components/icons";
 import { Alert, Badge, Card, Container, ProgressBar, buttonClass } from "@/components/ui";
 import { formatDuration, formatMinutes } from "@/lib/text";
 import { EnrollButton } from "./enroll-button";
@@ -37,10 +40,9 @@ export default async function CourseDetailPage({ params }: Props) {
   const courseId = new ObjectId(course.id);
   const isOwner = viewer?.idStr === course.instructorId;
   const isAdmin = viewer?.roles.includes("admin");
-  // Khóa bị đình chỉ: chỉ chủ khóa/admin xem chi tiết.
   if (course.status === "suspended" && !isOwner && !isAdmin) {
     return (
-      <Container className="py-10">
+      <Container className="py-16">
         <Alert tone="warning" title="Khóa học đang tạm ngưng">
           Khóa học này tạm thời không truy cập được.
         </Alert>
@@ -56,145 +58,251 @@ export default async function CourseDetailPage({ params }: Props) {
     viewer ? canReviewCourse(viewer, courseId) : false,
   ]);
   const firstLesson = course.chapters[0]?.lessons[0]?.id;
+  const previewCount = course.chapters.reduce((n, ch) => n + ch.lessons.filter((l) => l.isPreview).length, 0);
+  const firstPreview = course.chapters.flatMap((ch) => ch.lessons).find((l) => l.isPreview);
+
+  const cta =
+    enrollment?.status === "active" && progress ? (
+      <Link href={`/learn/${course.slug}/${progress.nextLessonId ?? firstLesson}`} className={buttonClass("primary", "w-full", "lg")}>
+        {progress.completed > 0 ? "Tiếp tục học" : "Bắt đầu học"} →
+      </Link>
+    ) : enrollment?.status === "revoked" ? null : course.status === "published" ? (
+      <EnrollButton courseId={course.id} loggedIn={Boolean(viewer)} verified={Boolean(viewer?.emailVerified)} slug={course.slug} />
+    ) : null;
 
   return (
-    <>
-      <section className="border-b border-slate-200 bg-white">
-        <Container className="grid gap-8 py-10 lg:grid-cols-3">
-          <div className="lg:col-span-2">
-            <nav aria-label="Breadcrumb" className="mb-3 text-sm text-slate-500">
-              <Link href="/courses" className="hover:underline">
+    <div className="pb-24 lg:pb-0">
+      {/* ---- Hero ---- */}
+      <section className="bg-grain-warm border-b border-line">
+        <Container className="grid gap-10 py-10 lg:grid-cols-[1fr_380px] lg:py-14">
+          <div className="stagger-in min-w-0">
+            <nav aria-label="Breadcrumb" style={{ "--i": 0 } as React.CSSProperties} className="mb-4 flex flex-wrap gap-1.5 text-sm text-ink-faint">
+              <Link href="/courses" className="hover:text-brand-700">
                 Khóa học
-              </Link>{" "}
-              › {course.categoryName ?? "Khác"}
+              </Link>
+              <span aria-hidden>/</span>
+              <span>{course.categoryName ?? "Khác"}</span>
             </nav>
-            <h1 className="text-3xl font-bold tracking-tight">{course.title}</h1>
-            <p className="mt-3 text-lg text-slate-600">{course.shortDescription}</p>
-            <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
-              <Badge tone="info">{LEVEL_LABEL[course.level]}</Badge>
-              <Stars value={course.ratingAvg} count={course.ratingCount} />
-              <span className="text-slate-600">
-                {course.lessonCount} bài · {course.chapters.length} chương · ~{formatMinutes(course.totalDurationSeconds)}
-              </span>
-              <span className="text-slate-600">Giảng viên: {course.instructorName}</span>
+            <div style={{ "--i": 1 } as React.CSSProperties} className="flex flex-wrap gap-2">
+              <Badge tone="brand">{LEVEL_LABEL[course.level]}</Badge>
+              {previewCount ? <Badge tone="success">{previewCount} bài học thử</Badge> : null}
+              {course.status === "archived" ? <Badge tone="warning">Đã lưu trữ</Badge> : null}
             </div>
+            <h1 style={{ "--i": 2 } as React.CSSProperties} className="text-display mt-4 text-[clamp(2rem,1.4rem+2.4vw,3.25rem)]">
+              {course.title}
+            </h1>
+            <p style={{ "--i": 3 } as React.CSSProperties} className="mt-4 max-w-2xl text-lg text-ink-soft">
+              {course.shortDescription}
+            </p>
+            <dl style={{ "--i": 4 } as React.CSSProperties} className="mt-6 flex flex-wrap gap-x-6 gap-y-3 text-sm text-ink-soft">
+              <div className="flex items-center gap-2">
+                <dt className="sr-only">Đánh giá</dt>
+                <dd>
+                  <Stars value={course.ratingAvg} count={course.ratingCount} />
+                </dd>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <IconBook size={16} className="text-brand-600" />
+                <dt className="sr-only">Số bài</dt>
+                <dd>
+                  {course.lessonCount} bài · {course.chapters.length} chương
+                </dd>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <IconClock size={16} className="text-brand-600" />
+                <dt className="sr-only">Thời lượng</dt>
+                <dd>~{formatMinutes(course.totalDurationSeconds)}</dd>
+              </div>
+              <div className="flex items-center gap-2">
+                <dt className="sr-only">Giảng viên</dt>
+                <dd className="flex items-center gap-2">
+                  <Avatar name={course.instructorName} size={24} /> {course.instructorName}
+                </dd>
+              </div>
+            </dl>
             {course.status === "archived" ? (
-              <Alert tone="warning" className="mt-4">
+              <Alert tone="warning" className="mt-6">
                 Khóa học đã được lưu trữ: không nhận đăng ký mới. Học viên đã đăng ký vẫn tiếp tục học được.
               </Alert>
             ) : null}
           </div>
-          <Card className="h-fit space-y-4">
-            {course.thumbnailUrl ? <img src={course.thumbnailUrl} alt="" className="aspect-video w-full rounded object-cover" /> : null}
-            {enrollment?.status === "active" && progress ? (
-              <>
-                <ProgressBar value={progress.percent} label={`Đã học ${progress.completed}/${progress.total} bài bắt buộc`} />
-                {enrollment.completedAt ? (
-                  <Badge tone="success">
-                    {enrollment.completedVersion !== null && enrollment.completedVersion < course.publishedVersion ? "Đã hoàn thành phiên bản trước — khóa có nội dung mới" : "Đã hoàn thành khóa học"}
-                  </Badge>
-                ) : null}
-                <Link href={`/learn/${course.slug}/${progress.nextLessonId ?? firstLesson}`} className={buttonClass("primary", "w-full")}>
-                  {progress.completed > 0 ? "Tiếp tục học" : "Bắt đầu học"}
-                </Link>
-                {course.hasPlacementQuiz ? (
-                  <Link href={`/courses/${course.slug}/placement`} className={buttonClass("outline", "w-full")}>
-                    Làm bài đánh giá đầu vào
+
+          {/* ---- Khối đăng ký (sticky trên desktop) ---- */}
+          <aside className="lg:row-span-2">
+            <Card className="animate-scale-in space-y-5 p-0 sm:p-0 lg:sticky lg:top-24">
+              <div className="overflow-hidden rounded-t-[var(--radius-lg)]">
+                {course.thumbnailUrl ? <img src={course.thumbnailUrl} alt="" className="aspect-video w-full object-cover" /> : <CourseCover title={course.title} className="aspect-video w-full" />}
+              </div>
+              <div className="space-y-4 px-5 pb-5 sm:px-6 sm:pb-6">
+                {enrollment?.status === "active" && progress ? (
+                  <>
+                    <ProgressBar value={progress.percent} label={`Đã học ${progress.completed}/${progress.total} bài bắt buộc`} />
+                    {enrollment.completedAt ? (
+                      <Badge tone="success">
+                        <IconCheck size={14} />
+                        {enrollment.completedVersion !== null && enrollment.completedVersion < course.publishedVersion ? "Đã hoàn thành phiên bản trước — có nội dung mới" : "Đã hoàn thành khóa học"}
+                      </Badge>
+                    ) : null}
+                  </>
+                ) : (
+                  <div>
+                    <p className="font-display text-3xl font-extrabold text-ink">Miễn phí</p>
+                    <p className="text-sm text-ink-faint">Trong phạm vi demo</p>
+                  </div>
+                )}
+                {enrollment?.status === "revoked" ? (
+                  <Alert tone="danger">Quyền truy cập khóa học của bạn đã bị thu hồi{enrollment.revokedReason ? `: ${enrollment.revokedReason}` : "."}</Alert>
+                ) : (
+                  <div className="hidden lg:block">{cta}</div>
+                )}
+                {enrollment?.status === "active" && course.hasPlacementQuiz ? (
+                  <Link href={`/courses/${course.slug}/placement`} className={buttonClass("soft", "w-full")}>
+                    <IconTarget size={18} /> Làm bài đánh giá đầu vào
                   </Link>
                 ) : null}
-              </>
-            ) : enrollment?.status === "revoked" ? (
-              <Alert tone="danger">Quyền truy cập khóa học của bạn đã bị thu hồi{enrollment.revokedReason ? `: ${enrollment.revokedReason}` : "."}</Alert>
-            ) : course.status === "published" ? (
-              <EnrollButton courseId={course.id} loggedIn={Boolean(viewer)} verified={Boolean(viewer?.emailVerified)} slug={course.slug} />
-            ) : null}
-            {isOwner || isAdmin ? (
-              <Link href={`/instructor/courses/${course.id}`} className={buttonClass("ghost", "w-full")}>
-                Mở trình soạn thảo
-              </Link>
-            ) : null}
-            <p className="text-xs text-slate-500">Khóa học miễn phí trong phạm vi demo.</p>
-          </Card>
+                {firstPreview && enrollment?.status !== "active" ? (
+                  <Link href={`/learn/${course.slug}/${firstPreview.id}`} className={buttonClass("outline", "w-full")}>
+                    <IconPlay size={16} /> Học thử miễn phí
+                  </Link>
+                ) : null}
+                <ul className="space-y-2 border-t border-line pt-4 text-sm text-ink-soft">
+                  {["Lưu vị trí học tự động", "Ghi chú theo bài và thời điểm video", "Quiz chấm ngay, ôn lại câu sai"].map((t) => (
+                    <li key={t} className="flex items-center gap-2">
+                      <IconCheck size={16} className="text-success-600" /> {t}
+                    </li>
+                  ))}
+                </ul>
+                {isOwner || isAdmin ? (
+                  <Link href={`/instructor/courses/${course.id}`} className={buttonClass("ghost", "w-full", "sm")}>
+                    Mở trình soạn thảo
+                  </Link>
+                ) : null}
+              </div>
+            </Card>
+          </aside>
         </Container>
       </section>
 
-      <Container className="grid gap-8 py-10 lg:grid-cols-3">
-        <div className="space-y-8 lg:col-span-2">
+      <Container className="grid gap-12 py-12 lg:grid-cols-[1fr_380px]">
+        <div className="min-w-0 space-y-14">
           {course.learningObjectives.length ? (
-            <section>
-              <h2 className="mb-3 text-xl font-bold">Bạn sẽ học được</h2>
-              <ul className="grid gap-2 sm:grid-cols-2">
+            <Reveal as="section" aria-labelledby="objectives">
+              <h2 id="objectives" className="text-h2 mb-5">
+                Bạn sẽ học được
+              </h2>
+              <ul className="grid gap-3 rounded-[var(--radius-lg)] bg-brand-50/70 p-6 sm:grid-cols-2">
                 {course.learningObjectives.map((o) => (
-                  <li key={o} className="flex gap-2 text-sm">
-                    <span aria-hidden className="text-green-600">✓</span>
+                  <li key={o} className="flex gap-3">
+                    <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-brand-700 text-white">
+                      <IconCheck size={14} />
+                    </span>
                     {o}
                   </li>
                 ))}
               </ul>
-            </section>
+            </Reveal>
           ) : null}
-          <section>
-            <h2 className="mb-3 text-xl font-bold">Giới thiệu</h2>
-            <Markdown>{course.description}</Markdown>
-          </section>
-          <section>
-            <h2 className="mb-3 text-xl font-bold">Nội dung khóa học</h2>
-            <div className="space-y-3">
+
+          <Reveal as="section" aria-labelledby="curriculum">
+            <div className="mb-5 flex flex-wrap items-end justify-between gap-2">
+              <h2 id="curriculum" className="text-h2">
+                Nội dung khóa học
+              </h2>
+              <p className="text-sm text-ink-faint">
+                {course.chapters.length} chương · {course.lessonCount} bài · {course.requiredLessonCount} bài bắt buộc
+              </p>
+            </div>
+            <div className="overflow-hidden rounded-[var(--radius-lg)] border border-line bg-surface">
               {course.chapters.map((ch, i) => (
-                <details key={ch.id} open={i === 0} className="rounded-lg border border-slate-200 bg-white">
-                  <summary className="cursor-pointer px-4 py-3 font-medium">
-                    Chương {i + 1}: {ch.title} <span className="text-sm font-normal text-slate-500">({ch.lessons.length} bài)</span>
+                <details key={ch.id} open={i === 0} className="smooth group border-b border-line last:border-b-0">
+                  <summary className="flex cursor-pointer items-center gap-4 px-5 py-4 transition hover:bg-brand-50/60">
+                    <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-brand-100 font-bold text-brand-800">{i + 1}</span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block font-semibold">{ch.title}</span>
+                      <span className="text-xs text-ink-faint">
+                        {ch.lessons.length} bài · {formatMinutes(ch.lessons.reduce((s, l) => s + l.durationSeconds, 0))}
+                      </span>
+                    </span>
+                    <IconChevronDown size={18} className="chevron shrink-0 text-ink-faint transition-transform duration-200" />
                   </summary>
-                  <ul className="divide-y divide-slate-100 border-t border-slate-100">
+                  <ul className="pb-2">
                     {ch.lessons.map((l) => (
-                      <li key={l.id} className="flex items-center justify-between gap-3 px-4 py-2 text-sm">
-                        <span className="flex items-center gap-2">
-                          <span aria-hidden>{l.type === "video" ? "▶" : "📄"}</span>
-                          <span className="sr-only">{l.type === "video" ? "Video:" : "Bài đọc:"}</span>
+                      <li key={l.id} className="flex items-center gap-3 px-5 py-2.5 pl-[4.25rem] text-sm">
+                        <span className="text-ink-faint">{l.type === "video" ? <IconPlay size={14} /> : <IconBook size={15} />}</span>
+                        <span className="sr-only">{l.type === "video" ? "Video:" : "Bài đọc:"}</span>
+                        <span className="min-w-0 flex-1">
                           {l.isPreview ? (
-                            <Link href={`/learn/${course.slug}/${l.id}`} className="text-brand-700 hover:underline">
+                            <Link href={`/learn/${course.slug}/${l.id}`} className="font-medium text-brand-700 hover:underline">
                               {l.title}
                             </Link>
                           ) : (
-                            l.title
+                            <span className="text-ink">{l.title}</span>
                           )}
-                          {l.isPreview ? <Badge tone="success">Học thử</Badge> : null}
-                          {!l.isRequired ? <Badge>Tùy chọn</Badge> : null}
+                          {!l.isRequired ? <span className="ml-2 text-xs text-ink-faint">(tùy chọn)</span> : null}
                         </span>
-                        <span className="shrink-0 text-xs text-slate-500">{formatDuration(l.durationSeconds)}</span>
+                        {l.isPreview ? (
+                          <Badge tone="success">Học thử</Badge>
+                        ) : enrollment?.status !== "active" ? (
+                          <IconLock size={14} className="text-ink-faint" aria-label="Cần đăng ký" />
+                        ) : null}
+                        <span className="w-12 shrink-0 text-right text-xs tabular-nums text-ink-faint">{formatDuration(l.durationSeconds)}</span>
                       </li>
                     ))}
                   </ul>
                 </details>
               ))}
             </div>
-          </section>
-          <CourseReviews
-            courseId={course.id}
-            reviews={reviews}
-            myReview={myReview ? { rating: myReview.rating, comment: myReview.comment } : null}
-            canReview={reviewAllowed}
-            loggedIn={Boolean(viewer)}
-          />
+          </Reveal>
+
+          <Reveal as="section" aria-labelledby="about">
+            <h2 id="about" className="text-h2 mb-5">
+              Giới thiệu
+            </h2>
+            <Markdown>{course.description}</Markdown>
+          </Reveal>
+
+          <Reveal>
+            <CourseReviews courseId={course.id} reviews={reviews} myReview={myReview ? { rating: myReview.rating, comment: myReview.comment } : null} canReview={reviewAllowed} loggedIn={Boolean(viewer)} />
+          </Reveal>
         </div>
+
         <aside className="space-y-6">
           {course.prerequisites.length ? (
-            <Card>
-              <h2 className="mb-2 font-semibold">Kiến thức đầu vào</h2>
-              <ul className="list-disc space-y-1 pl-5 text-sm">
+            <section className="rounded-[var(--radius-lg)] border border-line bg-surface p-6">
+              <h2 className="text-h3 mb-3">Kiến thức đầu vào</h2>
+              <ul className="space-y-2 text-sm text-ink-soft">
                 {course.prerequisites.map((p) => (
-                  <li key={p}>{p}</li>
+                  <li key={p} className="flex gap-2">
+                    <span className="mt-2 size-1.5 shrink-0 rounded-full bg-brand-400" />
+                    {p}
+                  </li>
                 ))}
               </ul>
-            </Card>
+            </section>
           ) : null}
-          <Card>
-            <h2 className="mb-2 font-semibold">Giảng viên</h2>
-            <p className="font-medium">{course.instructorName}</p>
-            {course.instructorBio ? <p className="mt-1 text-sm text-slate-600">{course.instructorBio}</p> : null}
-          </Card>
+          <section className="rounded-[var(--radius-lg)] bg-brand-50/70 p-6">
+            <h2 className="text-caption mb-3 text-brand-700">Giảng viên</h2>
+            <div className="flex items-center gap-3">
+              <Avatar name={course.instructorName} size={48} />
+              <p className="font-semibold">{course.instructorName}</p>
+            </div>
+            {course.instructorBio ? <p className="mt-3 text-sm text-ink-soft">{course.instructorBio}</p> : null}
+          </section>
         </aside>
       </Container>
-    </>
+
+      {/* ---- CTA cố định trên mobile (không che nội dung nhờ pb-24 ở trên) ---- */}
+      {cta ? (
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 p-3 shadow-lg backdrop-blur lg:hidden">
+          <div className="mx-auto flex max-w-xl items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold">{course.title}</p>
+              <p className="text-xs text-ink-faint">{progress ? `Đã học ${progress.percent}%` : "Miễn phí"}</p>
+            </div>
+            <div className="w-44 shrink-0">{cta}</div>
+          </div>
+        </div>
+      ) : null}
+    </div>
   );
 }

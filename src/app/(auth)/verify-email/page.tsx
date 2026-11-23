@@ -18,14 +18,14 @@ export default async function VerifyEmailPage({ searchParams }: { searchParams: 
           <Alert tone="success">Email {viewer.email} đã được xác minh.</Alert>
         ) : (
           <>
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-ink-soft">
               Chúng tôi đã gửi liên kết xác minh tới <strong>{viewer.email}</strong>. Liên kết có hiệu lực 24 giờ.
             </p>
             <ResendVerification />
           </>
         )
       ) : (
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-ink-soft">
           Mở liên kết trong email để xác minh, hoặc{" "}
           <Link href="/login?callbackUrl=/verify-email" className="text-brand-700 underline">
             đăng nhập

@@ -29,7 +29,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
     <Card className="space-y-5">
       <div>
         <h1 className="text-2xl font-bold">Đăng nhập</h1>
-        <p className="mt-1 text-sm text-slate-600">
+        <p className="mt-1 text-sm text-ink-soft">
           Chưa có tài khoản?{" "}
           <Link href="/register" className="text-brand-700 hover:underline">
             Đăng ký miễn phí

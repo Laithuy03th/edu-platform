@@ -48,13 +48,13 @@ export default async function SecurityPage({ searchParams }: { searchParams: Pro
             ) : env().googleEnabled ? (
               <LinkGoogleForm needsPassword={viewer.hasPassword} />
             ) : (
-              <p className="text-sm text-slate-500">Đăng nhập Google chưa được cấu hình trên máy chủ này.</p>
+              <p className="text-sm text-ink-faint">Đăng nhập Google chưa được cấu hình trên máy chủ này.</p>
             )}
           </div>
         </Card>
         <Card>
           <h2 className="mb-2 text-lg font-semibold">Phiên đăng nhập</h2>
-          <p className="mb-4 text-sm text-slate-600">
+          <p className="mb-4 text-sm text-ink-soft">
             Phiên hết hạn sau 8 giờ không hoạt động và tối đa 7 ngày kể từ lần đăng nhập. Đăng xuất tất cả thiết bị sẽ vô hiệu mọi phiên ngay ở lần truy cập kế tiếp.
           </p>
           <LogoutAllForm />

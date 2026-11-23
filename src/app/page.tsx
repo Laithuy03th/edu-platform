@@ -1,82 +1,256 @@
 import Link from "next/link";
 import { CourseCard } from "@/components/course-card";
-import { Container, buttonClass } from "@/components/ui";
-import { listFeatured } from "@/modules/courses/catalog";
-import { listFeaturedPaths } from "@/modules/learning-paths/service";
+import { HeroIllustration } from "@/components/hero-illustration";
+import { Reveal } from "@/components/motion";
 import { safeLoad } from "@/components/safe-load";
+import { IconArrowRight, IconCheck, IconClock, IconLeaf, IconNote, IconRepeat, IconRoute, IconRubric, IconTarget } from "@/components/icons";
+import { Container, EmptyState, Section, SectionHeading, buttonClass } from "@/components/ui";
+import { listCategories, listFeatured } from "@/modules/courses/catalog";
+import { listFeaturedPaths } from "@/modules/learning-paths/service";
 
-const FEATURES = [
-  { title: "Ghi chú theo thời điểm video", body: "Bấm một nút để ghi chú đúng giây đang xem; bấm lại ghi chú để tua tới đó." },
-  { title: "Ôn tập câu sai", body: "Câu trả lời sai được đưa vào lịch ôn 1–3–7–14 ngày theo quy tắc rõ ràng." },
-  { title: "Tự đánh giá mức độ hiểu", body: "Học xong vẫn có thể chưa hiểu — đánh dấu để quay lại ôn, tách khỏi tiến độ." },
-  { title: "Bài tập dự án có rubric", body: "Nộp link GitHub/demo, tự đánh giá theo tiêu chí, nhận phản hồi từ giảng viên." },
-  { title: "Đánh giá đầu vào", body: "Làm bài kiểm tra ngắn để biết chương nào nên học trước, chương nào ôn nhanh." },
-  { title: "Tiết kiệm dữ liệu", body: "Không tự phát video, hiển thị dung lượng trước khi tải, ưu tiên bài đọc." },
+const STEPS = [
+  { icon: <IconTarget size={20} />, title: "Đánh giá đầu vào", body: "Bài kiểm tra ngắn gợi ý chương nên học trước và chương chỉ cần ôn nhanh — theo quy tắc rõ ràng." },
+  { icon: <IconClock size={20} />, title: "Học bài ngắn", body: "Bài đọc gọn, video vừa đủ. Tự lưu vị trí xem, quay lại là học tiếp." },
+  { icon: <IconNote size={20} />, title: "Ghi chú tại chỗ", body: "Ghi đúng giây đang xem; bấm vào ghi chú để tua lại đoạn đó." },
+  { icon: <IconRepeat size={20} />, title: "Quiz & ôn câu sai", body: "Chấm ngay, câu sai tự vào lịch ôn 1 → 3 → 7 → 14 ngày." },
+  { icon: <IconRubric size={20} />, title: "Dự án có rubric", body: "Nộp link GitHub/demo, tự đánh giá rồi nhận phản hồi theo tiêu chí." },
 ];
 
 export default async function HomePage() {
-  const [featured, paths] = await Promise.all([safeLoad(() => listFeatured(), []), safeLoad(() => listFeaturedPaths(), [])]);
+  const [featured, paths, categories] = await Promise.all([
+    safeLoad(() => listFeatured(), []),
+    safeLoad(() => listFeaturedPaths(), []),
+    safeLoad(() => listCategories(), []),
+  ]);
   return (
     <>
-      <section className="border-b border-slate-200 bg-white">
-        <Container className="grid gap-8 py-14 md:grid-cols-2 md:items-center">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Học lập trình có lộ trình, có thực hành, có ôn tập.</h1>
-            <p className="mt-4 text-lg text-slate-600">
-              Bài đọc ngắn gọn, video vừa đủ, quiz chấm ngay và dự án có rubric. Miễn phí trong phạm vi demo.
+      {/* ---------------- HERO ---------------- */}
+      <section className="bg-grain-warm relative overflow-hidden">
+        <Container className="grid items-center gap-12 pb-16 pt-10 sm:pt-16 lg:grid-cols-[1.05fr_1fr] lg:gap-8 lg:pb-24">
+          <div className="stagger-in">
+            <p style={{ "--i": 0 } as React.CSSProperties} className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-surface/80 px-3 py-1 text-sm font-medium text-brand-800 shadow-xs backdrop-blur">
+              <IconLeaf size={16} /> Miễn phí trong phạm vi demo
             </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Link href="/courses" className={buttonClass("primary")}>
-                Xem khóa học
+            <h1 style={{ "--i": 1 } as React.CSSProperties} className="text-display mt-5 text-ink">
+              Học lập trình <span className="relative whitespace-nowrap text-brand-700">
+                nhớ lâu hơn
+                <svg className="absolute -bottom-2 left-0 w-full text-brand-300" viewBox="0 0 300 12" preserveAspectRatio="none" aria-hidden>
+                  <path d="M2 9c60-6 150-8 296-3" fill="none" stroke="currentColor" strokeWidth="5" strokeLinecap="round" />
+                </svg>
+              </span>
+              , không chỉ xem xong.
+            </h1>
+            <p style={{ "--i": 2 } as React.CSSProperties} className="mt-6 max-w-xl text-lg leading-relaxed text-ink-soft">
+              Bài đọc ngắn, video vừa đủ, ghi chú đúng giây đang xem, quiz chấm ngay và lịch ôn câu sai. Kết thúc mỗi khóa bằng một dự án thật có rubric.
+            </p>
+            <div style={{ "--i": 3 } as React.CSSProperties} className="mt-8 flex flex-wrap gap-3">
+              <Link href="/courses" className={buttonClass("primary", undefined, "lg")}>
+                Khám phá khóa học <IconArrowRight size={18} className="transition-transform group-hover/btn:translate-x-0.5" />
               </Link>
-              <Link href="/paths" className={buttonClass("outline")}>
+              <Link href="/paths" className={buttonClass("outline", undefined, "lg")}>
                 Chọn lộ trình theo mục tiêu
               </Link>
             </div>
+            <ul style={{ "--i": 4 } as React.CSSProperties} className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-ink-soft">
+              {["Không tự phát video", "Chế độ tiết kiệm dữ liệu", "Lưu vị trí học tự động"].map((t) => (
+                <li key={t} className="inline-flex items-center gap-1.5">
+                  <span className="grid size-5 place-items-center rounded-full bg-brand-100 text-brand-700">
+                    <IconCheck size={12} />
+                  </span>
+                  {t}
+                </li>
+              ))}
+            </ul>
           </div>
-          <ul className="grid gap-3 sm:grid-cols-2">
-            {FEATURES.map((f) => (
-              <li key={f.title} className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-                <p className="font-semibold">{f.title}</p>
-                <p className="mt-1 text-sm text-slate-600">{f.body}</p>
-              </li>
-            ))}
-          </ul>
+          <HeroIllustration />
         </Container>
       </section>
 
-      <Container className="py-10">
-        <div className="mb-4 flex items-end justify-between">
-          <h2 className="text-xl font-bold">Khóa học nổi bật</h2>
-          <Link href="/courses" className="text-sm text-brand-700 hover:underline">
-            Tất cả khóa học →
-          </Link>
-        </div>
-        {featured.length ? (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {featured.map((c) => (
-              <CourseCard key={c.id} course={c} />
-            ))}
-          </div>
-        ) : (
-          <p className="text-slate-600">Chưa có khóa học nào được xuất bản.</p>
-        )}
+      {/* ---------------- KHÁC BIỆT (bento) ---------------- */}
+      <Section>
+        <Container>
+          <Reveal>
+            <SectionHeading eyebrow="Vì sao khác" title="Được thiết kế để bạn nhớ và làm được" description="Ba thói quen giúp kiến thức ở lại lâu hơn — đều có sẵn trong mỗi khóa học." />
+          </Reveal>
+          <Reveal group className="grid gap-5 md:grid-cols-6">
+            <article className="group relative overflow-hidden rounded-[var(--radius-xl)] border border-line bg-surface p-7 shadow-sm transition hover:shadow-md md:col-span-4">
+              <div className="flex items-center gap-3">
+                <span className="grid size-11 place-items-center rounded-2xl bg-brand-100 text-brand-700 transition-transform group-hover:-rotate-6">
+                  <IconNote />
+                </span>
+                <h3 className="text-h3">Ghi chú theo thời điểm video</h3>
+              </div>
+              <p className="mt-3 max-w-lg text-ink-soft">Bấm “Lấy thời điểm hiện tại” để ghi đúng giây đang xem. Danh sách ghi chú là mục lục riêng của bạn — bấm vào là tua tới.</p>
+              <div className="mt-6 grid gap-2 sm:grid-cols-3" aria-hidden>
+                {[
+                  ["01:05", "useState chỉ chạy ở client"],
+                  ["04:30", "fetch trong Server Component"],
+                  ["07:12", "loading.tsx tạo Suspense"],
+                ].map(([t, x]) => (
+                  <div key={t} className="rounded-[var(--radius-md)] border border-line bg-canvas p-3 transition group-hover:border-brand-200">
+                    <span className="rounded-md bg-brand-100 px-1.5 py-0.5 font-mono text-xs font-semibold text-brand-800">▶ {t}</span>
+                    <p className="mt-2 text-sm text-ink">{x}</p>
+                  </div>
+                ))}
+              </div>
+            </article>
+            <article className="group relative overflow-hidden rounded-[var(--radius-xl)] bg-gradient-to-br from-brand-700 to-brand-900 p-7 text-white shadow-md md:col-span-2">
+              <span className="grid size-11 place-items-center rounded-2xl bg-white/15 transition-transform group-hover:rotate-6">
+                <IconRepeat />
+              </span>
+              <h3 className="text-h3 mt-4">Ôn tập câu sai</h3>
+              <p className="mt-2 text-sm text-white/85">Câu trả lời sai tự vào lịch ôn theo quy tắc cố định. Trả lời đúng liên tiếp thì giãn dần.</p>
+              <div className="mt-6 flex items-end gap-2" aria-hidden>
+                {[1, 3, 7, 14].map((d, i) => (
+                  <div key={d} className="flex-1 text-center">
+                    <div className="mx-auto rounded-t-lg bg-white/25 transition-all duration-500 group-hover:bg-white/40" style={{ height: 18 + i * 16 }} />
+                    <p className="mt-1 text-xs font-semibold">{d} ngày</p>
+                  </div>
+                ))}
+              </div>
+            </article>
+            <article className="group rounded-[var(--radius-xl)] border border-line bg-brand-50/60 p-7 md:col-span-3">
+              <span className="grid size-11 place-items-center rounded-2xl bg-surface text-brand-700 shadow-xs transition-transform group-hover:scale-110">
+                <IconRubric />
+              </span>
+              <h3 className="text-h3 mt-4">Bài tập dự án có rubric</h3>
+              <p className="mt-2 text-ink-soft">Tiêu chí rõ đạt/chưa đạt, tự đánh giá trước khi nộp, giảng viên phản hồi và có thể yêu cầu sửa.</p>
+            </article>
+            <article className="group rounded-[var(--radius-xl)] border border-line bg-surface p-7 md:col-span-3">
+              <span className="grid size-11 place-items-center rounded-2xl bg-brand-100 text-brand-700 transition-transform group-hover:scale-110">
+                <IconTarget />
+              </span>
+              <h3 className="text-h3 mt-4">Tự đánh giá mức độ hiểu</h3>
+              <p className="mt-2 text-ink-soft">Học xong chưa chắc đã hiểu. Đánh dấu “Cần ôn” hay “Chưa hiểu” để quay lại đúng chỗ — tách khỏi tiến độ.</p>
+            </article>
+          </Reveal>
+        </Container>
+      </Section>
 
-        {paths.length ? (
-          <>
-            <h2 className="mb-4 mt-12 text-xl font-bold">Lộ trình nổi bật</h2>
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {paths.map((p) => (
-                <Link key={p.id} href={`/paths/${p.slug}`} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md">
-                  <p className="font-semibold">{p.title}</p>
-                  <p className="mt-1 line-clamp-2 text-sm text-slate-600">{p.goal}</p>
-                  <p className="mt-3 text-xs text-slate-500">{p.itemCount} mục</p>
+      {/* ---------------- KHÓA HỌC NỔI BẬT ---------------- */}
+      <Section className="bg-surface">
+        <Container>
+          <Reveal>
+            <SectionHeading
+              eyebrow="Khóa học"
+              title="Khóa học nổi bật"
+              description="Các khóa đã qua duyệt nội dung, học thử được một số bài trước khi đăng ký."
+              action={
+                <Link href="/courses" className={buttonClass("ghost")}>
+                  Xem tất cả <IconArrowRight size={16} />
+                </Link>
+              }
+            />
+          </Reveal>
+          {featured.length ? (
+            <Reveal group className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {featured.map((c) => (
+                <CourseCard key={c.id} course={c} />
+              ))}
+            </Reveal>
+          ) : (
+            <EmptyState title="Chưa có khóa học nào được xuất bản">Khóa học sẽ xuất hiện ở đây sau khi được quản trị viên duyệt.</EmptyState>
+          )}
+        </Container>
+      </Section>
+
+      {/* ---------------- CHỦ ĐỀ ---------------- */}
+      {categories.length ? (
+        <Section>
+          <Container>
+            <Reveal>
+              <SectionHeading eyebrow="Chủ đề" title="Bắt đầu từ điều bạn cần" />
+            </Reveal>
+            <Reveal group className="flex flex-wrap gap-3">
+              {categories.map((c) => (
+                <Link
+                  key={c.id}
+                  href={`/courses?category=${c.slug}`}
+                  className="group inline-flex items-center gap-2 rounded-full border border-line bg-surface px-5 py-3 font-semibold text-ink shadow-xs transition hover:-translate-y-0.5 hover:border-brand-300 hover:bg-brand-50 hover:shadow-sm"
+                >
+                  {c.name}
+                  <IconArrowRight size={16} className="text-brand-600 transition-transform group-hover:translate-x-0.5" />
                 </Link>
               ))}
+            </Reveal>
+          </Container>
+        </Section>
+      ) : null}
+
+      {/* ---------------- CÁCH HỌC (timeline) ---------------- */}
+      <Section className="bg-surface">
+        <Container className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr]">
+          <Reveal>
+            <SectionHeading eyebrow="Cách học" title="Một vòng học trọn vẹn cho mỗi chương" description="Không cần làm đủ mọi bước — bạn có thể bỏ qua đánh giá đầu vào và học theo thứ tự thông thường." />
+          </Reveal>
+          <Reveal group as="ol" className="relative space-y-6 border-l-2 border-brand-100 pl-8">
+            {STEPS.map((s, i) => (
+              <li key={s.title} className="relative">
+                <span className="absolute -left-[3.05rem] top-0 grid size-10 place-items-center rounded-full border-4 border-surface bg-brand-100 text-brand-700 shadow-xs">{s.icon}</span>
+                <p className="text-caption text-brand-700">Bước {i + 1}</p>
+                <p className="text-h3 mt-0.5">{s.title}</p>
+                <p className="mt-1 text-ink-soft">{s.body}</p>
+              </li>
+            ))}
+          </Reveal>
+        </Container>
+      </Section>
+
+      {/* ---------------- LỘ TRÌNH ---------------- */}
+      {paths.length ? (
+        <Section>
+          <Container>
+            <Reveal>
+              <SectionHeading
+                eyebrow="Lộ trình"
+                title="Lộ trình theo mục tiêu"
+                description="Ghép các khóa, chương và cột mốc theo thứ tự đề xuất. Thời gian ước tính lấy từ thời lượng bài học thật."
+                action={
+                  <Link href="/paths" className={buttonClass("ghost")}>
+                    Mọi lộ trình <IconArrowRight size={16} />
+                  </Link>
+                }
+              />
+            </Reveal>
+            <Reveal group className="grid gap-5 md:grid-cols-3">
+              {paths.map((p) => (
+                <Link key={p.id} href={`/paths/${p.slug}`} className="group relative overflow-hidden rounded-[var(--radius-lg)] border border-line bg-surface p-6 shadow-sm transition hover:-translate-y-1 hover:border-brand-200 hover:shadow-md">
+                  <span className="grid size-11 place-items-center rounded-2xl bg-brand-100 text-brand-700 transition-transform group-hover:rotate-6">
+                    <IconRoute />
+                  </span>
+                  <p className="text-h3 mt-4">{p.title}</p>
+                  <p className="mt-1.5 line-clamp-3 text-sm text-ink-soft">{p.goal}</p>
+                  <p className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand-700">
+                    {p.itemCount} mục <IconArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+                  </p>
+                </Link>
+              ))}
+            </Reveal>
+          </Container>
+        </Section>
+      ) : null}
+
+      {/* ---------------- CTA ---------------- */}
+      <Section className="pb-4">
+        <Container>
+          <Reveal className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-brand-700 via-brand-800 to-brand-900 px-6 py-14 text-center text-white shadow-lg sm:px-12">
+            <div className="bg-dots absolute inset-0 opacity-30" aria-hidden />
+            <div className="absolute -left-20 -top-20 size-72 rounded-full bg-brand-400/30 blur-3xl" aria-hidden />
+            <div className="relative mx-auto max-w-2xl">
+              <h2 className="text-h1">Bắt đầu buổi học đầu tiên hôm nay</h2>
+              <p className="mt-3 text-white/85">Tạo tài khoản miễn phí, học thử vài bài, rồi quyết định khóa phù hợp với mục tiêu của bạn.</p>
+              <div className="mt-8 flex flex-wrap justify-center gap-3">
+                <Link href="/register" className={buttonClass("outline", "border-transparent bg-white text-brand-800 hover:bg-brand-50", "lg")}>
+                  Tạo tài khoản miễn phí
+                </Link>
+                <Link href="/courses" className={buttonClass("ghost", "text-white hover:bg-white/10 hover:text-white", "lg")}>
+                  Xem khóa học
+                </Link>
+              </div>
             </div>
-          </>
-        ) : null}
-      </Container>
+          </Reveal>
+        </Container>
+      </Section>
     </>
   );
 }

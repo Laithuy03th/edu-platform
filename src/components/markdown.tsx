@@ -32,12 +32,12 @@ export function Markdown({ children, allowImages = false, className }: { childre
     },
     img: ({ src, alt }) => {
       const s = typeof src === "string" ? src : "";
-      if (!allowImages || !/^https:\/\/res\.cloudinary\.com\//.test(s)) return <span className="text-slate-500">[ảnh: {alt || "không hiển thị"}]</span>;
+      if (!allowImages || !/^https:\/\/res\.cloudinary\.com\//.test(s)) return <span className="text-ink-faint">[ảnh: {alt || "không hiển thị"}]</span>;
       return <img src={s} alt={alt ?? ""} loading="lazy" decoding="async" className="max-w-full rounded" />;
     },
   };
   return (
-    <div className={className ?? "prose prose-slate max-w-none prose-pre:bg-slate-900 prose-pre:text-slate-100"}>
+    <div className={className ?? "prose max-w-none prose-pre:bg-ink prose-pre:text-white"}>
       <ReactMarkdown remarkPlugins={[remarkGfm]} components={components} urlTransform={safeUrl} skipHtml>
         {children}
       </ReactMarkdown>

@@ -12,7 +12,7 @@ export default async function RegisterPage() {
     <Card className="space-y-5">
       <div>
         <h1 className="text-2xl font-bold">Tạo tài khoản</h1>
-        <p className="mt-1 text-sm text-slate-600">
+        <p className="mt-1 text-sm text-ink-soft">
           Đã có tài khoản?{" "}
           <Link href="/login" className="text-brand-700 hover:underline">
             Đăng nhập

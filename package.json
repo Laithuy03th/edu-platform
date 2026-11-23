@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "next dev",
+    "dev:db": "tsx scripts/dev-mongo.ts",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -16,13 +17,13 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "db:indexes": "tsx scripts/db-indexes.ts",
-    "db:seed": "tsx scripts/db-seed.ts",
-    "admin:create": "tsx scripts/create-admin.ts",
-    "media:cleanup": "tsx scripts/media-cleanup.ts",
-    "media:reconcile": "tsx scripts/media-reconcile.ts",
-    "usage:sync": "tsx scripts/usage-sync.ts",
-    "bench:argon2": "tsx scripts/bench-argon2.ts"
+    "db:indexes": "tsx --conditions=react-server scripts/db-indexes.ts",
+    "db:seed": "tsx --conditions=react-server scripts/db-seed.ts",
+    "admin:create": "tsx --conditions=react-server scripts/create-admin.ts",
+    "media:cleanup": "tsx --conditions=react-server scripts/media-cleanup.ts",
+    "media:reconcile": "tsx --conditions=react-server scripts/media-reconcile.ts",
+    "usage:sync": "tsx --conditions=react-server scripts/usage-sync.ts",
+    "bench:argon2": "tsx --conditions=react-server scripts/bench-argon2.ts"
   },
   "dependencies": {
     "@node-rs/argon2": "2.2.2",

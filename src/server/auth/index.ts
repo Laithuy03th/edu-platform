@@ -1,7 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { redirect, unstable_rethrow } from "next/navigation";
 import { AuthError } from "next-auth";
 import { AppError } from "@/lib/errors";
 import { logger } from "@/lib/logger";
@@ -21,6 +21,7 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
   try {
     session = await auth();
   } catch (err) {
+    unstable_rethrow(err);
     logger.warn("auth.session_read_failed", { err });
     return null;
   }
@@ -28,6 +29,7 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
   try {
     return await resolveViewer({ sub: session.user?.id, av: session.av, lat: session.lat });
   } catch (err) {
+    unstable_rethrow(err);
     // Fail-closed: DB lỗi/chưa cấu hình → coi như chưa đăng nhập (không cấp quyền).
     logger.error("auth.resolve_viewer_failed", { err });
     return null;

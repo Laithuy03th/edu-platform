@@ -11,6 +11,7 @@ import {
 import { FormError } from "@/components/form-error";
 import { Alert, Button, Field, Input } from "@/components/ui";
 import { formToObject, useAction } from "@/components/use-action";
+import { useConfirm } from "@/components/overlays";
 
 export function ChangePasswordForm() {
   const a = useAction(changePasswordAction);
@@ -79,6 +80,7 @@ export function LinkGoogleForm({ needsPassword }: { needsPassword: boolean }) {
 }
 
 export function UnlinkGoogleButton() {
+  const confirm = useConfirm();
   const router = useRouter();
   const a = useAction(unlinkGoogleAction, { onSuccess: () => router.refresh() });
   return (
@@ -88,7 +90,9 @@ export function UnlinkGoogleButton() {
         variant="outline"
         pending={a.pending}
         onClick={() => {
-          if (confirm("Hủy liên kết Google khỏi tài khoản này?")) a.run({});
+          void confirm({ title: "Hủy liên kết Google?", description: "Bạn sẽ không đăng nhập bằng Google được nữa cho tới khi liên kết lại.", confirmLabel: "Hủy liên kết" }).then((r) => {
+            if (r.ok) void a.run({});
+          });
         }}
       >
         Hủy liên kết Google
@@ -98,6 +102,7 @@ export function UnlinkGoogleButton() {
 }
 
 export function LogoutAllForm() {
+  const confirm = useConfirm();
   const a = useAction(logoutAllAction);
   return (
     <div className="space-y-2">
@@ -106,7 +111,9 @@ export function LogoutAllForm() {
         variant="danger"
         pending={a.pending}
         onClick={() => {
-          if (confirm("Đăng xuất khỏi tất cả thiết bị, kể cả thiết bị này?")) a.run({});
+          void confirm({ title: "Đăng xuất tất cả thiết bị?", description: "Mọi phiên đăng nhập, kể cả thiết bị này, sẽ bị vô hiệu ngay.", confirmLabel: "Đăng xuất tất cả" }).then((r) => {
+            if (r.ok) void a.run({});
+          });
         }}
       >
         Đăng xuất tất cả thiết bị

@@ -12,6 +12,7 @@ import {
   verifyEmailAction,
 } from "@/modules/auth/actions";
 import { FormError } from "@/components/form-error";
+import { IconGoogle } from "@/components/icons";
 import { Alert, Button, Field, Input } from "@/components/ui";
 import { formToObject, useAction } from "@/components/use-action";
 
@@ -50,13 +51,13 @@ export function LoginForm({ callbackUrl, googleEnabled }: { callbackUrl?: string
       </form>
       {googleEnabled ? (
         <>
-          <div className="flex items-center gap-3 text-xs text-slate-500">
-            <span className="h-px flex-1 bg-slate-200" />
+          <div className="flex items-center gap-3 text-xs text-ink-faint">
+            <span className="h-px flex-1 bg-brand-100" />
             hoặc
-            <span className="h-px flex-1 bg-slate-200" />
+            <span className="h-px flex-1 bg-brand-100" />
           </div>
           <FormError error={google.error} />
-          <Button type="button" variant="outline" className="w-full" pending={google.pending} onClick={() => google.run({ callbackUrl })}>
+          <Button type="button" variant="outline" className="w-full" icon={<IconGoogle />} pending={google.pending} onClick={() => google.run({ callbackUrl })}>
             Tiếp tục với Google
           </Button>
         </>

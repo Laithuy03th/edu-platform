@@ -1,6 +1,7 @@
-import Link from "next/link";
 import { CourseCard } from "@/components/course-card";
-import { Container, EmptyState, PageHeader } from "@/components/ui";
+import { IconSearch } from "@/components/icons";
+import { Reveal } from "@/components/motion";
+import { Container, EmptyState, PageHeader, Pagination } from "@/components/ui";
 import { LEVELS, LEVEL_LABEL, listCatalog, listCategories, parseCatalogQuery, type CatalogQuery } from "@/modules/courses/catalog";
 import { CatalogFilters } from "./filters";
 
@@ -21,33 +22,28 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
     return s ? `/courses?${s}` : "/courses";
   };
   return (
-    <Container className="py-8">
-      <PageHeader title="Khóa học" description={`${total} khóa học`} />
-      <CatalogFilters
-        categories={categories}
-        levels={LEVELS.map((l) => ({ value: l, label: LEVEL_LABEL[l] }))}
-        initial={{ q: query.q, category: query.category ?? "", level: query.level ?? "", sort: query.sort }}
-      />
-      {items.length === 0 ? (
-        <EmptyState title="Không tìm thấy khóa học phù hợp">
-          Thử từ khóa khác (tìm theo từ, không phân biệt dấu) hoặc bỏ bớt bộ lọc.
-        </EmptyState>
-      ) : (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {items.map((c) => (
-            <CourseCard key={c.id} course={c} />
-          ))}
-        </div>
-      )}
-      {pages > 1 ? (
-        <nav aria-label="Phân trang" className="mt-8 flex items-center justify-center gap-2 text-sm">
-          {query.page > 1 ? <Link href={pageHref(query.page - 1)} className="rounded border px-3 py-1.5">← Trước</Link> : null}
-          <span>
-            Trang {query.page}/{pages}
-          </span>
-          {query.page < pages ? <Link href={pageHref(query.page + 1)} className="rounded border px-3 py-1.5">Sau →</Link> : null}
-        </nav>
-      ) : null}
-    </Container>
+    <div className="bg-grain-warm">
+      <Container className="py-10 sm:py-14">
+        <PageHeader eyebrow="Thư viện" title="Khóa học" description="Chọn khóa phù hợp với mục tiêu. Bài có nhãn “Học thử” xem được trước khi đăng ký." />
+        <CatalogFilters
+          categories={categories}
+          levels={LEVELS.map((l) => ({ value: l, label: LEVEL_LABEL[l] }))}
+          initial={{ q: query.q, category: query.category ?? "", level: query.level ?? "", sort: query.sort }}
+          total={total}
+        />
+        {items.length === 0 ? (
+          <EmptyState icon={<IconSearch />} title="Không tìm thấy khóa học phù hợp">
+            Tìm kiếm khớp theo từ (không phân biệt dấu). Thử từ khóa ngắn hơn hoặc bỏ bớt bộ lọc.
+          </EmptyState>
+        ) : (
+          <Reveal group className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {items.map((c) => (
+              <CourseCard key={c.id} course={c} />
+            ))}
+          </Reveal>
+        )}
+        <Pagination page={query.page} pages={pages} href={pageHref} />
+      </Container>
+    </div>
   );
 }

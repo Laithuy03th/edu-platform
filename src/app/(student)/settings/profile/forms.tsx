@@ -44,11 +44,11 @@ export function ProfileForm({ profile, timezones }: { profile: Profile; timezone
           ))}
         </Select>
       </Field>
-      <label className="flex items-start gap-3 rounded-md border border-slate-200 p-3">
+      <label className="flex items-start gap-3 rounded-md border border-line p-3">
         <input type="checkbox" name="dataSaver" defaultChecked={profile.dataSaver} className="mt-1 size-4" />
         <span>
           <span className="block text-sm font-medium">Chế độ tiết kiệm dữ liệu</span>
-          <span className="block text-xs text-slate-600">
+          <span className="block text-xs text-ink-soft">
             Không tải video cho tới khi bạn bấm phát, hiển thị dung lượng ước tính trước, ưu tiên bài đọc và transcript.
           </span>
         </span>

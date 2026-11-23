@@ -21,7 +21,7 @@ export default async function ProfileSettingsPage() {
       <div className="space-y-6">
         <Card>
           <h2 className="mb-1 text-lg font-semibold">Hồ sơ thành quả công khai</h2>
-          <p className="mb-4 text-sm text-slate-600">
+          <p className="mb-4 text-sm text-ink-soft">
             Mặc định riêng tư. Khi bật, chỉ các khóa đã hoàn thành và dự án bạn chọn mới hiển thị — không có email, ghi chú hay điểm chi tiết.
           </p>
           <PublicProfileForm enabled={profile.publicProfile.enabled} handle={profile.publicProfile.handle ?? ""} emailVerified={profile.emailVerified} />
@@ -30,7 +30,7 @@ export default async function ProfileSettingsPage() {
         {!profile.roles.includes("instructor") ? (
           <Card>
             <h2 className="mb-1 text-lg font-semibold">Trở thành giảng viên</h2>
-            <p className="mb-4 text-sm text-slate-600">
+            <p className="mb-4 text-sm text-ink-soft">
               Giảng viên được tạo khóa học và tải lên media trong hạn mức. Quyền này do quản trị viên duyệt.
             </p>
             <InstructorApplyForm
