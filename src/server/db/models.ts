@@ -228,6 +228,8 @@ export interface EnrollmentDoc {
   lastAccessedAt: Date | null;
   completedAt: Date | null;
   completedVersion: number | null;
+  /** Học viên chọn hiển thị khóa đã hoàn thành trên hồ sơ công khai (mặc định ẩn). */
+  showOnProfile?: boolean;
   enrolledAt: Date;
 }
 

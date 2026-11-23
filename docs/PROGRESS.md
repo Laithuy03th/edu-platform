@@ -49,7 +49,10 @@ Phần không phụ thuộc các câu trả lời này có thể bắt đầu ng
 ## Blockers
 
 - Không có blocker cho Phase 1 phần không cần credentials.
-- Cần credentials (người dùng tự điền vào `.env`): Atlas URI (tùy chọn ở Phase 1), Google OAuth, SMTP, Cloudinary (Phase 3).
+- Atlas URI đã có trong `.env` (cluster0, DB `tuhoc_dev`; user hiện có quyền Atlas Admin — nên đổi sang user chỉ `readWrite` trước khi deploy).
+- Cloudinary đã có trong `.env` (cloud `y15li99d`, môi trường Test, gói Free).
+- Còn thiếu credentials: Google OAuth, SMTP.
+- `scripts/db-indexes.ts`, `scripts/db-seed.ts` chưa tồn tại dù đã khai báo trong `package.json`.
 
 ## Nhật ký kiểm tra (lệnh thực tế)
 
@@ -59,3 +62,6 @@ Phần không phụ thuộc các câu trả lời này có thể bắt đầu ng
 | 2026-11-23 | `npm view <pkg> dist-tags` cho next, next-auth, better-auth, mongodb, zod, tailwindcss, vitest, @playwright/test, @node-rs/argon2, argon2, cloudinary, nodemailer, jose, typescript, eslint, prettier, react-hook-form | xem bảng phiên bản ở TECH_DECISIONS |
 | 2026-11-23 | `npm view next-auth@5.0.0-beta.32 peerDependencies` | `next: ^14 \|\| ^15 \|\| ^16` |
 | 2026-11-23 | `npm view typescript-eslint peerDependencies` | `typescript >=4.8.4 <6.1.0` |
+| 2026-11-23 | ping Atlas bằng driver `mongodb` với `MONGODB_URI` trong `.env` | `{"ok":1}`; DB `tuhoc_dev` chưa có collection |
+| 2026-11-23 | `pnpm db:indexes` | lỗi `ERR_MODULE_NOT_FOUND`: chưa có `scripts/db-indexes.ts` |
+| 2026-11-23 | `GET /v1_1/<cloud>/ping` Cloudinary Admin API với key/secret trong `.env` | HTTP 200 `{"status":"ok"}` (không upload) |

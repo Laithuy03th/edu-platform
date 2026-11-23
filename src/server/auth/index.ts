@@ -25,7 +25,13 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
     return null;
   }
   if (!session) return null;
-  return resolveViewer({ sub: session.user?.id, av: session.av, lat: session.lat });
+  try {
+    return await resolveViewer({ sub: session.user?.id, av: session.av, lat: session.lat });
+  } catch (err) {
+    // Fail-closed: DB lỗi/chưa cấu hình → coi như chưa đăng nhập (không cấp quyền).
+    logger.error("auth.resolve_viewer_failed", { err });
+    return null;
+  }
 });
 
 export async function requireViewer(): Promise<Viewer> {

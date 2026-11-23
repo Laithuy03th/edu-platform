@@ -44,7 +44,7 @@ export const INDEXES: Record<string, IndexDescription[]> = {
     {
       key: { featuredRank: 1 },
       name: "featured",
-      partialFilterExpression: { featuredRank: { $type: "number" } },
+      partialFilterExpression: { featuredRank: { $gte: 0 } },
     },
   ],
   chapters: [
