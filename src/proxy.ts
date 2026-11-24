@@ -22,6 +22,7 @@ function buildCsp(nonce: string): string {
     `media-src 'self' blob: ${cloud}`,
     `connect-src 'self' https://api.cloudinary.com${isDev ? " ws:" : ""}`,
     "font-src 'self'",
+    "worker-src 'self'",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self' https://accounts.google.com",
@@ -59,7 +60,8 @@ export function proxy(req: NextRequest) {
 export const config = {
   matcher: [
     {
-      source: "/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml).*)",
+      // vendor/: tệp tĩnh bên thứ ba (vd sql.js worker + wasm) — không gắn CSP nonce để worker biên dịch được WASM
+      source: "/((?!_next/static|_next/image|vendor/|favicon.ico|robots.txt|sitemap.xml).*)",
       missing: [
         { type: "header", key: "next-router-prefetch" },
         { type: "header", key: "purpose", value: "prefetch" },

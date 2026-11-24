@@ -25,10 +25,10 @@ Ngày kiểm tra: **2026-11-24**. Mỗi dòng ghi bằng chứng thật và tr�
 |---|---|---|
 | VERIFIED | 66 | A01, A02, A03, A04, A06, A07, A08, A09, C01, C02, C03, C04, C05, C06, L01, L02, L03, L04, L05, L06, L07, L08, L09, L10, L11, L12, P01, P02, P03, P04, P05, D01, D02, D03, M01, M03, M05, M06, M07, M08, M09, T01, T02, T03, T04, T05, T06, T07, T08, T09, U01, U02, U03, U05, U07, S01, S02, S03, S04, S06, O01, O03, O04, O05, O06, O07 |
 | IMPLEMENTED_UNVERIFIED | 2 | A05, O02 |
-| PARTIAL | 6 | M02, M04, U04, U06, S07, S09 |
+| PARTIAL | 7 | P06, M02, M04, U04, U06, S07, S09 |
 | MOCK_ONLY | 0 | — |
 | BLOCKED | 3 | S05, S08, S10 (cần URL public/Search Console/dữ liệu tìm kiếm thật) |
-| MISSING | 1 | P06 (Python/SQL chạy trong trình duyệt — roadmap; tải nặng, đặc tả xếp P2/roadmap) |
+| MISSING | 0 | — |
 | DEFERRED | 1 | O08 (deploy chỉ khi chủ dự án yêu cầu) |
 
 > Không công bố "% hoàn thành". Theo §31.1, nếu tính phần trăm thì phải công bố trọng số; tài liệu này không đặt trọng số. Bảng tổng hợp chỉ đếm theo trạng thái. Số liệu chính xác cho từng dòng nằm trong các bảng chi tiết bên dưới.
@@ -84,7 +84,7 @@ Ngày kiểm tra: **2026-11-24**. Mỗi dòng ghi bằng chứng thật và tr�
 | P03 | Hồ sơ thành quả opt-in | `/achievements`, `/u/[handle]` | INT D7; LIVE `/u/khong-co` → 404 | VERIFIED | — | — |
 | P04 | Đọc code, tìm lỗi, hints, lời giải có version | `modules/exercises`, khối "Luyện đọc code" ở trang học, soạn trong trình soạn bài | INT `exercises.test.ts`: payload không chứa đáp án/giải thích trước khi giải, chấm server, gợi ý từng mức, sửa → version mới; **UI thật trên Atlas**: sai → gợi ý → đúng → lời giải (không lộ trước khi nộp) | VERIFIED | ✓ 4 bài tập | Thêm bài tập cho các bài còn lại |
 | P05 | Playground HTML/CSS/JS cách ly | — | — | VERIFIED | — | P2, sau khi có thiết kế sandbox | `/playground` + runner sandbox (origin opaque, CSP riêng); E2E `playground-theme.spec.ts`: cookie/parent → SecurityError, fetch bị chặn, while(true) tự dừng; nút "Chạy thử" ở khối code |
-| P06 | Python/SQL chạy trên trình duyệt | — | — | MISSING | — | Roadmap |
+| P06 | Python/SQL chạy trên trình duyệt | — | — | PARTIAL | — | SQL: `/playground/sql` — SQLite WASM (sql.js 1.17, ~750 KB, chỉ tải khi mở trang) trong Web Worker, dữ liệu mẫu trong bộ nhớ, truy vấn > 3 s bị hủy và tạo lại DB; UI thật + E2E. Python (Pyodide > 10 MB): roadmap, chưa làm |
 
 ## D — Thảo luận và đánh giá
 

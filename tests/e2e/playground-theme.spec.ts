@@ -32,3 +32,17 @@ test("theme: Sáng → Tối áp dụng ngay và được nhớ sau khi tải l�
   const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
   expect(bg).toBe("rgb(18, 16, 17)");
 });
+
+test("playground SQL: chạy truy vấn mẫu, báo lỗi cú pháp, truy vấn vô hạn bị dừng", async ({ page }) => {
+  await page.goto("/playground/sql");
+  await expect(page.getByText("Sẵn sàng")).toBeVisible({ timeout: 30_000 });
+  await page.getByRole("button", { name: /^Chạy/ }).click();
+  await expect(page.locator("tbody tr").first()).toContainText("Next.js cơ bản cho người mới");
+  await page.locator("#sql-editor").fill("SELEC 1;");
+  await page.getByRole("button", { name: /^Chạy/ }).click();
+  await expect(page.locator("p[role=alert]")).toContainText("syntax error");
+  await page.locator("#sql-editor").fill("WITH RECURSIVE n(x) AS (SELECT 1 UNION ALL SELECT x + 1 FROM n) SELECT count(*) FROM n;");
+  await page.getByRole("button", { name: /^Chạy/ }).click();
+  await expect(page.getByText(/đã bị dừng/)).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByText("Sẵn sàng")).toBeVisible({ timeout: 15_000 });
+});
