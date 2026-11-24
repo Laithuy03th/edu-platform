@@ -57,12 +57,17 @@
 | 2026-11-24 | `pnpm db:seed` chạy lại | idempotent |
 | 2026-11-24 | `pnpm bench:argon2` | hash 17,2 ms, verify 12,8 ms (máy dev) |
 | 2026-11-24 | Kết nối Atlas (script kiểm tra) | **thất bại: TLS alert 80** → IP chưa có trong Network Access |
+| 2026-11-24 | Kết nối Atlas sau khi chủ dự án thêm IP | OK (sau ~1 phút); replica set, transaction hoạt động |
+| 2026-11-24 | `pnpm db:indexes` (Atlas `tuhoc_dev`) | pass, 29 collection + index |
+| 2026-11-24 | `pnpm db:seed` (Atlas) | 2 khóa (7 + 6 bài), 1 lộ trình, 3 tài khoản demo; dbStats 0,93 MiB |
+| 2026-11-24 | `pnpm usage:sync` | OK (Cloudinary + MongoDB) |
+| 2026-11-24 | `GET /courses` trên dev server của chủ dự án (:3000, Atlas) | HTTP 200, hiển thị 2 khóa |
 | 2026-11-24 | Cloudinary Usage API (1 lần) | thành công: Free, 25 credits, usage 0% |
 | 2026-11-24 | Screenshot QA 375/768/1440 | không tràn ngang sau khi sửa; không có lỗi JS |
 
 ## Chưa kiểm chứng / cần chủ dự án
 
-1. **Atlas Network Access:** thêm IP máy, rồi `pnpm db:indexes` và (tùy chọn) `pnpm db:seed` — [RUNBOOK §1](RUNBOOK.md).
+1. ~~**Atlas Network Access**~~ — đã xong 2026-11-24 (index + seed trên `tuhoc_dev`). Đổi mạng/IP thì phải thêm lại IP — [RUNBOOK §1](RUNBOOK.md). Tài khoản demo do seed tạo: đổi mật khẩu hoặc xóa trước khi công khai.
 2. **Xoay vòng secret:** một phần đầu của `AUTH_SECRET` và `RATE_LIMIT_SECRET` đã bị in ra log của trợ lý trong phiên 2026-11-24 → nên tạo giá trị mới (`openssl rand -base64 32`).
 3. **Google OAuth:** điền `AUTH_GOOGLE_ID/SECRET`, redirect URI `<APP_URL>/api/auth/callback/google`, thử các nhánh đăng nhập/liên kết.
 4. **SMTP:** điền `SMTP_*`, `MAIL_FROM` (bắt buộc khi production).

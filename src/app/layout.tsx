@@ -22,7 +22,8 @@ export const viewport: Viewport = { width: "device-width", initialScale: 1, them
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="vi" className={beVietnam.variable}>
+    // suppressHydrationWarning: chỉ cho thẻ <html> — tiện ích trình duyệt (vd dịch trang) hay chèn thuộc tính data-* vào đây.
+    <html lang="vi" className={beVietnam.variable} suppressHydrationWarning>
       <body className="flex min-h-screen flex-col font-sans">
         <a href="#main" className="sr-only z-[70] rounded-full bg-surface px-4 py-2 shadow-md focus:not-sr-only focus:fixed focus:left-3 focus:top-3">
           Bỏ qua tới nội dung chính
