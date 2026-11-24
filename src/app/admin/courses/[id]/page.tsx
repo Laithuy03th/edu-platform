@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { parseId } from "@/lib/ids";
 import { formatDuration } from "@/lib/text";
@@ -9,7 +10,7 @@ import { courseEnrollmentsAdmin } from "@/modules/admin/service";
 import { approveCourseAction, rejectCourseAction } from "@/modules/courses/actions";
 import { setEnrollmentStatusAction } from "@/modules/admin/actions";
 import { Markdown } from "@/components/markdown";
-import { Alert, Badge, Card, PageHeader, Table, Td, Th, Tr } from "@/components/ui";
+import { Alert, Badge, Card, PageHeader, Table, Td, Th, Tr, buttonClass } from "@/components/ui";
 import { CourseStatusBadges } from "@/app/instructor/status";
 import { AdminAction } from "../../client";
 import { ContentReviewForm } from "./content-review";
@@ -39,16 +40,47 @@ export default async function AdminCourseReview({ params }: { params: Promise<{ 
         title={course.draft.title}
         description={
           <span className="flex flex-wrap items-center gap-2">
-            <CourseStatusBadges status={course.status} review={course.review} /> Giảng viên: {instructor?.displayName ?? "?"} · Bản nháp rev {course.draftRevision}
+            <CourseStatusBadges status={course.status} review={course.review} /> Giảng viên:{" "}
+            {instructor?.displayName ?? "?"} · Bản nháp rev {course.draftRevision}
           </span>
         }
         actions={
-          pending ? (
-            <>
-              <AdminAction label="Từ chối" variant="danger" confirmTitle="Từ chối khóa học?" reasonLabel="Lý do gửi giảng viên (≥ 10 ký tự)" success="Đã từ chối." action={rejectCourseAction} input={{ courseId: id }} reasonField="reason" />
-              <AdminAction label="Duyệt & xuất bản" variant="primary" tone="brand" confirmTitle="Duyệt và xuất bản bản nháp này?" confirmText="Nội dung bản nháp (đúng revision đã nộp) sẽ trở thành bản công khai." success="Đã xuất bản." action={approveCourseAction} input={{ courseId: id, submittedRevision: course.review.submittedRevision ?? course.draftRevision }} />
-            </>
-          ) : null
+          <>
+            {/* Admin sửa được mọi khóa: nội dung, bài học, ảnh bìa, ảnh và video bài học (cùng trình soạn của giảng viên) */}
+            <Link href={`/instructor/courses/${id}`} className={buttonClass("outline", undefined, "sm")}>
+              Sửa nội dung & bài học
+            </Link>
+            <Link href={`/instructor/courses/${id}/media`} className={buttonClass("outline", undefined, "sm")}>
+              Ảnh & video
+            </Link>
+            {pending ? (
+              <>
+                <AdminAction
+                  label="Từ chối"
+                  variant="danger"
+                  confirmTitle="Từ chối khóa học?"
+                  reasonLabel="Lý do gửi giảng viên (≥ 10 ký tự)"
+                  success="Đã từ chối."
+                  action={rejectCourseAction}
+                  input={{ courseId: id }}
+                  reasonField="reason"
+                />
+                <AdminAction
+                  label="Duyệt & xuất bản"
+                  variant="primary"
+                  tone="brand"
+                  confirmTitle="Duyệt và xuất bản bản nháp này?"
+                  confirmText="Nội dung bản nháp (đúng revision đã nộp) sẽ trở thành bản công khai."
+                  success="Đã xuất bản."
+                  action={approveCourseAction}
+                  input={{
+                    courseId: id,
+                    submittedRevision: course.review.submittedRevision ?? course.draftRevision,
+                  }}
+                />
+              </>
+            ) : null}
+          </>
         }
       />
       {problems.length ? (
@@ -68,7 +100,10 @@ export default async function AdminCourseReview({ params }: { params: Promise<{ 
             <Markdown>{course.draft.description || "_(trống)_"}</Markdown>
           </Card>
           {chapters.map((ch, i) => (
-            <section key={ch._id.toHexString()} className="rounded-[var(--radius-lg)] border border-line bg-surface">
+            <section
+              key={ch._id.toHexString()}
+              className="rounded-[var(--radius-lg)] border border-line bg-surface"
+            >
               <p className="border-b border-line px-5 py-3 font-semibold">
                 {i + 1}. {ch.draft!.title}
               </p>
@@ -80,7 +115,9 @@ export default async function AdminCourseReview({ params }: { params: Promise<{ 
                       <span className="flex-1 font-medium">{l.draft!.title}</span>
                       <Badge>{l.draft!.type === "video" ? "Video" : "Bài đọc"}</Badge>
                       {l.draft!.isPreview ? <Badge tone="success">Học thử</Badge> : null}
-                      <span className="text-xs text-ink-faint">{formatDuration(l.draft!.durationSeconds)}</span>
+                      <span className="text-xs text-ink-faint">
+                        {formatDuration(l.draft!.durationSeconds)}
+                      </span>
                     </summary>
                     <div className="px-5 pb-5">
                       <Markdown>{l.draft!.content || "_(không có nội dung đọc)_"}</Markdown>
@@ -96,13 +133,19 @@ export default async function AdminCourseReview({ params }: { params: Promise<{ 
             canReview={Boolean(course.published)}
             current={
               course.contentReview
-                ? { reviewerName: course.contentReview.reviewerName, reviewedAt: course.contentReview.reviewedAt.toISOString(), outdated: course.contentReview.publishedVersion < course.publishedVersion }
+                ? {
+                    reviewerName: course.contentReview.reviewerName,
+                    reviewedAt: course.contentReview.reviewedAt.toISOString(),
+                    outdated: course.contentReview.publishedVersion < course.publishedVersion,
+                  }
                 : null
             }
           />
           <Card className="space-y-3">
             <h2 className="text-h3">Học viên ({enrollments.length})</h2>
-            <p className="text-xs text-ink-faint">Thu hồi có lý do; học viên mất quyền ở request kế tiếp nhưng vẫn xem được ghi chú của mình.</p>
+            <p className="text-xs text-ink-faint">
+              Thu hồi có lý do; học viên mất quyền ở request kế tiếp nhưng vẫn xem được ghi chú của mình.
+            </p>
             {enrollments.length === 0 ? (
               <p className="text-sm text-ink-faint">Chưa có.</p>
             ) : (
@@ -121,13 +164,32 @@ export default async function AdminCourseReview({ params }: { params: Promise<{ 
                         <p className="text-xs text-ink-faint">
                           {e.user?.email} · {formatDate(e.enrolledAt, admin.timezone)}
                         </p>
-                        {e.status === "revoked" ? <Badge tone="danger">Đã thu hồi</Badge> : e.completedAt ? <Badge tone="success">Hoàn thành</Badge> : null}
+                        {e.status === "revoked" ? (
+                          <Badge tone="danger">Đã thu hồi</Badge>
+                        ) : e.completedAt ? (
+                          <Badge tone="success">Hoàn thành</Badge>
+                        ) : null}
                       </Td>
                       <Td className="text-right">
                         {e.status === "active" ? (
-                          <AdminAction label="Thu hồi" variant="ghost" confirmTitle="Thu hồi quyền học?" reasonLabel="Lý do" action={setEnrollmentStatusAction} input={{ enrollmentId: e.id, action: "revoke" }} reasonField="reason" />
+                          <AdminAction
+                            label="Thu hồi"
+                            variant="ghost"
+                            confirmTitle="Thu hồi quyền học?"
+                            reasonLabel="Lý do"
+                            action={setEnrollmentStatusAction}
+                            input={{ enrollmentId: e.id, action: "revoke" }}
+                            reasonField="reason"
+                          />
                         ) : (
-                          <AdminAction label="Khôi phục" variant="ghost" tone="brand" confirmTitle="Khôi phục quyền học?" action={setEnrollmentStatusAction} input={{ enrollmentId: e.id, action: "restore" }} />
+                          <AdminAction
+                            label="Khôi phục"
+                            variant="ghost"
+                            tone="brand"
+                            confirmTitle="Khôi phục quyền học?"
+                            action={setEnrollmentStatusAction}
+                            input={{ enrollmentId: e.id, action: "restore" }}
+                          />
                         )}
                       </Td>
                     </Tr>

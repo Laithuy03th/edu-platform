@@ -35,10 +35,21 @@ export default async function AdminCourses() {
                 <Tr key={c.id}>
                   <Td className="font-semibold">{c.title}</Td>
                   <Td>{c.instructor}</Td>
-                  <Td>{c.isUpdate ? <Badge tone="warning">Cập nhật bản đã xuất bản</Badge> : <Badge tone="info">Xuất bản lần đầu</Badge>}</Td>
-                  <Td className="text-ink-soft">{c.submittedAt ? formatDateTime(c.submittedAt, admin.timezone) : "—"}</Td>
+                  <Td>
+                    {c.isUpdate ? (
+                      <Badge tone="warning">Cập nhật bản đã xuất bản</Badge>
+                    ) : (
+                      <Badge tone="info">Xuất bản lần đầu</Badge>
+                    )}
+                  </Td>
+                  <Td className="text-ink-soft">
+                    {c.submittedAt ? formatDateTime(c.submittedAt, admin.timezone) : "—"}
+                  </Td>
                   <Td className="text-right">
-                    <Link href={`/admin/courses/${c.id}`} className="font-semibold text-brand-700 hover:underline">
+                    <Link
+                      href={`/admin/courses/${c.id}`}
+                      className="font-semibold text-brand-700 hover:underline"
+                    >
                       Xem & duyệt
                     </Link>
                   </Td>
@@ -76,16 +87,44 @@ export default async function AdminCourses() {
                   <Td className="text-right tabular-nums">{c.enrollmentCount}</Td>
                   <Td>
                     {c.status === "published" ? (
-                      <AdminAction variant="ghost" label={c.featuredRank ? `★ #${c.featuredRank} — bỏ` : "☆ Đặt nổi bật"} success="Đã cập nhật nổi bật." action={setFeaturedAction} input={{ courseId: id, rank: c.featuredRank ? null : 1 }} />
+                      <AdminAction
+                        variant="ghost"
+                        label={c.featuredRank ? `★ #${c.featuredRank} — bỏ` : "☆ Đặt nổi bật"}
+                        success="Đã cập nhật nổi bật."
+                        action={setFeaturedAction}
+                        input={{ courseId: id, rank: c.featuredRank ? null : 1 }}
+                      />
                     ) : (
                       "—"
                     )}
                   </Td>
-                  <Td className="text-right">
+                  <Td className="whitespace-nowrap text-right">
+                    <Link href={`/instructor/courses/${id}`} className="mr-3 text-sm font-semibold text-brand-700 hover:underline">
+                      Sửa
+                    </Link>
+                    <Link href={`/instructor/courses/${id}/media`} className="mr-3 text-sm font-semibold text-brand-700 hover:underline">
+                      Ảnh & video
+                    </Link>
                     {c.status === "suspended" ? (
-                      <AdminAction label="Bỏ đình chỉ" tone="brand" confirmTitle="Bỏ đình chỉ khóa học?" action={setCourseStatusAction} input={{ courseId: id, action: "unsuspend", reason: "" }} />
+                      <AdminAction
+                        label="Bỏ đình chỉ"
+                        tone="brand"
+                        confirmTitle="Bỏ đình chỉ khóa học?"
+                        action={setCourseStatusAction}
+                        input={{ courseId: id, action: "unsuspend", reason: "" }}
+                      />
                     ) : c.status === "published" || c.status === "archived" ? (
-                      <AdminAction label="Đình chỉ" variant="danger" confirmTitle="Đình chỉ khóa học?" confirmText="Chặn toàn bộ truy cập nội dung, kể cả học viên đã đăng ký." reasonLabel="Lý do (ghi vào audit)" success="Đã đình chỉ." action={setCourseStatusAction} input={{ courseId: id, action: "suspend" }} reasonField="reason" />
+                      <AdminAction
+                        label="Đình chỉ"
+                        variant="danger"
+                        confirmTitle="Đình chỉ khóa học?"
+                        confirmText="Chặn toàn bộ truy cập nội dung, kể cả học viên đã đăng ký."
+                        reasonLabel="Lý do (ghi vào audit)"
+                        success="Đã đình chỉ."
+                        action={setCourseStatusAction}
+                        input={{ courseId: id, action: "suspend" }}
+                        reasonField="reason"
+                      />
                     ) : null}
                   </Td>
                 </Tr>
