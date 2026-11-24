@@ -7,6 +7,8 @@ import { getDb } from "./client";
 export type Role = "student" | "instructor" | "admin";
 
 export interface UserDoc {
+  /** L12: số bài/tuần người học TỰ đặt (null = không đặt mục tiêu, chỉ đếm). Thiếu ở document cũ. */
+  weeklyGoalLessons?: number | null;
   email: string;
   emailNormalized: string;
   emailVerifiedAt: Date | null;

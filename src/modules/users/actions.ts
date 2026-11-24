@@ -16,6 +16,7 @@ const profile = defineAction(
       timezone: z.string().max(64),
       learningGoal: z.string().trim().max(200, "Mục tiêu tối đa 200 ký tự").default(""),
       dataSaver: zBool.default(false),
+      weeklyGoalLessons: z.coerce.number().int().min(0).max(30).default(0).transform((n) => (n > 0 ? n : null)),
     }),
     rate: (_i, { viewer }) => [[RULES.profileUser, viewer.idStr]],
   },
@@ -27,6 +28,7 @@ const profile = defineAction(
       timezone: input.timezone,
       learningGoal: input.learningGoal,
       dataSaver: input.dataSaver,
+      weeklyGoalLessons: input.weeklyGoalLessons,
     });
     revalidatePath("/", "layout");
     return { message: "Đã lưu hồ sơ." };

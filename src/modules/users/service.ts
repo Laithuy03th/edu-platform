@@ -10,6 +10,7 @@ export type ProfileInput = {
   timezone: string;
   learningGoal: string;
   dataSaver: boolean;
+  weeklyGoalLessons: number | null;
 };
 
 /**
@@ -30,6 +31,7 @@ export async function updateProfile(userId: ObjectId, input: ProfileInput) {
         timezone: input.timezone,
         learningGoal: input.learningGoal,
         dataSaver: input.dataSaver,
+        weeklyGoalLessons: input.weeklyGoalLessons,
         updatedAt: new Date(),
       },
     },
@@ -54,7 +56,7 @@ export async function getProfile(userId: ObjectId) {
   const c = await cols();
   const u = await c.users.findOne(
     { _id: userId },
-    { projection: { email: 1, displayName: 1, bio: 1, timezone: 1, learningGoal: 1, dataSaver: 1, publicProfile: 1, emailVerifiedAt: 1, passwordHash: 1, roles: 1, createdAt: 1 } },
+    { projection: { email: 1, displayName: 1, bio: 1, timezone: 1, learningGoal: 1, dataSaver: 1, weeklyGoalLessons: 1, publicProfile: 1, emailVerifiedAt: 1, passwordHash: 1, roles: 1, createdAt: 1 } },
   );
   if (!u) throw new AppError("UNAUTHENTICATED", "Vui lòng đăng nhập.");
   return {
@@ -64,6 +66,7 @@ export async function getProfile(userId: ObjectId) {
     timezone: u.timezone,
     learningGoal: u.learningGoal,
     dataSaver: u.dataSaver,
+    weeklyGoalLessons: u.weeklyGoalLessons ?? null,
     publicProfile: u.publicProfile,
     emailVerified: Boolean(u.emailVerifiedAt),
     hasPassword: Boolean(u.passwordHash),

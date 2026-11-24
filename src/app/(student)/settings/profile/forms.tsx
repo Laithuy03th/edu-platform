@@ -6,7 +6,7 @@ import { FormError } from "@/components/form-error";
 import { Alert, Badge, Button, Field, Input, Select, Textarea } from "@/components/ui";
 import { formToObject, useAction } from "@/components/use-action";
 
-type Profile = { email: string; displayName: string; bio: string; timezone: string; learningGoal: string; dataSaver: boolean };
+type Profile = { email: string; displayName: string; bio: string; timezone: string; learningGoal: string; dataSaver: boolean; weeklyGoalLessons: number | null };
 
 export function ProfileForm({ profile, timezones }: { profile: Profile; timezones: string[] }) {
   const router = useRouter();
@@ -40,6 +40,16 @@ export function ProfileForm({ profile, timezones }: { profile: Profile; timezone
           {timezones.map((tz) => (
             <option key={tz} value={tz}>
               {tz}
+            </option>
+          ))}
+        </Select>
+      </Field>
+      <Field id="weeklyGoalLessons" label="Mục tiêu mỗi tuần" optional hint="Tự đặt theo thời gian của bạn — không có nhắc nhở hay chuỗi ngày bị mất.">
+        <Select id="weeklyGoalLessons" name="weeklyGoalLessons" defaultValue={String(profile.weeklyGoalLessons ?? 0)}>
+          <option value="0">Không đặt mục tiêu (chỉ xem số bài đã học)</option>
+          {[1, 2, 3, 5, 7, 10, 15].map((n) => (
+            <option key={n} value={n}>
+              {n} bài/tuần
             </option>
           ))}
         </Select>

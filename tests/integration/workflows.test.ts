@@ -149,11 +149,11 @@ describe("tài khoản & dự án (A02, A07, P01)", async () => {
 
   it("A07: múi giờ không hợp lệ bị từ chối; hợp lệ được lưu", async () => {
     const u = await makeUser(["student"]);
-    const base = { displayName: "Tên Mới", bio: "", timezone: "Mars/Olympus", learningGoal: "", dataSaver: true };
+    const base = { displayName: "Tên Mới", bio: "", timezone: "Mars/Olympus", learningGoal: "", dataSaver: true, weeklyGoalLessons: 3 };
     await expect(users.updateProfile(u.id, base)).rejects.toMatchObject({ code: "VALIDATION_FAILED" });
     await users.updateProfile(u.id, { ...base, timezone: "Asia/Tokyo" });
     const c = await cols();
-    expect((await c.users.findOne({ _id: u.id }))).toMatchObject({ displayName: "Tên Mới", timezone: "Asia/Tokyo", dataSaver: true, roles: ["student"] });
+    expect((await c.users.findOne({ _id: u.id }))).toMatchObject({ displayName: "Tên Mới", timezone: "Asia/Tokyo", dataSaver: true, weeklyGoalLessons: 3, roles: ["student"] });
   });
 
   it("P01: chỉ chủ khóa soạn; id tiêu chí rubric ổn định qua các lần lưu; công khai sau khi duyệt", async () => {

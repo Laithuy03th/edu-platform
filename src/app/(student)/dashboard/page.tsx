@@ -13,7 +13,6 @@ import { Badge, Container, EmptyState, ProgressBar, ProgressRing, buttonClass } 
 
 export const metadata = { title: "Tổng quan" };
 
-const WEEKLY_GOAL = 5;
 
 function greeting(tz: string) {
   const h = Number(new Intl.DateTimeFormat("en-GB", { timeZone: tz, hour: "2-digit", hour12: false }).format(new Date()));
@@ -110,14 +109,26 @@ export default async function DashboardPage() {
               <IconArrowRight className="text-brand-600 transition-transform group-hover:translate-x-1" />
             </Link>
             <div className="flex items-center gap-4 rounded-[var(--radius-xl)] border border-line bg-surface p-5 shadow-sm">
-              <ProgressRing value={Math.min(100, (weekly / WEEKLY_GOAL) * 100)} label="Mục tiêu tuần" />
-              <div>
-                <p className="text-sm text-ink-soft">Mục tiêu tuần này</p>
-                <p className="font-semibold">
-                  {weekly}/{WEEKLY_GOAL} bài hoàn thành
-                </p>
-                <p className="text-xs text-ink-faint">{weekly >= WEEKLY_GOAL ? "Đã đạt — tuyệt vời!" : `Còn ${WEEKLY_GOAL - weekly} bài nữa.`}</p>
-              </div>
+              {profile.weeklyGoalLessons ? (
+                <>
+                  <ProgressRing value={Math.min(100, (weekly / profile.weeklyGoalLessons) * 100)} label="Mục tiêu tuần" />
+                  <div>
+                    <p className="text-sm text-ink-soft">Mục tiêu tuần này (bạn tự đặt)</p>
+                    <p className="font-semibold">
+                      {weekly}/{profile.weeklyGoalLessons} bài hoàn thành
+                    </p>
+                    <p className="text-xs text-ink-faint">{weekly >= profile.weeklyGoalLessons ? "Đã đạt — tuyệt vời!" : "Học theo nhịp của bạn, không cần vội."}</p>
+                  </div>
+                </>
+              ) : (
+                <div>
+                  <p className="text-sm text-ink-soft">Tuần này</p>
+                  <p className="font-semibold">{weekly} bài hoàn thành</p>
+                  <Link href="/settings/profile" className="text-xs font-semibold text-brand-700 hover:underline">
+                    Tự đặt mục tiêu tuần (tùy chọn)
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </div>
