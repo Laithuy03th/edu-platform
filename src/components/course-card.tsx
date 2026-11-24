@@ -66,6 +66,16 @@ export function CourseCard({ course }: { course: CourseCardDto }) {
           </Link>
         </h3>
         <p className="line-clamp-2 text-sm text-ink-soft">{course.shortDescription}</p>
+        {course.technologies.length ? (
+          <ul className="flex flex-wrap gap-1.5" aria-label="Công nghệ">
+            {course.technologies.slice(0, 3).map((t) => (
+              <li key={t.slug} className="rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-800">
+                {t.name}
+                {t.testedVersion ? ` ${t.testedVersion}` : ""}
+              </li>
+            ))}
+          </ul>
+        ) : null}
         <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-line pt-3 text-xs text-ink-soft">
           <span className="inline-flex items-center gap-1.5">
             <IconBook size={15} className="text-brand-600" />

@@ -14,6 +14,7 @@ export async function SiteHeader() {
 
   const main = [
     { href: "/courses", label: "Khóa học" },
+    { href: "/technologies", label: "Công nghệ" },
     { href: "/paths", label: "Lộ trình" },
     ...(viewer ? [{ href: "/dashboard", label: "Học tập" }, { href: "/review", label: "Ôn tập" }] : []),
   ];
@@ -139,6 +140,7 @@ export function SiteFooter() {
         <nav aria-label="Khám phá" className="space-y-2 text-sm">
           <p className="text-caption text-ink-faint">Khám phá</p>
           <Link href="/courses" className="block text-ink-soft hover:text-brand-700">Khóa học</Link>
+          <Link href="/technologies" className="block text-ink-soft hover:text-brand-700">Học theo công nghệ</Link>
           <Link href="/paths" className="block text-ink-soft hover:text-brand-700">Lộ trình theo mục tiêu</Link>
           <Link href="/register" className="block text-ink-soft hover:text-brand-700">Tạo tài khoản</Link>
         </nav>

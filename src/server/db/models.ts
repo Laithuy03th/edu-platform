@@ -67,6 +67,32 @@ export interface CategoryDoc {
   isActive: boolean;
 }
 
+/** Taxonomy công nghệ (V2 §32, T01). Không phải mọi công nghệ đều có trang hub — hub chỉ hiện khi có nội dung đã xuất bản. */
+export const TECH_TYPES = ["language", "framework", "library", "runtime", "database", "tool", "platform", "protocol", "concept"] as const;
+export const TECH_DOMAINS = ["foundations", "cs", "web", "frontend", "backend", "database", "mobile", "devops", "qa", "security", "data", "systems", "game"] as const;
+export type TechType = (typeof TECH_TYPES)[number];
+export type TechDomain = (typeof TECH_DOMAINS)[number];
+export interface TechnologyDoc {
+  slug: string;
+  name: string;
+  type: TechType;
+  domain: TechDomain;
+  /** Tên gọi khác cho tìm kiếm (js, ts, postgres…) — không sinh URL riêng; URL alias chuyển hướng 308 về slug chuẩn. */
+  aliases: string[];
+  description: string;
+  officialUrl: string | null;
+  /** active: được gắn vào khóa học; planned: chỉ xuất hiện trong roadmap, không có trang. */
+  status: "active" | "planned";
+  order: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+/** Công nghệ + phiên bản đã kiểm thử của một khóa (T06). Tối đa 8 mục/khóa. */
+export interface CourseTechnology {
+  technologyId: ObjectId;
+  testedVersion: string;
+}
+
 export type Level = "beginner" | "intermediate" | "advanced";
 export interface CourseContent {
   title: string;
@@ -78,8 +104,12 @@ export interface CourseContent {
   level: Level;
   thumbnailMediaId: ObjectId | null;
   placementQuizId: ObjectId | null;
+  /** Thêm ở schemaVersion 2; document cũ có thể thiếu → đọc bằng `?? []`. */
+  technologies?: CourseTechnology[];
 }
 export interface PublishedCourse extends CourseContent {
+  /** Lần duyệt gần nhất làm thay đổi nội dung công khai (dùng cho sitemap lastmod, "cập nhật ngày"). */
+  contentUpdatedAt?: Date;
   searchText: string;
   lessonCount: number;
   requiredLessonCount: number;
@@ -111,6 +141,11 @@ export interface CourseDoc {
   featuredRank: number | null;
   suspendedReason: string | null;
   archivedAt: Date | null;
+  /**
+   * Review chuyên môn (T06) — do admin ghi nhận tên người review THẬT; khác với duyệt xuất bản.
+   * Gắn với publishedVersion đã review để biết nội dung có đổi sau lần review không.
+   */
+  contentReview?: { reviewerName: string; reviewedAt: Date; publishedVersion: number; note: string } | null;
   createdAt: Date;
   updatedAt: Date;
   schemaVersion: number;
@@ -549,6 +584,7 @@ export async function cols() {
     authTokens: db.collection<AuthTokenDoc>("authTokens"),
     instructorApplications: db.collection<InstructorApplicationDoc>("instructorApplications"),
     categories: db.collection<CategoryDoc>("categories"),
+    technologies: db.collection<TechnologyDoc>("technologies"),
     courses: db.collection<CourseDoc>("courses"),
     chapters: db.collection<ChapterDoc>("chapters"),
     lessons: db.collection<LessonDoc>("lessons"),

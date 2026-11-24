@@ -12,6 +12,7 @@ import { Markdown } from "@/components/markdown";
 import { Alert, Badge, Card, PageHeader, Table, Td, Th, Tr } from "@/components/ui";
 import { CourseStatusBadges } from "@/app/instructor/status";
 import { AdminAction } from "../../client";
+import { ContentReviewForm } from "./content-review";
 
 export const metadata = { title: "Duyệt khóa học" };
 
@@ -89,7 +90,16 @@ export default async function AdminCourseReview({ params }: { params: Promise<{ 
             </section>
           ))}
         </div>
-        <aside>
+        <aside className="space-y-6">
+          <ContentReviewForm
+            courseId={id}
+            canReview={Boolean(course.published)}
+            current={
+              course.contentReview
+                ? { reviewerName: course.contentReview.reviewerName, reviewedAt: course.contentReview.reviewedAt.toISOString(), outdated: course.contentReview.publishedVersion < course.publishedVersion }
+                : null
+            }
+          />
           <Card className="space-y-3">
             <h2 className="text-h3">Học viên ({enrollments.length})</h2>
             <p className="text-xs text-ink-faint">Thu hồi có lý do; học viên mất quyền ở request kế tiếp nhưng vẫn xem được ghi chú của mình.</p>

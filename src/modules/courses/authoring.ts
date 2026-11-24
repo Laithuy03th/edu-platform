@@ -545,13 +545,20 @@ export async function approveCourse(viewer: Viewer, courseId: ObjectId, submitte
     }
 
     const d = course.draft;
+    // Tìm kiếm theo tên công nghệ + alias (vd "js", "ts") mà không sinh URL riêng cho alias (§32.2).
+    const techIds = (d.technologies ?? []).map((t) => t.technologyId);
+    const techWords = techIds.length
+      ? (await c.technologies.find({ _id: { $in: techIds } }, { session, projection: { name: 1, aliases: 1 } }).toArray()).flatMap((t) => [t.name, ...t.aliases])
+      : [];
     await c.courses.updateOne(
       { _id: courseId },
       {
         $set: {
           published: {
             ...d,
-            searchText: normalizeForSearch(`${d.title} ${d.shortDescription}`),
+            searchText: normalizeForSearch(`${d.title} ${d.shortDescription} ${techWords.join(" ")}`),
+            technologies: d.technologies ?? [],
+            contentUpdatedAt: now,
             lessonCount,
             requiredLessonCount,
             totalDurationSeconds,

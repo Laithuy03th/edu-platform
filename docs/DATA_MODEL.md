@@ -104,6 +104,12 @@
 
 `{ slug (U), name, order, isActive }` — vài chục bản ghi. Index `{slug:1}` **U**.
 
+### 3.1b `technologies` (V2 T01, schemaVersion 2)
+
+`{ slug (U), name, type: language|framework|library|runtime|database|tool|platform|protocol|concept, domain: foundations|cs|web|frontend|backend|database|mobile|devops|qa|security|data|systems|game, aliases[≤10], description ≤600, officialUrl (https)|null, status: active|planned, order, createdAt, updatedAt }`. Index: `{slug:1}` **U**, `{aliases:1}`, `{status:1,domain:1,order:1}`. Alias không trùng slug/alias của công nghệ khác (kiểm ở service). Vài trăm bản ghi tối đa — không đáng kể so với ngân sách.
+
+**Trên course** (draft + published, qua duyệt): `technologies: [{technologyId, testedVersion ≤40}]` (≤ 8, document cũ thiếu field → `[]`). `published.contentUpdatedAt` = lần duyệt gần nhất (sitemap lastmod). `contentReview: {reviewerName, reviewedAt, publishedVersion, note} | null` — review chuyên môn do admin ghi; `publishedVersion < course.publishedVersion` → "nội dung đã đổi sau review". Index courses `{status:1, "published.technologies.technologyId":1}`.
+
 ### 3.2 `courses`
 
 | Field | Type | R | Validation / ghi chú |

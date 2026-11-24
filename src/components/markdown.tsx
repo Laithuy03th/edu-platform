@@ -5,7 +5,7 @@ import remarkGfm from "remark-gfm";
  * Markdown an toàn (ADR-017): KHÔNG rehype-raw → HTML hiển thị như text;
  * URL chỉ http/https/mailto/nội bộ; ảnh chỉ từ res.cloudinary.com và chỉ khi allowImages.
  */
-function safeUrl(url: string): string {
+export function safeUrl(url: string): string {
   const u = url.trim();
   if (u.startsWith("/") && !u.startsWith("//")) return u;
   if (u.startsWith("#")) return u;

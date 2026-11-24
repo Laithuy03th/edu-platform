@@ -15,7 +15,7 @@ import { pageOpenGraph } from "@/lib/seo";
  */
 export async function generateMetadata({ searchParams }: { searchParams: Promise<CatalogQuery> }): Promise<Metadata> {
   const query = parseCatalogQuery(await searchParams);
-  const filtered = Boolean(query.q || query.category || query.level || query.instructor || query.sort !== "newest");
+  const filtered = Boolean(query.q || query.category || query.level || query.instructor || query.tech || query.sort !== "newest");
   const description = "Danh sách khóa học đã xuất bản: tìm theo tên, lọc theo chủ đề và cấp độ.";
   const url = query.page > 1 ? `/courses?page=${query.page}` : "/courses";
   return {
@@ -37,6 +37,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
     if (query.q) sp.set("q", query.q);
     if (query.category) sp.set("category", query.category);
     if (query.level) sp.set("level", query.level);
+    if (query.tech) sp.set("tech", query.tech);
     if (query.sort !== "newest") sp.set("sort", query.sort);
     if (p > 1) sp.set("page", String(p));
     const s = sp.toString();

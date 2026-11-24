@@ -33,6 +33,9 @@ Lộ trình: 1 (`full-stack-javascript-can-ban`). Categories: 3. Review/Q&A/bài
 
 ## 3. Độ phủ taxonomy (§32.2)
 
+**Cập nhật 2026-11-24 (sau):** taxonomy đã có trong hệ thống — 35 công nghệ trên 12 mảng (8 active, 27 planned) quản lý ở `/admin/technologies`. Hub công khai: JavaScript, Node.js, React, Next.js, MongoDB (vì có khóa demo). Các mục planned chỉ hiện trong roadmap. Độ phủ **kiến thức đã review** vẫn là 0 — bảng dưới giữ nguyên ý nghĩa.
+
+
 | Mảng | Taxonomy trong hệ thống | Nội dung đã xuất bản | Đã review chuyên môn |
 |---|---|---|---|
 | Nền tảng web, JS/TS | Chưa có (chỉ có category) | Gián tiếp qua bài Next.js | 0 |

@@ -19,6 +19,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         { href: "/admin/users", label: "Người dùng", icon: <IconUser size={18} /> },
         { href: "/admin/instructor-applications", label: "Đơn giảng viên", icon: <IconShield size={18} /> },
         { href: "/admin/categories", label: "Chủ đề", icon: <IconLayout size={18} /> },
+        { href: "/admin/technologies", label: "Công nghệ", icon: <IconGrid size={18} /> },
         { href: "/instructor/paths", label: "Lộ trình", icon: <IconRoute size={18} /> },
         { href: "/admin/moderation", label: "Kiểm duyệt", icon: <IconChat size={18} /> },
         { href: "/admin/media", label: "Media & quota", icon: <IconUpload size={18} /> },

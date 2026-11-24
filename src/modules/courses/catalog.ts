@@ -20,6 +20,8 @@ export type CourseCardDto = {
   shortDescription: string;
   level: Level;
   categoryName: string | null;
+  /** Công nghệ + phiên bản đã kiểm thử (đã xuất bản), theo thứ tự giảng viên khai báo. */
+  technologies: { slug: string; name: string; testedVersion: string }[];
   instructorName: string;
   lessonCount: number;
   totalDurationSeconds: number;
@@ -29,7 +31,7 @@ export type CourseCardDto = {
   enrollmentCount: number;
 };
 
-export type CatalogQuery = { q?: string; category?: string; level?: string; instructor?: string; sort?: string; page?: string };
+export type CatalogQuery = { q?: string; category?: string; level?: string; instructor?: string; sort?: string; page?: string; tech?: string };
 
 /** Chuẩn hóa query từ URL: allowlist, không nhận operator/filter thô (C17). */
 export function parseCatalogQuery(sp: CatalogQuery) {
@@ -40,17 +42,21 @@ export function parseCatalogQuery(sp: CatalogQuery) {
   const page = Number.isFinite(pageNum) ? Math.min(Math.max(pageNum, 1), 50) : 1;
   const category = typeof sp.category === "string" && /^[a-z0-9-]{1,80}$/.test(sp.category) ? sp.category : null;
   const instructor = parseId(sp.instructor)?.toHexString() ?? null;
-  return { q, level, sort, page, category, instructor, pageSize: PAGE_SIZES[0] };
+  const tech = typeof sp.tech === "string" && /^[a-z0-9.+#-]{1,60}$/.test(sp.tech) ? sp.tech : null;
+  return { q, level, sort, page, category, instructor, tech, pageSize: PAGE_SIZES[0] };
 }
 export type ParsedCatalogQuery = ReturnType<typeof parseCatalogQuery>;
 
 async function toCards(courses: (CourseDoc & { _id: ObjectId })[]): Promise<CourseCardDto[]> {
   const c = await cols();
   const instructorIds = [...new Set(courses.map((x) => x.instructorId.toHexString()))].map((id) => new ObjectId(id));
-  const [users, categories] = await Promise.all([
+  const techIds = [...new Set(courses.flatMap((x) => (x.published?.technologies ?? []).map((t) => t.technologyId.toHexString())))].map((id) => new ObjectId(id));
+  const [users, categories, techs] = await Promise.all([
     c.users.find({ _id: { $in: instructorIds } }).project<{ _id: ObjectId; displayName: string }>({ displayName: 1 }).toArray(),
     c.categories.find({}).toArray(),
+    techIds.length ? c.technologies.find({ _id: { $in: techIds } }).project<{ _id: ObjectId; slug: string; name: string }>({ slug: 1, name: 1 }).toArray() : [],
   ]);
+  const techOf = new Map(techs.map((t) => [t._id.toHexString(), t]));
   const nameOf = new Map(users.map((u) => [u._id.toHexString(), u.displayName]));
   const catOf = new Map(categories.map((x) => [x._id.toHexString(), x.name]));
   return courses.map((x) => ({
@@ -60,6 +66,10 @@ async function toCards(courses: (CourseDoc & { _id: ObjectId })[]): Promise<Cour
     shortDescription: x.published!.shortDescription,
     level: x.published!.level,
     categoryName: x.published!.categoryId ? (catOf.get(x.published!.categoryId.toHexString()) ?? null) : null,
+    technologies: (x.published!.technologies ?? []).flatMap((t) => {
+      const tech = techOf.get(t.technologyId.toHexString());
+      return tech ? [{ slug: tech.slug, name: tech.name, testedVersion: t.testedVersion }] : [];
+    }),
     instructorName: nameOf.get(x.instructorId.toHexString()) ?? "Giảng viên",
     lessonCount: x.published!.lessonCount,
     totalDurationSeconds: x.published!.totalDurationSeconds,
@@ -80,6 +90,12 @@ async function listCatalogUncached(query: ParsedCatalogQuery) {
     if (!cat) return { items: [] as CourseCardDto[], total: 0 };
     filter["published.categoryId"] = cat._id;
   }
+  if (query.tech) {
+    // Nhận cả alias (js → javascript) để link cũ/viết tắt vẫn lọc đúng.
+    const tech = await c.technologies.findOne({ $or: [{ slug: query.tech }, { aliases: query.tech }] }, { projection: { _id: 1 } });
+    if (!tech) return { items: [] as CourseCardDto[], total: 0 };
+    filter["published.technologies.technologyId"] = tech._id;
+  }
   if (query.q) filter.$text = { $search: normalizeForSearch(query.q) };
   const sort: Record<string, 1 | -1> = query.sort === "rating" ? { ratingAvg: -1, ratingCount: -1, _id: -1 } : { "published.publishedAt": -1, _id: -1 };
   const [docs, total] = await Promise.all([
@@ -89,7 +105,7 @@ async function listCatalogUncached(query: ParsedCatalogQuery) {
   return { items: await toCards(docs), total };
 }
 
-export const listCatalog = unstable_cache(listCatalogUncached, ["catalog-list-v1"], { tags: [CATALOG_TAG], revalidate: 3600 });
+export const listCatalog = unstable_cache(listCatalogUncached, ["catalog-list-v2"], { tags: [CATALOG_TAG], revalidate: 3600 });
 
 export const listFeatured = unstable_cache(
   async () => {
@@ -98,7 +114,7 @@ export const listFeatured = unstable_cache(
     if (docs.length === 0) docs = await c.courses.find({ status: "published", published: { $ne: null } }).sort({ "published.publishedAt": -1 }).limit(6).toArray();
     return toCards(docs);
   },
-  ["catalog-featured-v1"],
+  ["catalog-featured-v2"],
   { tags: [CATALOG_TAG], revalidate: 3600 },
 );
 
@@ -122,6 +138,10 @@ export type CourseDetailDto = CourseCardDto & {
   publishedVersion: number;
   requiredLessonCount: number;
   hasPlacementQuiz: boolean;
+  /** Lần cập nhật nội dung công khai gần nhất (ISO). */
+  contentUpdatedAt: string;
+  /** Review chuyên môn: null = chưa có người review; outdated = nội dung đã đổi sau lần review. */
+  contentReview: { reviewerName: string; reviewedAt: string; outdated: boolean } | null;
   chapters: {
     id: string;
     title: string;
@@ -164,6 +184,10 @@ async function courseDetailUncached(slug: string): Promise<CourseDetailDto | nul
     publishedVersion: course.publishedVersion,
     requiredLessonCount: course.published.requiredLessonCount,
     hasPlacementQuiz: Boolean(course.published.placementQuizId),
+    contentUpdatedAt: (course.published.contentUpdatedAt ?? course.published.publishedAt).toISOString(),
+    contentReview: course.contentReview
+      ? { reviewerName: course.contentReview.reviewerName, reviewedAt: course.contentReview.reviewedAt.toISOString(), outdated: course.contentReview.publishedVersion < course.publishedVersion }
+      : null,
     chapters: chapters.map((ch) => ({
       id: ch._id.toHexString(),
       title: ch.published!.title,
@@ -182,7 +206,7 @@ async function courseDetailUncached(slug: string): Promise<CourseDetailDto | nul
   };
 }
 
-export const getCourseDetail = unstable_cache(courseDetailUncached, ["course-detail-v1"], { tags: [CATALOG_TAG], revalidate: 3600 });
+export const getCourseDetail = unstable_cache(courseDetailUncached, ["course-detail-v2"], { tags: [CATALOG_TAG], revalidate: 3600 });
 
 /** Bản không cache — dùng trong test tích hợp. */
 export const __uncached = { listCatalog: listCatalogUncached, courseDetail: courseDetailUncached };

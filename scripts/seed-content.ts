@@ -530,3 +530,57 @@ export const PATH = {
   audience: "Người đã biết HTML/CSS/JavaScript cơ bản, muốn làm ứng dụng web hoàn chỉnh.",
   prerequisites: "JavaScript ES2015+, dùng terminal cơ bản.",
 };
+
+/* ---------- Taxonomy công nghệ (T01) ----------
+ * active: đang được khóa demo dùng; planned: chỉ hiện trong roadmap /technologies, KHÔNG có trang riêng.
+ * Mô tả do dự án tự viết; officialUrl là trang tài liệu chính thức (chỉ để dẫn nguồn, không ngụ ý tài trợ/chứng nhận).
+ */
+type SeedTech = { slug: string; name: string; type: string; domain: string; aliases: string[]; description: string; officialUrl: string | null; status: "active" | "planned"; order: number };
+const T = (slug: string, name: string, type: string, domain: string, aliases: string[], description: string, officialUrl: string | null, status: "active" | "planned" = "planned", order = 100): SeedTech => ({ slug, name, type, domain, aliases, description, officialUrl, status, order });
+
+export const TECHNOLOGIES: SeedTech[] = [
+  T("html", "HTML", "language", "web", ["html5"], "Ngôn ngữ đánh dấu mô tả cấu trúc trang web: tiêu đề, đoạn văn, form, liên kết.", "https://developer.mozilla.org/docs/Web/HTML", "active", 10),
+  T("css", "CSS", "language", "web", ["css3"], "Ngôn ngữ mô tả cách trình bày: bố cục, màu sắc, responsive.", "https://developer.mozilla.org/docs/Web/CSS", "active", 11),
+  T("javascript", "JavaScript", "language", "web", ["js", "ecmascript"], "Ngôn ngữ chạy trong trình duyệt và trên server (qua runtime như Node.js).", "https://developer.mozilla.org/docs/Web/JavaScript", "active", 12),
+  T("typescript", "TypeScript", "language", "web", ["ts"], "JavaScript có hệ kiểu tĩnh, kiểm tra lỗi khi biên dịch.", "https://www.typescriptlang.org/docs/", "active", 13),
+  T("react", "React", "library", "frontend", ["reactjs"], "Thư viện xây giao diện từ component; là nền của Next.js.", "https://react.dev/", "active", 20),
+  T("nextjs", "Next.js", "framework", "frontend", ["next", "next.js"], "Framework React có routing theo thư mục, Server Components, Server Actions và render phía server.", "https://nextjs.org/docs", "active", 21),
+  T("nodejs", "Node.js", "runtime", "backend", ["node", "node.js"], "Runtime chạy JavaScript ngoài trình duyệt, dùng cho server, công cụ build và script.", "https://nodejs.org/docs/latest/api/", "active", 30),
+  T("mongodb", "MongoDB", "database", "database", ["mongo"], "Cơ sở dữ liệu dạng document (BSON), truy vấn bằng driver chính thức hoặc mongosh.", "https://www.mongodb.com/docs/", "active", 40),
+  T("git", "Git", "tool", "foundations", [], "Hệ quản lý phiên bản phân tán: commit, branch, merge.", "https://git-scm.com/doc"),
+  T("vue", "Vue", "framework", "frontend", ["vuejs"], "", "https://vuejs.org/guide/"),
+  T("angular", "Angular", "framework", "frontend", [], "", "https://angular.dev/"),
+  T("svelte", "Svelte", "framework", "frontend", ["sveltekit"], "", "https://svelte.dev/docs"),
+  T("python", "Python", "language", "backend", ["py"], "", "https://docs.python.org/3/"),
+  T("django", "Django", "framework", "backend", [], "", "https://docs.djangoproject.com/"),
+  T("fastapi", "FastAPI", "framework", "backend", [], "", "https://fastapi.tiangolo.com/"),
+  T("java", "Java", "language", "backend", [], "", "https://dev.java/learn/"),
+  T("spring-boot", "Spring Boot", "framework", "backend", ["spring"], "", "https://docs.spring.io/spring-boot/"),
+  T("csharp", "C#", "language", "backend", ["c#"], "", "https://learn.microsoft.com/dotnet/csharp/"),
+  T("dotnet", ".NET / ASP.NET Core", "platform", "backend", ["aspnet", "asp.net"], "", "https://learn.microsoft.com/aspnet/core/"),
+  T("php", "PHP", "language", "backend", [], "", "https://www.php.net/docs.php"),
+  T("laravel", "Laravel", "framework", "backend", [], "", "https://laravel.com/docs"),
+  T("go", "Go", "language", "backend", ["golang"], "", "https://go.dev/doc/"),
+  T("rust", "Rust", "language", "systems", [], "", "https://doc.rust-lang.org/book/"),
+  T("cpp", "C/C++", "language", "systems", ["c++", "c"], "", "https://en.cppreference.com/"),
+  T("sql", "SQL", "language", "database", [], "", null),
+  T("postgresql", "PostgreSQL", "database", "database", ["postgres", "pg"], "", "https://www.postgresql.org/docs/"),
+  T("mysql", "MySQL", "database", "database", ["mariadb"], "", "https://dev.mysql.com/doc/"),
+  T("redis", "Redis", "database", "database", [], "", "https://redis.io/docs/"),
+  T("kotlin", "Kotlin", "language", "mobile", [], "", "https://kotlinlang.org/docs/"),
+  T("swift", "Swift", "language", "mobile", [], "", "https://www.swift.org/documentation/"),
+  T("flutter", "Flutter", "framework", "mobile", [], "", "https://docs.flutter.dev/"),
+  T("linux", "Linux", "platform", "devops", [], "", null),
+  T("docker", "Docker", "tool", "devops", [], "", "https://docs.docker.com/"),
+  T("kubernetes", "Kubernetes", "platform", "devops", ["k8s"], "", "https://kubernetes.io/docs/"),
+  T("playwright", "Playwright", "tool", "qa", [], "", "https://playwright.dev/docs/intro"),
+];
+
+/**
+ * Công nghệ của từng khóa seed. testedVersion để TRỐNG: ví dụ trong nội dung demo chưa được chạy thử
+ * ở một phiên bản cụ thể — chỉ điền khi đã kiểm thử thật (V2 §33.3).
+ */
+export const COURSE_TECHNOLOGIES: Record<string, string[]> = {
+  "nextjs-co-ban": ["nextjs", "react", "javascript", "nodejs"],
+  "mongodb-cho-web-developer": ["mongodb", "nodejs", "javascript"],
+};

@@ -3,7 +3,7 @@
 ## Checkpoint (2026-11-24)
 
 - **Nhánh:** `main` (git cục bộ, chưa có remote). Commit mới nhất: xem `git log --oneline`.
-- **Trạng thái:** Phase 1–6 đã triển khai (LMS nền). **Đặc tả V2** (`PROMPT_CLAUDE_EDU_IT_V2.md`) đã audit 2026-11-24 — xem [FEATURE_AUDIT](FEATURE_AUDIT.md) (79 ID: 29 VERIFIED, 12 IMPLEMENTED_UNVERIFIED, 15 PARTIAL, 3 MOCK_ONLY, 6 BLOCKED, 13 MISSING, 1 DEFERRED), [MEDIA_AUDIT](MEDIA_AUDIT.md), [UI_AUDIT](UI_AUDIT.md), [SEO_AUDIT](SEO_AUDIT.md), [CONTENT_COVERAGE](CONTENT_COVERAGE.md). Việc tiếp theo: [REMAINING_WORK](REMAINING_WORK.md) (P0 cần chủ dự án: SMTP, ca thử video, xoay secret).
+- **Trạng thái:** Phase 1–6 đã triển khai (LMS nền). **Đặc tả V2** (`PROMPT_CLAUDE_EDU_IT_V2.md`) đang thực hiện — trạng thái từng ID ở [FEATURE_AUDIT](FEATURE_AUDIT.md) (79 ID: 32 VERIFIED, 13 IMPLEMENTED_UNVERIFIED, 18 PARTIAL, 3 MOCK_ONLY, 5 BLOCKED, 7 MISSING, 1 DEFERRED); [MEDIA_AUDIT](MEDIA_AUDIT.md), [UI_AUDIT](UI_AUDIT.md), [SEO_AUDIT](SEO_AUDIT.md), [CONTENT_COVERAGE](CONTENT_COVERAGE.md). Việc tiếp: [REMAINING_WORK](REMAINING_WORK.md). Đã xong trong V2: soft-404/SEO kỹ thuật, SMTP Gmail, taxonomy + hub công nghệ, khối code tô màu, review chuyên môn.
 - **Quyết định:** chủ dự án giao toàn quyền quyết định (2026-11-23) → 5 câu hỏi mở của Phase 0 chốt theo phương án đề xuất (ADR-002, ADR-010, ADR-016, ADR-018). Brief thiết kế đỏ nhạt + animation áp dụng toàn site (ADR-021); ô mật khẩu có nút hiện/ẩn (ADR-022).
 
 ## Ma trận feature (PRD §5) → màn hình / service / test
@@ -76,6 +76,11 @@
 | 2026-11-24 | `pnpm build` + `pnpm test:e2e` (Mongo cục bộ) | build pass; lần 1: 9/10 (E2E-1 lỗi vì `.next/cache` còn dữ liệu Atlas từ lần chạy :3100 → ID khóa không khớp DB cục bộ); xóa `.next/cache` → **10/10 pass** |
 | 2026-11-24 | `pnpm mail:check` sau khi chủ dự án điền SMTP (Gmail, 465) | đăng nhập SMTP **OK**; App Password có dấu cách → adapter bỏ dấu cách với Gmail |
 | 2026-11-24 | `pnpm mail:check --self` | Gmail chấp nhận 1 thư thử tới địa chỉ MAIL_FROM (log `mail.sent`); chủ dự án cần xác nhận đã nhận trong hộp thư |
+| 2026-11-24 | `pnpm test` (sau taxonomy + code block) | **103/103** (11 file; thêm `technologies.test.ts` 6 test) · typecheck pass · lint 0 lỗi |
+| 2026-11-24 | `pnpm db:indexes` + `pnpm db:seed` (Atlas `tuhoc_dev`) | thêm 35 công nghệ; gắn công nghệ cho 2 khóa (migration v1→v2, chỉ thêm field, idempotent); user demo không bị tạo lại |
+| 2026-11-24 | curl dev :3000 (Atlas) | `/technologies` 200 (5 hub); `/technologies/js` → 308 `/javascript`; `/technologies/python` (planned) 404; `/courses?tech=js` ra 2 khóa; sitemap có 5 hub; bài học thử: khung code shiki + nút sao chép |
+| 2026-11-24 | Screenshot 375/1440 (/technologies, hub, khóa, bài học) | không tràn ngang; xem trực quan OK |
+| 2026-11-24 | `pnpm build` + `pnpm test:e2e` (Mongo cục bộ đã seed taxonomy, đã xóa `.next/cache`) | build pass; **10/10 pass** |
 
 ## Chưa kiểm chứng / cần chủ dự án
 

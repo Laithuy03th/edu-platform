@@ -8,7 +8,8 @@ import { ensureIndexes } from "@/server/db/indexes";
 import { cols, type QuizQuestion, type Role } from "@/server/db/models";
 import { hashPassword } from "@/server/auth/password";
 import { normalizeEmail } from "@/server/auth/email";
-import { CATEGORIES, COURSES, PATH, type SeedQuestion } from "./seed-content";
+import { CATEGORIES, COURSES, COURSE_TECHNOLOGIES, PATH, TECHNOLOGIES, type SeedQuestion } from "./seed-content";
+import type { TechDomain, TechType } from "@/server/db/models";
 
 /**
  * Seed idempotent theo natural key (slug/email): chạy lại không nhân đôi. Không upload media.
@@ -26,6 +27,19 @@ async function main() {
     await c.categories.updateOne({ slug: cat.slug }, { $setOnInsert: { ...cat, isActive: true } }, { upsert: true });
   }
   const catId = new Map((await c.categories.find({}).toArray()).map((x) => [x.slug, x._id]));
+
+  // ---- Taxonomy công nghệ: chỉ chèn mục chưa có ($setOnInsert) → không ghi đè chỉnh sửa của admin ----
+  let techAdded = 0;
+  for (const t of TECHNOLOGIES) {
+    const r = await c.technologies.updateOne(
+      { slug: t.slug },
+      { $setOnInsert: { ...t, type: t.type as TechType, domain: t.domain as TechDomain, createdAt: now, updatedAt: now } },
+      { upsert: true },
+    );
+    techAdded += r.upsertedCount;
+  }
+  console.log(`Công nghệ: thêm ${techAdded}, đã có ${TECHNOLOGIES.length - techAdded}`);
+  const techBySlug = new Map((await c.technologies.find({}).toArray()).map((x) => [x.slug, x]));
 
   // ---- Người dùng ----
   let instructorId: ObjectId;
@@ -206,6 +220,24 @@ async function main() {
       updatedAt: now,
     });
     console.log(`+ Đã tạo lộ trình: ${PATH.slug}`);
+  }
+
+  // ---- Migration schemaVersion 1 → 2 cho khóa seed: gắn công nghệ, searchText có alias, contentUpdatedAt ----
+  // Chỉ chạm khóa CHƯA có field draft.technologies (idempotent; không ghi đè khai báo của giảng viên).
+  for (const [slug, techSlugs] of Object.entries(COURSE_TECHNOLOGIES)) {
+    const course = await c.courses.findOne({ slug, "draft.technologies": { $exists: false } });
+    if (!course) continue;
+    const techs = techSlugs.map((x) => techBySlug.get(x)).filter((x) => x !== undefined);
+    const items = techs.map((t) => ({ technologyId: t._id, testedVersion: "" }));
+    const set: Record<string, unknown> = { "draft.technologies": items, schemaVersion: 2 };
+    if (course.published) {
+      const words = techs.flatMap((t) => [t.name, ...t.aliases]).join(" ");
+      set["published.technologies"] = items;
+      set["published.searchText"] = normalizeForSearch(`${course.published.title} ${course.published.shortDescription} ${words}`);
+      if (!course.published.contentUpdatedAt) set["published.contentUpdatedAt"] = course.published.publishedAt;
+    }
+    await c.courses.updateOne({ _id: course._id }, { $set: set });
+    console.log(`~ Gắn công nghệ cho khóa ${slug}: ${techSlugs.join(", ")}`);
   }
   console.log("✓ Seed xong.");
 }

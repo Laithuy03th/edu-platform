@@ -31,6 +31,11 @@ export const INDEXES: Record<string, IndexDescription[]> = {
     { key: { status: 1, createdAt: 1 }, name: "status_created" },
   ],
   categories: [{ key: { slug: 1 }, name: "uniq_slug", unique: true }],
+  technologies: [
+    { key: { slug: 1 }, name: "uniq_slug", unique: true },
+    { key: { aliases: 1 }, name: "aliases" },
+    { key: { status: 1, domain: 1, order: 1 }, name: "status_domain_order" },
+  ],
   courses: [
     { key: { slug: 1 }, name: "uniq_slug", unique: true },
     { key: { instructorId: 1, updatedAt: -1 }, name: "instructor_updated" },
@@ -39,6 +44,7 @@ export const INDEXES: Record<string, IndexDescription[]> = {
       name: "catalog_filter",
     },
     { key: { status: 1, ratingAvg: -1 }, name: "catalog_rating" },
+    { key: { status: 1, "published.technologies.technologyId": 1 }, name: "catalog_technology" },
     { key: { "published.searchText": "text" }, name: "catalog_text", default_language: "none" },
     { key: { "review.state": 1, "review.submittedAt": 1 }, name: "review_queue" },
     {

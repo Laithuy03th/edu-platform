@@ -8,6 +8,8 @@ import { listCourseMedia } from "@/modules/media/service";
 import { PageHeader, buttonClass } from "@/components/ui";
 import { CourseStatusBadges } from "../../status";
 import { CourseEditor } from "./editor";
+import { TechnologiesForm } from "./technologies-form";
+import { listActiveTechnologies } from "@/modules/technologies/service";
 
 export const metadata = { title: "Soạn khóa học" };
 
@@ -23,7 +25,7 @@ export default async function CourseEditorPage({ params }: { params: Promise<{ i
     if (err instanceof AppError && err.code === "NOT_FOUND") notFound();
     throw err;
   }
-  const [problems, media] = await Promise.all([publishProblems(courseId), listCourseMedia(viewer, courseId)]);
+  const [problems, media, techOptions] = await Promise.all([publishProblems(courseId), listCourseMedia(viewer, courseId), listActiveTechnologies()]);
   const { course } = data;
   return (
     <>
@@ -76,6 +78,16 @@ export default async function CourseEditorPage({ params }: { params: Promise<{ i
         assignments={data.assignments.map((a) => ({ id: a._id.toHexString(), title: a.draft.title }))}
         problems={problems}
       />
+      <div className="mt-8 max-w-3xl">
+        <TechnologiesForm
+          key={`tech-${course.draftRevision}`}
+          courseId={id}
+          revision={course.draftRevision}
+          locked={course.review.state === "pending" || course.status === "suspended"}
+          options={techOptions}
+          initial={(course.draft.technologies ?? []).map((t) => ({ technologyId: t.technologyId.toHexString(), testedVersion: t.testedVersion }))}
+        />
+      </div>
     </>
   );
 }

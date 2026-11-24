@@ -134,3 +134,15 @@ export const IconEye = ({ size, ...p }: P) => (
 export const IconEyeOff = ({ size, ...p }: P) => (
   <svg {...base(size, p)}><path d="M10.6 5.1A9.6 9.6 0 0 1 12 5c6 0 9.5 7 9.5 7a17 17 0 0 1-2.4 3.3M6.4 6.4C3.9 8.1 2.5 12 2.5 12S6 19 12 19c1.9 0 3.6-.7 5-1.6" /><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2M3 3l18 18" /></svg>
 );
+export const IconCopy = ({ size, ...p }: P) => (
+  <svg {...base(size, p)}><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg>
+);
+export const IconTerminal = ({ size, ...p }: P) => (
+  <svg {...base(size, p)}><rect x="3" y="4" width="18" height="16" rx="2" /><path d="m7 9 3 3-3 3M13 15h4" /></svg>
+);
+export const IconBookmark = ({ size, ...p }: P) => (
+  <svg {...base(size, p)}><path d="M6 4h12v17l-6-4-6 4z" /></svg>
+);
+export const IconLink = ({ size, ...p }: P) => (
+  <svg {...base(size, p)}><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1" /><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" /></svg>
+);

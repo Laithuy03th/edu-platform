@@ -8,6 +8,7 @@ import { Container, EmptyState, Section, SectionHeading, buttonClass } from "@/c
 import { listCategories, listFeatured } from "@/modules/courses/catalog";
 import { listFeaturedPaths } from "@/modules/learning-paths/service";
 import { JsonLd, organizationLd, websiteLd } from "@/lib/seo";
+import { getTechnologyDirectory, TYPE_LABEL } from "@/modules/technologies/service";
 
 export const metadata = { alternates: { canonical: "/" } };
 
@@ -20,10 +21,11 @@ const STEPS = [
 ];
 
 export default async function HomePage() {
-  const [featured, paths, categories] = await Promise.all([
+  const [featured, paths, categories, techDir] = await Promise.all([
     safeLoad(() => listFeatured(), []),
     safeLoad(() => listFeaturedPaths(), []),
     safeLoad(() => listCategories(), []),
+    safeLoad(() => getTechnologyDirectory(), { hubs: [], planned: [] }),
   ]);
   return (
     <>
@@ -158,8 +160,38 @@ export default async function HomePage() {
         </Container>
       </Section>
 
-      {/* ---------------- CHỦ ĐỀ ---------------- */}
-      {categories.length ? (
+      {/* ---------------- CÔNG NGHỆ (hub có nội dung thật; fallback: chủ đề) ---------------- */}
+      {techDir.hubs.length ? (
+        <Section>
+          <Container>
+            <Reveal>
+              <SectionHeading
+                eyebrow="Công nghệ"
+                title="Học theo công nghệ bạn cần"
+                description="Chỉ hiện công nghệ đã có khóa học xuất bản. Các mảng khác nằm trong lộ trình nội dung."
+                action={
+                  <Link href="/technologies" className={buttonClass("outline", undefined, "sm")}>
+                    Tất cả công nghệ
+                  </Link>
+                }
+              />
+            </Reveal>
+            <Reveal group className="flex flex-wrap gap-3">
+              {techDir.hubs.map((t) => (
+                <Link
+                  key={t.slug}
+                  href={`/technologies/${t.slug}`}
+                  className="group inline-flex items-center gap-2 rounded-full border border-line bg-surface px-5 py-3 font-semibold text-ink shadow-xs transition hover:-translate-y-0.5 hover:border-brand-300 hover:bg-brand-50 hover:shadow-sm"
+                >
+                  {t.name}
+                  <span className="text-xs font-medium text-ink-faint">{TYPE_LABEL[t.type]}</span>
+                  <IconArrowRight size={16} className="text-brand-600 transition-transform group-hover:translate-x-0.5" />
+                </Link>
+              ))}
+            </Reveal>
+          </Container>
+        </Section>
+      ) : categories.length ? (
         <Section>
           <Container>
             <Reveal>

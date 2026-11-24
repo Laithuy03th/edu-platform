@@ -14,6 +14,7 @@ import { Reveal } from "@/components/motion";
 import { IconBook, IconCheck, IconChevronDown, IconClock, IconLock, IconPlay, IconTarget } from "@/components/icons";
 import { Alert, Badge, Card, Container, ProgressBar, buttonClass } from "@/components/ui";
 import { formatDuration, formatMinutes } from "@/lib/text";
+import { formatDate } from "@/lib/time";
 import { EnrollButton } from "./enroll-button";
 import { CourseReviews } from "./reviews";
 import { JsonLd, breadcrumbLd, courseLd, pageOpenGraph, robotsUnless } from "@/lib/seo";
@@ -129,6 +130,33 @@ export default async function CourseDetailPage({ params }: Props) {
                 </dd>
               </div>
             </dl>
+            {/* T01/T06: công nghệ + phiên bản đã kiểm thử, review chuyên môn và ngày cập nhật thật. */}
+            <div style={{ "--i": 5 } as React.CSSProperties} className="mt-6 space-y-3 text-sm">
+              {course.technologies.length ? (
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-ink-faint">Công nghệ:</span>
+                  {course.technologies.map((t) => (
+                    <Link key={t.slug} href={`/technologies/${t.slug}`} className="rounded-full border border-line bg-surface px-3 py-1 font-medium text-ink transition hover:border-brand-200 hover:text-brand-700">
+                      {t.name}
+                      {t.testedVersion ? <span className="ml-1 text-ink-faint">· đã kiểm thử {t.testedVersion}</span> : null}
+                    </Link>
+                  ))}
+                </div>
+              ) : null}
+              <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-ink-faint">
+                <span>Cập nhật nội dung: {formatDate(course.contentUpdatedAt)}</span>
+                {course.contentReview ? (
+                  <span className="inline-flex items-center gap-1">
+                    <IconCheck size={14} className="text-success-700" /> Review chuyên môn: {course.contentReview.reviewerName} ({formatDate(course.contentReview.reviewedAt)})
+                    {course.contentReview.outdated ? <Badge tone="warning">nội dung đã đổi sau lần review</Badge> : null}
+                  </span>
+                ) : (
+                  <Badge tone="warning" title="Nội dung chưa được một người có chuyên môn kiểm tra độc lập">
+                    Chưa review chuyên môn
+                  </Badge>
+                )}
+              </p>
+            </div>
             {course.status === "archived" ? (
               <Alert tone="warning" className="mt-6">
                 Khóa học đã được lưu trữ: không nhận đăng ký mới. Học viên đã đăng ký vẫn tiếp tục học được.

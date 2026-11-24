@@ -23,12 +23,12 @@ Ngày kiểm tra: **2026-11-24**. Mỗi dòng ghi bằng chứng thật và tr�
 
 | Trạng thái | Số ID | Danh sách |
 |---|---|---|
-| VERIFIED | 29 | A01, A03, A04, A06, A09, C01, C03, C04, C05, C06, L02, L03, L04, L06, L07, L08, L09, P02, P03, D02, U01, U05, S01, S02, S03, O01, O04, O05, O06 |
+| VERIFIED | 32 | A01, A03, A04, A06, A09, C01, C03, C04, C05, C06, L02, L03, L04, L06, L07, L08, L09, P02, P03, D02, T01, T02, T09, U01, U05, S01, S02, S03, O01, O04, O05, O06 |
 | IMPLEMENTED_UNVERIFIED | 13 | A02, A05, A07, A08, L05, L11, P01, D01, D03, M06, M07, S04, O02 |
-| PARTIAL | 15 | C02, L01, L12, M03, M04, T03, T08, U02, U03, U04, U06, S06, S07, O03, O07 |
+| PARTIAL | 18 | C02, L01, L12, M03, M04, T03, T05, T06, T07, T08, U02, U03, U04, U06, S06, S07, O03, O07 |
 | MOCK_ONLY | 3 | M01, M02, M08 |
 | BLOCKED | 5 | M05, M09, S05, S08, S10 |
-| MISSING | 13 | L10, P04, P05, P06, T01, T02, T04, T05, T06, T07, T09, U07, S09 |
+| MISSING | 7 | L10, P04, P05, P06, T04, U07, S09 |
 | DEFERRED | 1 | O08 (deploy chỉ khi chủ dự án yêu cầu) |
 
 > Không công bố "% hoàn thành". Theo §31.1, nếu tính phần trăm thì phải công bố trọng số; tài liệu này không đặt trọng số. Bảng tổng hợp chỉ đếm theo trạng thái. Số liệu chính xác cho từng dòng nằm trong các bảng chi tiết bên dưới.
@@ -112,22 +112,22 @@ Ngày kiểm tra: **2026-11-24**. Mỗi dòng ghi bằng chứng thật và tr�
 
 | ID | Yêu cầu | Trạng thái | Ghi chú |
 |---|---|---|---|
-| T01 | Taxonomy domain/topic/technology/type/version | MISSING | Chỉ có `categories` (3 bản ghi, một chiều) |
-| T02 | Technology hub, ánh xạ course/reference/project | MISSING | |
-| T03 | Prerequisite/concept graph, alias tìm kiếm | PARTIAL | Có prerequisite và chống vòng lặp cho lộ trình; chưa có concept graph và alias |
+| T01 | Taxonomy domain/topic/technology/type/version | VERIFIED | `technologies` (type × domain × alias, active/planned), admin `/admin/technologies`; INT `technologies.test.ts` (slug/alias không trùng, chỉ admin); Atlas: 35 công nghệ (8 active) |
+| T02 | Technology hub, ánh xạ course/reference/project | VERIFIED | `/technologies`, `/technologies/[slug]`: chỉ tồn tại khi có khóa đã xuất bản; alias → 308; LIVE: 5 hub 200, `python` (planned) 404, `js` → `javascript`; INT hub biến mất khi khóa bị lưu trữ. Chưa có reference/project riêng (T05) |
+| T03 | Prerequisite/concept graph, alias tìm kiếm | PARTIAL | Alias tìm kiếm **xong** (`?q=js`, `?tech=js`, INT); prerequisite + chống vòng lặp ở lộ trình; còn thiếu concept graph |
 | T04 | Environment recipe theo OS | MISSING | |
-| T05 | Template article/reference/cheatsheet/troubleshooting | MISSING | Hiện chỉ có lesson trong course |
-| T06 | Author/reviewer/testedVersion, báo lỗi nội dung | MISSING | |
-| T07 | Code: copy, highlight, output, smoke check | MISSING | Code block hiện chỉ là `<pre>` thường |
+| T05 | Template article/reference/cheatsheet/troubleshooting | PARTIAL | Bài học có mục lục + heading anchor + khung code; chưa có loại nội dung tutorial/reference public riêng |
+| T06 | Author/reviewer/testedVersion, báo lỗi nội dung | PARTIAL | `testedVersion` theo công nghệ của khóa (qua duyệt), **review chuyên môn** do admin ghi tên người thật, tự báo "đã đổi sau review"; `contentUpdatedAt` thật (INT). Thiếu: nút báo lỗi nội dung, reviewer theo từng bài |
+| T07 | Code: copy, highlight, output, smoke check | PARTIAL | shiki tô màu **ở server** (0 KB highlighter xuống client), nút sao chép, `title="file"`, khối ` ```output `; LIVE trên bài học thử. Thiếu smoke-check tự động cho snippet |
 | T08 | Bản đồ độ phủ published/reviewed/planned | PARTIAL | Đã có tài liệu thủ công [CONTENT_COVERAGE.md](CONTENT_COVERAGE.md); chưa có màn admin |
-| T09 | Bản đồ nhiều mảng IT, không public placeholder | MISSING | Đúng là chưa có trang placeholder nào; nhưng cũng chưa có màn roadmap |
+| T09 | Bản đồ nhiều mảng IT, không public placeholder | VERIFIED | Mục "Lộ trình nội dung" ở `/technologies` liệt kê công nghệ planned theo mảng, **không có link/trang riêng**, không vào sitemap (INT + LIVE) |
 
 ## U — Giao diện (chi tiết trong [UI_AUDIT.md](UI_AUDIT.md))
 
 | ID | Yêu cầu | Trạng thái | Ghi chú |
 |---|---|---|---|
 | U01 | Token đỏ nhạt, font, spacing, component | VERIFIED | Token trùng bảng §36.2; tương phản đo hôm nay đạt AA cho chữ |
-| U02 | Home, hero, nav, footer | PARTIAL | Thiếu điều hướng theo mảng IT và technology hub |
+| U02 | Home, hero, nav, footer | PARTIAL | Đã thêm "Công nghệ" vào header/footer và khối hub trên trang chủ; chưa có project showcase |
 | U03 | Layout catalog/course/technology/tutorial/project | PARTIAL | Có catalog và course; chưa có technology/tutorial/reference |
 | U04 | Learning, dashboard, instructor, admin | PARTIAL | Có đủ màn; chưa có screenshot audit cho admin/learning ở cả 3 viewport |
 | U05 | Motion và reduced motion | VERIFIED | LIVE: tắt JS hoặc bật reduce → 0 phần tử chữ bị ẩn, 0 animation chạy |

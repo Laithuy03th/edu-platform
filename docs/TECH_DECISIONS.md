@@ -203,6 +203,14 @@ Node.js: máy dev hiện có **v22.13.0**, pnpm **11.25.0**. Vercel hỗ trợ 2
   - `APP_ENV` khác production → `noindex, nofollow` toàn site.
 - **Đánh đổi:** chuyển trang public không còn skeleton (catalog vẫn có trạng thái chờ của bộ lọc). Thời gian render server của các trang này đo được ~0,1–0,4 s.
 
+## ADR-025 — Taxonomy công nghệ, hub chỉ khi có nội dung, tô màu code ở server (V2 T01/T02/T06/T07)
+
+- **Taxonomy:** collection riêng `technologies` (loại × mảng × alias, active/planned) thay vì mở rộng `categories` — vì công nghệ có quan hệ nhiều-nhiều với khóa và cần phiên bản theo từng khóa. Không thêm collection `technologyVersions` khi chưa cần: phiên bản đã kiểm thử nằm trên mapping của khóa.
+- **Hub:** `/technologies/[slug]` (giữ quy ước URL tiếng Anh như `/courses`, `/paths` thay vì `/cong-nghe` — đổi sẽ cần redirect plan). Chỉ trả 200 khi có ≥ 1 khóa published dùng công nghệ; alias → 308; planned chỉ liệt kê trong roadmap, không link, không sitemap.
+- **testedVersion trung thực:** seed để TRỐNG vì ví dụ demo chưa được chạy ở phiên bản cụ thể; UI chỉ ghi "đã kiểm thử …" khi có giá trị.
+- **Review chuyên môn ≠ duyệt xuất bản:** admin ghi tên người review thật, gắn với publishedVersion để tự phát hiện nội dung đã đổi.
+- **Code:** shiki 4.6.0 + @shikijs/rehype qua `MarkdownAsync` (react-markdown 10) chạy ở server component → HTML đã tô màu, client chỉ nhận nút sao chép. Theme github-dark-default; ngôn ngữ nạp lazy, không rõ → text. Nội dung người dùng (ghi chú/hỏi đáp) vẫn dùng renderer đồng bộ, không tô màu.
+
 ## Kiểm chứng sau triển khai (2026-11-24)
 
 | Mục [KC] | Kết quả |

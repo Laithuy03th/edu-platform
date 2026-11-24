@@ -9,7 +9,7 @@ import { getLearnPageData } from "@/modules/learning/queries";
 import { playbackSource } from "@/modules/media/delivery";
 import { lessonNotes } from "@/modules/notes/service";
 import { listQuestions } from "@/modules/discussions/service";
-import { Markdown } from "@/components/markdown";
+import { LessonMarkdown, extractToc } from "@/components/lesson-markdown";
 import { Tabs } from "@/components/overlays";
 import { IconArrowLeft, IconArrowRight, IconBook, IconChat, IconClock, IconNote, IconRubric, IconTarget } from "@/components/icons";
 import { Alert, Badge, Container, ProgressBar, buttonClass } from "@/components/ui";
@@ -56,6 +56,7 @@ export default async function LearnPage({ params }: Props) {
   }
 
   const { lesson, course } = data;
+  const toc = extractToc(lesson.content);
   const canTrack = Boolean(viewer && data.isEnrolled);
   const isVideo = lesson.type === "video";
   // Chỉ cấp URL video ngay khi render nếu KHÔNG bật tiết kiệm dữ liệu; vẫn preload="none".
@@ -147,7 +148,21 @@ export default async function LearnPage({ params }: Props) {
 
           {lesson.content.trim() ? (
             <div className="text-[1.0625rem] leading-[1.8]">
-              <Markdown allowImages>{lesson.content}</Markdown>
+              {toc.length >= 3 ? (
+                <nav aria-label="Mục lục bài" className="mb-6 rounded-[var(--radius-md)] border border-line bg-surface-muted px-5 py-4 text-sm">
+                  <p className="mb-2 font-semibold text-ink">Trong bài này</p>
+                  <ol className="space-y-1">
+                    {toc.map((t) => (
+                      <li key={t.id} className={t.level === 3 ? "pl-4" : ""}>
+                        <a href={`#${t.id}`} className="text-ink-soft hover:text-brand-700">
+                          {t.text}
+                        </a>
+                      </li>
+                    ))}
+                  </ol>
+                </nav>
+              ) : null}
+              <LessonMarkdown>{lesson.content}</LessonMarkdown>
             </div>
           ) : null}
 
