@@ -34,6 +34,8 @@ const nextConfig: NextConfig = {
       // Trang chứa token trong URL: không gửi Referer ra ngoài.
       { source: "/reset-password", headers: [{ key: "Referrer-Policy", value: "no-referrer" }] },
       { source: "/verify-email", headers: [{ key: "Referrer-Policy", value: "no-referrer" }] },
+      // Runner của playground (P05) phải được nhúng bởi trang cùng site; header sau ghi đè X-Frame-Options DENY ở trên.
+      { source: "/api/sandbox/runner", headers: [{ key: "X-Frame-Options", value: "SAMEORIGIN" }] },
     ];
   },
 };
