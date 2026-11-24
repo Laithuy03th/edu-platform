@@ -1,7 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, type ReactNode } from "react";
+import { useState, useSyncExternalStore, type ReactNode } from "react";
+
+const FOCUS_KEY = "tuhoc.focus";
+const FOCUS_EVENT = "tuhoc:focus-change";
+function subscribeFocus(cb: () => void) {
+  window.addEventListener(FOCUS_EVENT, cb);
+  window.addEventListener("storage", cb);
+  return () => {
+    window.removeEventListener(FOCUS_EVENT, cb);
+    window.removeEventListener("storage", cb);
+  };
+}
 import { IconCheck, IconLayout, IconLock, IconMenu, IconPlay } from "@/components/icons";
 import { Drawer } from "@/components/overlays";
 import { cn } from "@/components/ui";
@@ -61,16 +72,12 @@ function OutlineNav({ outline, slug }: { outline: Outline; slug: string }) {
 
 /** Khung trang học: sidebar (desktop) có thể thu gọn = chế độ tập trung; mục lục là drawer trên mobile. */
 export function LearnShell({ outline, slug, topBar, children }: { outline: Outline; slug: string; topBar: ReactNode; children: ReactNode }) {
-  const [focus, setFocus] = useState(false);
+  // Tùy chọn "chế độ tập trung" lưu trong localStorage, đọc qua useSyncExternalStore (không lệch hydrate).
+  const focus = useSyncExternalStore(subscribeFocus, () => localStorage.getItem(FOCUS_KEY) === "1", () => false);
   const [drawer, setDrawer] = useState(false);
-  useEffect(() => {
-    setFocus(localStorage.getItem("tuhoc.focus") === "1");
-  }, []);
   const toggle = () => {
-    setFocus((f) => {
-      localStorage.setItem("tuhoc.focus", f ? "0" : "1");
-      return !f;
-    });
+    localStorage.setItem(FOCUS_KEY, focus ? "0" : "1");
+    window.dispatchEvent(new Event(FOCUS_EVENT));
   };
   return (
     <>
@@ -101,7 +108,9 @@ export function LearnShell({ outline, slug, topBar, children }: { outline: Outli
         <div className="min-w-0">{children}</div>
       </div>
       <Drawer open={drawer} onClose={() => setDrawer(false)} title="Mục lục khóa học" side="left">
-        <OutlineNav outline={outline} slug={slug} />
+        <div onClick={(e) => (e.target as HTMLElement).closest("a") && setDrawer(false)}>
+          <OutlineNav outline={outline} slug={slug} />
+        </div>
       </Drawer>
     </>
   );

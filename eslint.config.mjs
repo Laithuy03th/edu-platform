@@ -9,6 +9,7 @@ const eslintConfig = defineConfig([
     rules: {
       // Ảnh Cloudinary dùng <img> với srcset kích thước cố định (ADR-011), không qua Image Optimization.
       "@next/next/no-img-element": "off",
+      "@typescript-eslint/no-unused-vars": ["warn", { varsIgnorePattern: "^_", argsIgnorePattern: "^_", ignoreRestSiblings: true }],
     },
   },
   {

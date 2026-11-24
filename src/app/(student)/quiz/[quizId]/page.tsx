@@ -4,7 +4,7 @@ import { AppError } from "@/lib/errors";
 import { parseId } from "@/lib/ids";
 import { requireViewer } from "@/server/auth";
 import { getQuizForAttempt } from "@/modules/quizzes/service";
-import { Alert, Container, buttonClass } from "@/components/ui";
+import { Alert, Container } from "@/components/ui";
 import { QuizRunner } from "./quiz-runner";
 
 export const metadata = { title: "Quiz" };

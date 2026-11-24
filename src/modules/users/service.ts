@@ -3,7 +3,6 @@ import type { ObjectId } from "mongodb";
 import { AppError, isDuplicateKeyError } from "@/lib/errors";
 import { isValidTimeZone } from "@/lib/time";
 import { cols } from "@/server/db/models";
-import { audit } from "@/server/audit";
 
 export type ProfileInput = {
   displayName: string;

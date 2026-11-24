@@ -34,7 +34,7 @@ export function VideoPlayer({ lessonId, media, initialSrc, initialError, resumeA
   const [error, setError] = useState<string | null>(initialError);
   const [loading, setLoading] = useState(false);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "error">("idle");
-  const lastSaved = useRef<{ pos: number; at: number }>({ pos: resumeAt, at: Date.now() });
+  const lastSaved = useRef<{ pos: number; at: number }>({ pos: resumeAt, at: 0 });
   const resumed = useRef(false);
 
   const save = useCallback(

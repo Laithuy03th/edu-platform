@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Avatar } from "./avatar";
 import { IconMenu } from "./icons";
 import { LogoutButton } from "./logout-button";
@@ -33,7 +33,6 @@ type L = { href: string; label: string };
 export function MobileMenu({ main, account, user }: { main: L[]; account: L[]; user: { name: string; email: string; avatarUrl: string | null } | null }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
-  useEffect(() => setOpen(false), [pathname]);
   return (
     <>
       <button type="button" aria-label="Mở menu" aria-expanded={open} onClick={() => setOpen(true)} className="grid size-10 place-items-center rounded-full text-ink hover:bg-brand-50 md:hidden">
@@ -49,7 +48,7 @@ export function MobileMenu({ main, account, user }: { main: L[]; account: L[]; u
             </div>
           </div>
         ) : null}
-        <nav aria-label="Menu chính (mobile)" className="flex flex-col gap-1">
+        <nav aria-label="Menu chính (mobile)" className="flex flex-col gap-1" onClick={(e) => (e.target as HTMLElement).closest("a") && setOpen(false)}>
           {[...main, ...account.filter((a) => !main.some((m) => m.href === a.href))].map((l) => (
             <Link
               key={l.href}

@@ -44,10 +44,11 @@ export function QuizRunner({ quiz, backHref }: { quiz: Quiz; backHref: string })
   });
   const view = useAction(getAttemptResultAction, { onSuccess: (r) => setResult(r) });
 
-  useEffect(() => {
+  /** Bắt đầu: khôi phục bài dở dang (cùng submissionId) nếu có, ngược lại tạo submissionId mới. */
+  function begin() {
     try {
       const saved = JSON.parse(sessionStorage.getItem(storeKey) ?? "null") as { answers: Record<string, string>; submissionId: string } | null;
-      if (saved) {
+      if (saved?.submissionId) {
         setAnswers(saved.answers);
         setSubmissionId(saved.submissionId);
         setStarted(true);
@@ -57,7 +58,8 @@ export function QuizRunner({ quiz, backHref }: { quiz: Quiz; backHref: string })
       /* ignore */
     }
     setSubmissionId(crypto.randomUUID());
-  }, [storeKey]);
+    setStarted(true);
+  }
 
   useEffect(() => {
     if (started && submissionId) sessionStorage.setItem(storeKey, JSON.stringify({ answers, submissionId }));
@@ -88,7 +90,7 @@ export function QuizRunner({ quiz, backHref }: { quiz: Quiz; backHref: string })
           </p>
         ) : null}
         <div className="mt-6 flex flex-wrap gap-3">
-          <Button size="lg" onClick={() => setStarted(true)}>
+          <Button size="lg" onClick={begin}>
             Bắt đầu làm bài
           </Button>
           {quiz.kind === "placement" ? (
