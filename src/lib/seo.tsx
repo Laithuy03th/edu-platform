@@ -61,3 +61,20 @@ export function pageOpenGraph(og: { title: string; description: string; url: str
 export function robotsUnless(indexable: boolean) {
   return indexable ? {} : { robots: { index: false, follow: true } };
 }
+
+/** TechArticle: chỉ dữ liệu thật (tác giả, ngày xuất bản, ngày cập nhật nội dung). Không rating, không ảnh giả. */
+export function articleLd(a: { slug: string; title: string; summary: string; authorName: string; publishedAt: string; contentUpdatedAt: string; technologies: string[] }) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    headline: a.title,
+    description: a.summary,
+    url: absoluteUrl(`/huong-dan/${a.slug}`),
+    inLanguage: "vi",
+    datePublished: a.publishedAt,
+    dateModified: a.contentUpdatedAt,
+    author: { "@type": "Person", name: a.authorName },
+    publisher: { "@type": "Organization", name: SITE_NAME, url: absoluteUrl("/") },
+    ...(a.technologies.length ? { about: a.technologies.map((name) => ({ "@type": "Thing", name })) } : {}),
+  };
+}

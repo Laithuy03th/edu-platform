@@ -8,7 +8,9 @@ import { ensureIndexes } from "@/server/db/indexes";
 import { cols, type QuizQuestion, type Role } from "@/server/db/models";
 import { hashPassword } from "@/server/auth/password";
 import { normalizeEmail } from "@/server/auth/email";
-import { CATEGORIES, COURSES, COURSE_TECHNOLOGIES, PATH, TECHNOLOGIES, type SeedQuestion } from "./seed-content";
+import { ARTICLES, CATEGORIES, COURSES, COURSE_TECHNOLOGIES, PATH, TECHNOLOGIES, type SeedQuestion } from "./seed-content";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import type { TechDomain, TechType } from "@/server/db/models";
 
 /**
@@ -90,6 +92,36 @@ async function main() {
     if (!u) throw new Error("Không tìm thấy giảng viên.");
     instructorId = u._id;
   }
+
+  // ---- Bài công khai (T04/T05): chỉ chèn bài chưa có ($setOnInsert) — không ghi đè chỉnh sửa của tác giả/admin ----
+  let articlesAdded = 0;
+  for (const a of ARTICLES) {
+    const content = readFileSync(path.join("scripts", "content", "articles", `${a.slug}.md`), "utf8");
+    const technologyIds = a.tech.map((s) => techBySlug.get(s)?._id).filter((x): x is ObjectId => Boolean(x));
+    const body = { kind: a.kind, title: a.title, summary: a.summary, content, level: a.level, technologyIds, testedOn: a.testedOn.map((t) => ({ ...t, testedAt: new Date(t.testedAt) })) };
+    const r = await c.articles.updateOne(
+      { slug: a.slug },
+      {
+        $setOnInsert: {
+          slug: a.slug,
+          slugHistory: [],
+          authorId: instructorId,
+          status: "published",
+          review: { state: "approved", submittedRevision: 1, submittedAt: now, reviewedAt: now, reviewerId: null, rejectReason: null },
+          draftRevision: 1,
+          publishedVersion: 1,
+          draft: body,
+          published: { ...body, publishedAt: now, contentUpdatedAt: now },
+          contentReview: null,
+          createdAt: now,
+          updatedAt: now,
+        },
+      },
+      { upsert: true },
+    );
+    articlesAdded += r.upsertedCount;
+  }
+  console.log(`Bài hướng dẫn: thêm ${articlesAdded}, đã có ${ARTICLES.length - articlesAdded}`);
 
   const toQuestion = (q: SeedQuestion): QuizQuestion => {
     const options = q.options.map((text) => ({ optionId: randomUUID().slice(0, 8), text }));

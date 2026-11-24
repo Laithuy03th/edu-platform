@@ -3,10 +3,11 @@ import { env } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import { cols } from "@/server/db/models";
 import { listHubSlugs } from "@/modules/technologies/service";
+import { listArticleSitemap } from "@/modules/articles/service";
 
 export const dynamic = "force-dynamic";
 
-/** Sitemap chỉ gồm khóa học và lộ trình đã xuất bản (URL ổn định theo slug). */
+/** Sitemap chỉ gồm nội dung ĐÃ xuất bản: khóa học, hub có khóa, bài hướng dẫn, lộ trình (URL ổn định theo slug). */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = env().appUrl;
   const items: MetadataRoute.Sitemap = [
@@ -14,6 +15,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/courses`, changeFrequency: "daily", priority: 0.9 },
     { url: `${base}/technologies`, changeFrequency: "weekly", priority: 0.7 },
     { url: `${base}/paths`, changeFrequency: "weekly", priority: 0.7 },
+    { url: `${base}/huong-dan`, changeFrequency: "weekly", priority: 0.7 },
   ];
   try {
     const c = await cols();
@@ -25,6 +27,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     for (const x of courses) items.push({ url: `${base}/courses/${x.slug}`, lastModified: x.published.contentUpdatedAt ?? x.published.publishedAt, changeFrequency: "weekly", priority: 0.8 });
     // Chỉ hub có khóa đã xuất bản (không đưa công nghệ "planned"/rỗng vào sitemap).
     for (const h of await listHubSlugs()) items.push({ url: `${base}/technologies/${h.slug}`, lastModified: h.lastModified, changeFrequency: "weekly", priority: 0.7 });
+    for (const a of await listArticleSitemap()) items.push({ url: `${base}/huong-dan/${a.slug}`, lastModified: a.published.contentUpdatedAt, changeFrequency: "monthly", priority: 0.6 });
     for (const x of paths) items.push({ url: `${base}/paths/${x.slug}`, lastModified: x.updatedAt, changeFrequency: "monthly", priority: 0.6 });
   } catch (err) {
     logger.error("sitemap.failed", { err });

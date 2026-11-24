@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { viewerOrRedirect } from "@/server/auth";
 import { AppShell } from "@/components/app-shell";
-import { IconChart, IconChat, IconFlag, IconGrid, IconRoute, IconRubric } from "@/components/icons";
+import { IconBook, IconChart, IconChat, IconFlag, IconGrid, IconRoute, IconRubric } from "@/components/icons";
 
 export const metadata: Metadata = { title: { default: "Khu giảng viên", template: "%s · Giảng viên" }, robots: { index: false } };
 
@@ -19,6 +19,7 @@ export default async function InstructorLayout({ children }: { children: React.R
         { href: "/instructor/submissions", label: "Bài nộp", icon: <IconRubric size={18} /> },
         { href: "/instructor/questions", label: "Hỏi đáp", icon: <IconChat size={18} /> },
         { href: "/instructor/issues", label: "Báo lỗi nội dung", icon: <IconFlag size={18} /> },
+        { href: "/instructor/articles", label: "Bài hướng dẫn", icon: <IconBook size={18} /> },
         { href: "/instructor/paths", label: "Lộ trình", icon: <IconRoute size={18} /> },
       ]}
     >

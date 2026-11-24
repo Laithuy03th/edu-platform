@@ -16,6 +16,7 @@ export async function SiteHeader() {
     { href: "/courses", label: "Khóa học" },
     { href: "/technologies", label: "Công nghệ" },
     { href: "/paths", label: "Lộ trình" },
+    { href: "/huong-dan", label: "Hướng dẫn" },
     ...(viewer ? [{ href: "/dashboard", label: "Học tập" }, { href: "/review", label: "Ôn tập" }] : []),
   ];
   const account = viewer
@@ -142,6 +143,7 @@ export function SiteFooter() {
           <p className="text-caption text-ink-faint">Khám phá</p>
           <Link href="/courses" className="block text-ink-soft hover:text-brand-700">Khóa học</Link>
           <Link href="/technologies" className="block text-ink-soft hover:text-brand-700">Học theo công nghệ</Link>
+          <Link href="/huong-dan" className="block text-ink-soft hover:text-brand-700">Hướng dẫn &amp; tham khảo</Link>
           <Link href="/paths" className="block text-ink-soft hover:text-brand-700">Lộ trình theo mục tiêu</Link>
           <Link href="/register" className="block text-ink-soft hover:text-brand-700">Tạo tài khoản</Link>
         </nav>

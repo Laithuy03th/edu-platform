@@ -584,3 +584,38 @@ export const COURSE_TECHNOLOGIES: Record<string, string[]> = {
   "nextjs-co-ban": ["nextjs", "react", "javascript", "nodejs"],
   "mongodb-cho-web-developer": ["mongodb", "nodejs", "javascript"],
 };
+
+/**
+ * Bài công khai (T04/T05). Nội dung ở scripts/content/articles/<slug>.md. testedOn CHỈ ghi môi trường
+ * đã chạy thật các lệnh/code trong bài (2026-11-24, máy phát triển của dự án). Chưa có review chuyên môn.
+ */
+export type SeedArticle = { slug: string; kind: "tutorial" | "reference" | "cheatsheet" | "troubleshooting" | "recipe"; title: string; summary: string; level: "beginner" | "intermediate" | "advanced"; tech: string[]; testedOn: { os: string; tools: string; testedAt: string }[] };
+export const ARTICLES: SeedArticle[] = [
+  {
+    slug: "cai-nodejs-va-tao-du-an-nextjs-tren-windows",
+    kind: "recipe",
+    title: "Cài Node.js và tạo dự án Next.js đầu tiên trên Windows",
+    summary: "Từ máy Windows trắng tới trang Next.js chạy ở localhost:3000: cài Node.js LTS, kiểm tra phiên bản, tạo dự án bằng create-next-app, chạy dev và build — có kết quả mong đợi cho từng bước.",
+    level: "beginner",
+    tech: ["nodejs", "nextjs", "typescript"],
+    testedOn: [{ os: "Windows 11 Home (PowerShell 5.1)", tools: "Node 22.13.0, npm 10.9.2, Git 2.51.0; create-next-app → Next.js 16.4.6, React 19.3.0", testedAt: "2026-11-24" }],
+  },
+  {
+    slug: "loi-ket-noi-mongodb-tu-nodejs",
+    kind: "troubleshooting",
+    title: "Lỗi kết nối MongoDB từ Node.js: đọc thông báo và sửa",
+    summary: "ECONNREFUSED, Invalid connection string, Invalid scheme, querySrv ENOTFOUND và các lỗi Atlas (IP, xác thực): nguyên nhân, cách sửa và đoạn code kiểm tra kết nối tối thiểu.",
+    level: "beginner",
+    tech: ["mongodb", "nodejs"],
+    testedOn: [{ os: "Windows 11 Home", tools: "Node 22.13.0, driver mongodb 7.9.1 (tái hiện lỗi 1–4)", testedAt: "2026-11-24" }],
+  },
+  {
+    slug: "nextjs-app-router-cac-file-dac-biet",
+    kind: "reference",
+    title: "Next.js App Router: các file đặc biệt và lưu ý thực tế",
+    summary: "Tra nhanh page, layout, loading, error, not-found, route và các thư mục đặc biệt; params là Promise; vì sao loading.tsx có thể làm trang 404 trả status 200.",
+    level: "intermediate",
+    tech: ["nextjs", "react"],
+    testedOn: [{ os: "Windows 11 Home", tools: "Next.js 16.4.6 (build production của nền tảng này, kiểm tra status bằng curl)", testedAt: "2026-11-24" }],
+  },
+];

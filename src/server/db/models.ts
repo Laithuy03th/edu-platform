@@ -283,6 +283,36 @@ export interface LessonProgressDoc {
   lastSavedAt: Date;
 }
 
+/* ---------- Bài viết công khai: tutorial / reference / cheatsheet / troubleshooting / recipe (T04/T05) ---------- */
+export const ARTICLE_KINDS = ["tutorial", "reference", "cheatsheet", "troubleshooting", "recipe"] as const;
+export type ArticleKind = (typeof ARTICLE_KINDS)[number];
+export interface ArticleContent {
+  kind: ArticleKind;
+  title: string;
+  summary: string;
+  /** Markdown (render server-side, khối code tô màu, mục lục từ h2/h3). */
+  content: string;
+  level: Level;
+  technologyIds: ObjectId[];
+  /** Môi trường ĐÃ chạy thật các lệnh/code trong bài (recipe bắt buộc ≥ 1 trước khi xuất bản). */
+  testedOn: { os: string; tools: string; testedAt: Date }[];
+}
+export interface ArticleDoc {
+  slug: string;
+  /** Slug cũ → 308 về slug hiện tại (S06). Unique toàn collection để không hai bài tranh một URL. */
+  slugHistory: string[];
+  authorId: ObjectId;
+  status: "draft" | "published" | "archived";
+  review: { state: "none" | "pending" | "approved" | "rejected"; submittedRevision: number | null; submittedAt: Date | null; reviewedAt: Date | null; reviewerId: ObjectId | null; rejectReason: string | null };
+  draftRevision: number;
+  publishedVersion: number;
+  draft: ArticleContent;
+  published: (ArticleContent & { publishedAt: Date; contentUpdatedAt: Date }) | null;
+  contentReview: { reviewerName: string; reviewedAt: Date; publishedVersion: number; note: string } | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 /** Bookmark (L10): mỗi người lưu một mục tối đa một lần (unique userId+targetType+targetId). */
 export interface BookmarkDoc {
   userId: ObjectId;
@@ -638,6 +668,7 @@ export async function cols() {
     lessonProgress: db.collection<LessonProgressDoc>("lessonProgress"),
     notes: db.collection<NoteDoc>("notes"),
     bookmarks: db.collection<BookmarkDoc>("bookmarks"),
+    articles: db.collection<ArticleDoc>("articles"),
     reviewItems: db.collection<ReviewItemDoc>("reviewItems"),
     learningPaths: db.collection<LearningPathDoc>("learningPaths"),
     pathEnrollments: db.collection<PathEnrollmentDoc>("pathEnrollments"),

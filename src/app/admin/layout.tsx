@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { viewerOrRedirect } from "@/server/auth";
 import { AppShell } from "@/components/app-shell";
-import { IconChart, IconChat, IconGrid, IconLayout, IconRoute, IconShield, IconSparkle, IconUpload, IconUser } from "@/components/icons";
+import { IconBook, IconChart, IconChat, IconFlag, IconGrid, IconLayout, IconRoute, IconShield, IconSparkle, IconUpload, IconUser } from "@/components/icons";
 
 export const metadata: Metadata = { title: { default: "Quản trị", template: "%s · Quản trị" }, robots: { index: false } };
 
@@ -21,6 +21,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         { href: "/admin/categories", label: "Chủ đề", icon: <IconLayout size={18} /> },
         { href: "/admin/technologies", label: "Công nghệ", icon: <IconGrid size={18} /> },
         { href: "/admin/site", label: "Banner thông báo", icon: <IconSparkle size={18} /> },
+        { href: "/instructor/articles", label: "Bài hướng dẫn", icon: <IconBook size={18} /> },
+        { href: "/instructor/issues", label: "Báo lỗi nội dung", icon: <IconFlag size={18} /> },
         { href: "/instructor/paths", label: "Lộ trình", icon: <IconRoute size={18} /> },
         { href: "/admin/moderation", label: "Kiểm duyệt", icon: <IconChat size={18} /> },
         { href: "/admin/media", label: "Media & quota", icon: <IconUpload size={18} /> },

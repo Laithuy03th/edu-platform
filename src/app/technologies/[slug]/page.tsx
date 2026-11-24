@@ -8,6 +8,8 @@ import { IconArrowRight, IconBook, IconLink, IconRoute } from "@/components/icon
 import { Badge, Card, Container, PageHeader, buttonClass } from "@/components/ui";
 import { formatDate } from "@/lib/time";
 import { JsonLd, breadcrumbLd, pageOpenGraph } from "@/lib/seo";
+import { KIND_LABEL, listPublicArticles } from "@/modules/articles/service";
+import { safeLoad } from "@/components/safe-load";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -31,6 +33,7 @@ export default async function TechnologyHubPage({ params }: Props) {
   const hub = await load(slug);
   if (!hub) notFound();
   if ("redirectTo" in hub) permanentRedirect(`/technologies/${hub.redirectTo}`);
+  const articles = await safeLoad(() => listPublicArticles({ tech: hub.slug, limit: 12 }), []);
   return (
     <div className="bg-grain-warm">
       <JsonLd data={breadcrumbLd([{ name: "Công nghệ", path: "/technologies" }, { name: hub.name, path: `/technologies/${hub.slug}` }])} />
@@ -95,6 +98,28 @@ export default async function TechnologyHubPage({ params }: Props) {
                 </li>
               ))}
             </ul>
+          </section>
+        ) : null}
+
+        {articles.length ? (
+          <section aria-labelledby="huong-dan" className="mt-12">
+            <h2 id="huong-dan" className="text-h2 flex items-center gap-2 text-ink">
+              <IconLink className="text-brand-600" /> Hướng dẫn & tham khảo
+            </h2>
+            <ul className="mt-5 grid gap-3 md:grid-cols-2">
+              {articles.map((a) => (
+                <li key={a.slug}>
+                  <Link href={`/huong-dan/${a.slug}`} className="group block rounded-[var(--radius-md)] border border-line bg-surface p-4 transition hover:border-brand-200 hover:bg-brand-50/60">
+                    <span className="text-caption text-brand-700">{KIND_LABEL[a.kind]}</span>
+                    <span className="mt-0.5 block font-semibold text-ink group-hover:text-brand-800">{a.title}</span>
+                    <span className="mt-1 line-clamp-2 block text-sm text-ink-soft">{a.summary}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <Link href={`/huong-dan?tech=${hub.slug}`} className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand-700 hover:underline">
+              Tất cả bài về {hub.name} <IconArrowRight size={14} />
+            </Link>
           </section>
         ) : null}
 
