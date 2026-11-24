@@ -154,3 +154,20 @@ describe("readingSeconds (tổng thời lượng khóa có bài video kèm bài 
     expect(readingSeconds("```ts\n" + Array(400).fill("x").join(" ") + "\n```\nHai từ")).toBe(60);
   });
 });
+
+describe("versionCache (cache theo phiên bản, LRU)", async () => {
+  const { versionCache } = await import("@/lib/version-cache");
+  it("cùng khóa chỉ tải một lần; khóa mới tải lại; lỗi không bị cache; giới hạn kích thước", async () => {
+    const cache = versionCache<number>(2);
+    let calls = 0;
+    const load = async () => ++calls;
+    expect(await cache("c1:1", load)).toBe(1);
+    expect(await cache("c1:1", load)).toBe(1);
+    expect(await cache("c1:2", load)).toBe(2);
+    await expect(cache("err", async () => Promise.reject(new Error("x")))).rejects.toThrow();
+    expect(await cache("err", async () => 9)).toBe(9);
+    // vượt 2 mục → mục cũ nhất (c1:2) bị bỏ
+    await cache("c1:3", load);
+    expect(await cache("c1:2", load)).toBe(4);
+  });
+});

@@ -1,9 +1,10 @@
 import "server-only";
+import { versionCache } from "@/lib/version-cache";
 import type { ObjectId } from "mongodb";
 import { notFound } from "@/lib/errors";
 import { cols } from "@/server/db/models";
 import type { Viewer } from "@/server/auth/viewer-core";
-import { requireLessonAccess } from "./access";
+import { requireLessonAccessMemo } from "./access";
 import { completedSet, computeProgress, publishedOutline } from "./progress";
 import { mediaSummary } from "@/modules/media/delivery";
 
@@ -16,12 +17,18 @@ export async function courseProgressFor(userId: ObjectId, courseId: ObjectId) {
   return { ...p, nextLessonId: next?.id.toHexString() ?? null };
 }
 
+// Dữ liệu chỉ đổi khi khóa được duyệt lại (publishedVersion tăng) → cache theo phiên bản, không bao giờ cũ.
+const outlineCache = versionCache<Awaited<ReturnType<typeof publishedOutline>>>(300);
+const quizMetaCache = versionCache<{ title: string; questionCount: number; passPercent: number } | null>(1000);
+const assignmentTitleCache = versionCache<string | null>(1000);
+
 /** Dữ liệu trang học. Ném lỗi FORBIDDEN/UNAUTHENTICATED nếu không có quyền đọc bài. */
 export async function getLearnPageData(viewer: Viewer | null, slug: string, lessonId: ObjectId) {
-  const { course, lesson, enrollment } = await requireLessonAccess(viewer, lessonId);
+  const { course, lesson, enrollment } = await requireLessonAccessMemo(viewer, lessonId);
   if (course.slug !== slug) throw notFound("Không tìm thấy bài học");
   const c = await cols();
-  const outline = (await publishedOutline([course._id])).get(course._id.toHexString())!;
+  const ver = `${course._id.toHexString()}:${course.publishedVersion}`;
+  const outline = (await outlineCache(ver, () => publishedOutline([course._id]))).get(course._id.toHexString())!;
   const done = viewer ? await completedSet(viewer.id, [course._id]) : new Set<string>();
   const idx = outline.lessons.findIndex((l) => l.id.equals(lessonId));
   const prev = idx > 0 ? outline.lessons[idx - 1] : null;
@@ -32,15 +39,20 @@ export async function getLearnPageData(viewer: Viewer | null, slug: string, less
 
   let quiz: { id: string; title: string; questionCount: number; best: number | null; latest: number | null; passPercent: number } | null = null;
   if (p.quizId) {
-    const q = await c.quizzes.findOne({ _id: p.quizId });
-    const v = q?.publishedVersion ? await c.quizVersions.findOne({ quizId: q._id, version: q.publishedVersion }, { projection: { title: 1, questions: 1, passPercent: 1 } }) : null;
-    const r = viewer && v ? await c.quizResults.findOne({ userId: viewer.id, quizId: p.quizId }) : null;
-    if (v) quiz = { id: p.quizId.toHexString(), title: v.title, questionCount: v.questions.length, best: r?.bestScorePercent ?? null, latest: r?.latestScorePercent ?? null, passPercent: v.passPercent };
+    const quizId = p.quizId;
+    const v = await quizMetaCache(`${ver}:${quizId.toHexString()}`, async () => {
+      const q = await c.quizzes.findOne({ _id: quizId }, { projection: { publishedVersion: 1 } });
+      const qv = q?.publishedVersion ? await c.quizVersions.findOne({ quizId, version: q.publishedVersion }, { projection: { title: 1, questions: 1, passPercent: 1 } }) : null;
+      return qv ? { title: qv.title, questionCount: qv.questions.length, passPercent: qv.passPercent } : null;
+    });
+    const r = viewer && v ? await c.quizResults.findOne({ userId: viewer.id, quizId }) : null;
+    if (v) quiz = { id: quizId.toHexString(), title: v.title, questionCount: v.questionCount, best: r?.bestScorePercent ?? null, latest: r?.latestScorePercent ?? null, passPercent: v.passPercent };
   }
   let assignment: { id: string; title: string } | null = null;
   if (p.projectAssignmentId) {
-    const a = await c.projectAssignments.findOne({ _id: p.projectAssignmentId, published: { $ne: null } }, { projection: { "published.title": 1 } });
-    if (a?.published) assignment = { id: a._id.toHexString(), title: a.published.title };
+    const aid = p.projectAssignmentId;
+    const title = await assignmentTitleCache(`${ver}:${aid.toHexString()}`, async () => (await c.projectAssignments.findOne({ _id: aid, published: { $ne: null } }, { projection: { "published.title": 1 } }))?.published?.title ?? null);
+    if (title) assignment = { id: aid.toHexString(), title };
   }
 
   return {

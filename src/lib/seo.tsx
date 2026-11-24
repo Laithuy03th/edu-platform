@@ -53,8 +53,11 @@ export function courseLd(c: { slug: string; title: string; shortDescription: str
 }
 
 /** Open Graph đầy đủ cho trang con (Next gộp metadata NÔNG: openGraph của trang thay toàn bộ của layout). */
+export const DEFAULT_OG_IMAGE = { url: "/og-default.jpg", width: 1200, height: 630, alt: "Tự Học — học lập trình tiếng Việt" };
 export function pageOpenGraph(og: { title: string; description: string; url: string; images?: string[] }) {
-  return { type: "website" as const, siteName: SITE_NAME, locale: "vi_VN", ...og };
+  // Không có ảnh riêng (bìa khóa học) → ảnh mặc định 1200×630 tĩnh (không render động theo query).
+  const { images, ...rest } = og;
+  return { type: "website" as const, siteName: SITE_NAME, locale: "vi_VN", ...rest, images: images?.length ? images : [DEFAULT_OG_IMAGE] };
 }
 
 /** Chỉ thêm key robots khi cần chặn index — để trống thì kế thừa chính sách theo môi trường từ layout. */

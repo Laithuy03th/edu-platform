@@ -5,7 +5,7 @@ import { z } from "zod";
 import { AppError, notFound } from "@/lib/errors";
 import { cols, type CodeExerciseDoc, type Doc } from "@/server/db/models";
 import type { Viewer } from "@/server/auth/viewer-core";
-import { requireLessonAccess } from "@/modules/learning/access";
+import { requireLessonAccess, requireLessonAccessMemo } from "@/modules/learning/access";
 import { loadEditableCourse } from "@/modules/courses/authoring";
 
 export const MAX_PER_LESSON = 6;
@@ -51,7 +51,7 @@ function toDto(e: Doc<CodeExerciseDoc>, a: { attempts: number; hintsUsed: number
 
 /** Bài tập của một bài học — kiểm tra quyền đọc bài trước (enrollment hoặc học thử). */
 export async function lessonExercises(viewer: Viewer | null, lessonId: ObjectId): Promise<ExerciseDto[]> {
-  await requireLessonAccess(viewer, lessonId);
+  await requireLessonAccessMemo(viewer, lessonId);
   const c = await cols();
   const list = await c.codeExercises.find({ lessonId, status: "published" }).sort({ order: 1 }).limit(MAX_PER_LESSON).toArray();
   if (!list.length) return [];

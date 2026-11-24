@@ -5,7 +5,7 @@ import { SiteFooter, SiteHeader } from "@/components/site-header";
 import { AnnouncementBar } from "@/components/announcement-bar";
 import { Providers } from "@/components/providers";
 import { env } from "@/lib/env";
-import { SITE_NAME } from "@/lib/seo";
+import { DEFAULT_OG_IMAGE, SITE_NAME } from "@/lib/seo";
 
 // Font thiết kế cho tiếng Việt; next/font self-host lúc build → không request Google khi chạy.
 const beVietnam = Be_Vietnam_Pro({
@@ -23,8 +23,8 @@ export const metadata: Metadata = {
   title: { default: "Tự Học — học lập trình theo lộ trình", template: "%s · Tự Học" },
   description: "Nền tảng học trực tuyến: bài đọc, video ngắn, quiz, bài tập dự án có rubric, ghi chú theo thời điểm video và ôn tập câu sai.",
   applicationName: SITE_NAME,
-  openGraph: { type: "website", siteName: SITE_NAME, locale: "vi_VN" },
-  twitter: { card: "summary" },
+  openGraph: { type: "website", siteName: SITE_NAME, locale: "vi_VN", images: [DEFAULT_OG_IMAGE] },
+  twitter: { card: "summary_large_image" },
   robots: appEnv.isProduction ? undefined : { index: false, follow: false },
 };
 

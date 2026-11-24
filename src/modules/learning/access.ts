@@ -1,5 +1,6 @@
 import "server-only";
-import type { ObjectId } from "mongodb";
+import { cache } from "react";
+import { ObjectId } from "mongodb";
 import { AppError, notFound } from "@/lib/errors";
 import { cols, type CourseDoc, type Doc, type EnrollmentDoc, type LessonDoc } from "@/server/db/models";
 import type { Viewer } from "@/server/auth/viewer-core";
@@ -39,6 +40,16 @@ export async function requireLessonAccess(viewer: Viewer | null, lessonId: Objec
     throw new AppError(code, REASON_MSG[decision.reason] ?? "Không có quyền truy cập.");
   }
   return { course, lesson: lesson as LessonAccess["lesson"], enrollment };
+}
+
+/**
+ * Cùng kiểm tra quyền như requireLessonAccess nhưng MEMO trong phạm vi một request (React cache):
+ * trang học gọi kiểm tra ở nhiều chỗ (dữ liệu trang, URL video, bài tập) — chỉ truy vấn DB một lần.
+ * Không dùng sau một mutation trong cùng request (kết quả có thể cũ).
+ */
+const accessMemo = cache((_viewerKey: string, lessonHex: string, viewer: Viewer | null) => requireLessonAccess(viewer, new ObjectId(lessonHex)));
+export function requireLessonAccessMemo(viewer: Viewer | null, lessonId: ObjectId): Promise<LessonAccess> {
+  return accessMemo(viewer ? `${viewer.idStr}:${viewer.authVersion}` : "anon", lessonId.toHexString(), viewer);
 }
 
 /** Quyền "học" (ghi tiến độ, ghi chú, quiz): cần đăng nhập + quyền đọc bài. */

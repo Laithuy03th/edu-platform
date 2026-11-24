@@ -5,7 +5,7 @@ import { AppError } from "@/lib/errors";
 import { cols } from "@/server/db/models";
 import { signedVideoPosterUrl, signedVideoUrl } from "@/server/cloudinary";
 import type { Viewer } from "@/server/auth/viewer-core";
-import { requireLessonAccess } from "@/modules/learning/access";
+import { requireLessonAccessMemo } from "@/modules/learning/access";
 import { getSettings } from "./settings";
 import { posterUrl } from "./urls";
 
@@ -30,7 +30,7 @@ export async function mediaSummary(mediaId: ObjectId) {
  * GIỚI HẠN (ADR-010): signed URL không hết hạn và có thể bị chia sẻ; tắt cấp mới không thu hồi URL cũ.
  */
 export async function playbackSource(viewer: Viewer | null, lessonId: ObjectId) {
-  const { lesson } = await requireLessonAccess(viewer, lessonId);
+  const { lesson } = await requireLessonAccessMemo(viewer, lessonId);
   if (lesson.published.type !== "video" || !lesson.published.mediaId) throw new AppError("NOT_FOUND", "Bài này không có video.");
   const c = await cols();
   const m = await c.mediaAssets.findOne({ _id: lesson.published.mediaId });

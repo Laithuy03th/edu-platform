@@ -2,6 +2,30 @@ import "server-only";
 import { MarkdownAsync, type Components, type ExtraProps } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeShiki from "@shikijs/rehype";
+
+/**
+ * Cache kết quả tô màu theo (ngôn ngữ, meta, code) — giống nhau giữa các request nên không cần tô lại.
+ * Đo tải cục bộ: tô màu là phần tốn CPU nhất của trang bài viết. LRU giới hạn để không phình bộ nhớ.
+ */
+class LruMap<V> {
+  private m = new Map<string, V>();
+  constructor(private max: number) {}
+  get(k: string) {
+    const v = this.m.get(k);
+    if (v !== undefined) {
+      this.m.delete(k);
+      this.m.set(k, v);
+    }
+    return v;
+  }
+  set(k: string, v: V) {
+    this.m.set(k, v);
+    if (this.m.size > this.max) this.m.delete(this.m.keys().next().value!);
+    return this;
+  }
+}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- kiểu hast Root của shiki
+const highlightCache = new LruMap<any>(3000);
 import type { ShikiTransformer } from "shiki";
 import { CodeFrame } from "@/components/code-frame";
 import { safeUrl } from "@/components/markdown";
@@ -108,7 +132,7 @@ export async function LessonMarkdown({ children, allowImages = true }: { childre
     <div className="prose max-w-none">
       <MarkdownAsync
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[[rehypeShiki, { theme: "github-dark-default", lazy: true, fallbackLanguage: "text", defaultLanguage: "text", transformers: [metaTitle] }]]}
+        rehypePlugins={[[rehypeShiki, { theme: "github-dark-default", cache: highlightCache, lazy: true, fallbackLanguage: "text", defaultLanguage: "text", transformers: [metaTitle] }]]}
         components={components}
         urlTransform={safeUrl}
         skipHtml
