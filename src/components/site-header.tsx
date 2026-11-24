@@ -5,10 +5,14 @@ import { LogoutButton } from "./logout-button";
 import { MobileMenu, NavLink } from "./nav-client";
 import { ScrollState } from "./motion";
 import { IconChevronDown, IconSearch, Logo } from "./icons";
+import { ThemeToggle } from "./theme-toggle";
+import { cookies } from "next/headers";
+import { parseTheme, THEME_COOKIE } from "@/lib/site-cookies";
 import { Container, buttonClass } from "./ui";
 
 export async function SiteHeader() {
   const viewer = await getViewer();
+  const themePref = parseTheme((await cookies()).get(THEME_COOKIE)?.value);
   const isInstructor = viewer?.roles.includes("instructor");
   const isAdmin = viewer?.roles.includes("admin");
 
@@ -18,11 +22,12 @@ export async function SiteHeader() {
     { href: "/paths", label: "Lộ trình" },
     { href: "/huong-dan", label: "Hướng dẫn" },
     { href: "/playground", label: "Playground" },
-    ...(viewer ? [{ href: "/dashboard", label: "Học tập" }, { href: "/review", label: "Ôn tập" }] : []),
+    ...(viewer ? [{ href: "/dashboard", label: "Học tập" }] : []),
   ];
   const account = viewer
     ? [
         { href: "/dashboard", label: "Tổng quan" },
+        { href: "/review", label: "Ôn tập hôm nay" },
         { href: "/my-courses", label: "Khóa học của tôi" },
         { href: "/notes", label: "Ghi chú" },
         { href: "/saved", label: "Đánh dấu của tôi" },
@@ -40,11 +45,11 @@ export async function SiteHeader() {
       <ScrollState className="group/header sticky top-0 z-40 border-b border-transparent bg-canvas/70 backdrop-blur-xl transition-[background-color,border-color,box-shadow] duration-300 data-[scrolled=true]:border-line data-[scrolled=true]:bg-surface/85 data-[scrolled=true]:shadow-sm">
         <header>
           <Container className="flex h-16 items-center justify-between gap-3 transition-[height] duration-300 group-data-[scrolled=true]/header:h-14">
-            <div className="flex items-center gap-8">
+            <div className="flex items-center gap-5 xl:gap-8">
               <Link href="/" aria-label="Tự Học — trang chủ" className="transition-transform hover:scale-[1.02]">
                 <Logo />
               </Link>
-              <nav aria-label="Điều hướng chính" className="hidden items-center gap-1 lg:flex">
+              <nav aria-label="Điều hướng chính" className="hidden items-center gap-0.5 lg:flex xl:gap-1">
                 {main.map((l) => (
                   <NavLink key={l.href} href={l.href}>
                     {l.label}
@@ -54,7 +59,7 @@ export async function SiteHeader() {
             </div>
 
             <div className="flex items-center gap-2">
-              <form action="/courses" role="search" className="relative hidden lg:block">
+              <form action="/courses" role="search" className="relative hidden xl:block">
                 <label htmlFor="header-search" className="sr-only">
                   Tìm khóa học
                 </label>
@@ -68,15 +73,16 @@ export async function SiteHeader() {
                   className="h-10 w-56 rounded-full border border-line bg-surface/80 pl-10 pr-4 text-sm transition-[width,border-color,box-shadow] duration-300 placeholder:text-ink-faint focus:w-72 focus:border-brand-300 focus:outline-none focus:ring-4 focus:ring-brand-100"
                 />
               </form>
-              <Link href="/courses" aria-label="Tìm khóa học" className="grid size-10 place-items-center rounded-full text-ink-soft hover:bg-brand-50 lg:hidden">
+              <Link href="/courses" aria-label="Tìm khóa học" className="grid size-10 place-items-center rounded-full text-ink-soft hover:bg-brand-50 xl:hidden">
                 <IconSearch size={20} />
               </Link>
+              <ThemeToggle initial={themePref} />
 
               {viewer ? (
                 <details className="group relative hidden lg:block">
                   <summary className="flex cursor-pointer items-center gap-2 rounded-full py-1 pl-1 pr-3 transition hover:bg-brand-50" aria-label="Mở menu tài khoản">
                     <Avatar name={viewer.displayName} url={viewer.avatarUrl} size={34} />
-                    <span className="max-w-36 truncate text-sm font-semibold">{viewer.displayName}</span>
+                    <span className="hidden max-w-36 truncate text-sm font-semibold xl:inline">{viewer.displayName}</span>
                     <IconChevronDown size={16} className="chevron text-ink-faint transition-transform duration-200" />
                   </summary>
                   <div className="absolute right-0 z-50 mt-2 w-64 origin-top-right rounded-[var(--radius-md)] border border-line bg-surface p-2 shadow-lg animate-scale-in">

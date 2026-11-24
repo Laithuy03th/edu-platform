@@ -375,6 +375,116 @@ dialog[open]::backdrop {
 }
 
 /* =============================================================================
+   DARK THEME (U07, tùy chọn — mặc định vẫn là sáng). Bật bằng <html data-theme="dark">.
+   Cách làm: (1) đổi giá trị token nền/chữ/viền/sắc nhạt; (2) chữ đỏ đậm (text-brand-6..9) → đỏ hồng
+   để đủ tương phản trên nền tối, NHƯNG nền đỏ (nút, nhãn chữ trắng) giữ nguyên đỏ đậm.
+   Tương phản đã kiểm: ink #f4f4f5 trên canvas #121011 ≈ 17:1; ink-soft #c9c3c5 ≈ 11:1;
+   ink-faint #a29a9d ≈ 6.8:1; brand text #fca5a5 trên surface #1a1617 ≈ 9:1; trắng trên #b91c1c ≈ 6.5:1.
+   ============================================================================= */
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --color-canvas: #121011;
+  --color-surface: #1a1617;
+  --color-surface-muted: #221d1f;
+  --color-ink: #f4f4f5;
+  --color-ink-soft: #c9c3c5;
+  --color-ink-faint: #a29a9d;
+  --color-line: #332b2d;
+  --color-line-strong: #4a3e41;
+  --color-brand-50: #2a1416;
+  --color-brand-100: #3a1a1d;
+  --color-brand-200: #5a2226;
+  --color-brand-300: #8a3035;
+  --color-success-50: #0f2418;
+  --color-success-200: #1f4a30;
+  --color-success-600: #22c55e;
+  --color-success-700: #4ade80;
+  --color-warning-50: #2a210a;
+  --color-warning-200: #5a4612;
+  --color-warning-700: #facc15;
+  --color-warning-800: #fde68a;
+  --color-danger-50: #2a1012;
+  --color-danger-200: #5c1d22;
+  --color-danger-700: #f87171;
+  --color-danger-800: #fca5a5;
+  --color-info-50: #0f1a2e;
+  --color-info-200: #1e3a5f;
+  --color-info-700: #93c5fd;
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4), 0 2px 8px -2px rgb(0 0 0 / 0.5);
+  --shadow-md: 0 2px 4px rgb(0 0 0 / 0.35), 0 12px 24px -8px rgb(0 0 0 / 0.6);
+  --shadow-lg: 0 4px 8px rgb(0 0 0 / 0.35), 0 24px 48px -16px rgb(0 0 0 / 0.7);
+}
+/* Chữ đỏ đậm → đỏ hồng sáng (chỉ màu chữ; nền đỏ giữ nguyên vì dùng biến gốc) */
+html[data-theme="dark"] :is(.text-brand-600, .text-brand-700, .text-brand-800, .text-brand-900),
+html[data-theme="dark"] :is(.hover\:text-brand-700, .hover\:text-brand-800):hover,
+html[data-theme="dark"] .group:hover :is(.group-hover\:text-brand-700, .group-hover\:text-brand-800) {
+  color: #fca5a5;
+}
+/* Chữ hồng nhạt (thường nằm trên nền đỏ hoặc là điểm nhấn): giữ màu sáng gốc, không theo token sắc tối */
+html[data-theme="dark"] .text-brand-100 {
+  color: #fee2e2;
+}
+html[data-theme="dark"] .text-brand-200 {
+  color: #fecaca;
+}
+html[data-theme="dark"] .text-brand-300 {
+  color: #fca5a5;
+}
+html[data-theme="dark"] :is(.text-ink-soft, .text-ink) a:not([class]) {
+  color: #fca5a5;
+}
+/* Nền trắng/nửa trong suốt cố định → bề mặt tối */
+html[data-theme="dark"] :is(.bg-white, .bg-white\/80, .bg-white\/90, .bg-surface\/80, .bg-surface\/90, .bg-surface\/95) {
+  background-color: rgb(26 22 23 / 0.92);
+}
+html[data-theme="dark"] .bg-white\/50 {
+  background-color: rgb(255 255 255 / 0.06);
+}
+/* Nút "outline" trắng trên khối CTA đỏ: giữ chữ đỏ đậm trên nền trắng */
+html[data-theme="dark"] .text-brand-800.bg-white {
+  background-color: #fff;
+  color: #991b1b;
+}
+html[data-theme="dark"] .bg-grain-warm {
+  background-image:
+    radial-gradient(60rem 30rem at 85% -10%, rgb(127 29 29 / 0.35), transparent 60%),
+    radial-gradient(40rem 24rem at -10% 10%, rgb(127 29 29 / 0.18), transparent 60%);
+}
+html[data-theme="dark"] .bg-dots {
+  background-image: radial-gradient(rgb(252 165 165 / 0.1) 1px, transparent 1px);
+}
+html[data-theme="dark"] .hero-stage {
+  background:
+    radial-gradient(60rem 40rem at 85% -10%, rgb(127 29 29 / 0.55), transparent 60%),
+    radial-gradient(40rem 30rem at -5% 30%, rgb(127 29 29 / 0.25), transparent 65%),
+    linear-gradient(180deg, #161213 0%, var(--color-canvas) 70%);
+}
+html[data-theme="dark"] .hero-grid {
+  background-image:
+    linear-gradient(to right, rgb(252 165 165 / 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(252 165 165 / 0.06) 1px, transparent 1px);
+}
+html[data-theme="dark"] .hero-blob {
+  opacity: 0.18;
+}
+html[data-theme="dark"] .skeleton {
+  background: linear-gradient(90deg, #221d1f 0%, #2c2527 40%, #221d1f 80%);
+  background-size: 200% 100%;
+}
+html[data-theme="dark"] ::selection {
+  background: #7f1d1d;
+  color: #fff;
+}
+html[data-theme="dark"] :focus-visible {
+  outline-color: #fca5a5;
+}
+/* Ảnh bìa/hình minh họa sáng: hạ độ chói nhẹ để không "đập vào mắt" trên nền tối */
+html[data-theme="dark"] img:not([src*=".svg"]) {
+  filter: brightness(0.92);
+}
+
+/* =============================================================================
    HERO / TRANG CHỦ (V2 §36.4) — chuyển động trang trí: chỉ transform/opacity, dừng khi ngoài viewport
    (PauseOffscreen) và tắt theo prefers-reduced-motion (khối ở trên). Nội dung luôn đọc được khi không có JS.
    ============================================================================= */

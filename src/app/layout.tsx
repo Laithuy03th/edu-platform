@@ -6,6 +6,8 @@ import { AnnouncementBar } from "@/components/announcement-bar";
 import { Providers } from "@/components/providers";
 import { env } from "@/lib/env";
 import { DEFAULT_OG_IMAGE, SITE_NAME } from "@/lib/seo";
+import { cookies, headers } from "next/headers";
+import { parseTheme, THEME_COOKIE } from "@/lib/site-cookies";
 
 // Font thiết kế cho tiếng Việt; next/font self-host lúc build → không request Google khi chạy.
 const beVietnam = Be_Vietnam_Pro({
@@ -30,10 +32,19 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#fffaf9" };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // U07: theme từ cookie → render đúng ngay từ server (không nhấp nháy). "system" cần biết media query của
+  // trình duyệt → một script inline rất nhỏ có nonce CSP chạy trước khi vẽ.
+  const pref = parseTheme((await cookies()).get(THEME_COOKIE)?.value);
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   return (
     // suppressHydrationWarning: chỉ cho thẻ <html> — tiện ích trình duyệt (vd dịch trang) hay chèn thuộc tính data-* vào đây.
-    <html lang="vi" className={beVietnam.variable} suppressHydrationWarning>
+    <html lang="vi" className={beVietnam.variable} data-theme={pref === "dark" ? "dark" : "light"} suppressHydrationWarning>
+      {pref === "system" ? (
+        <head>
+          <script nonce={nonce} dangerouslySetInnerHTML={{ __html: "if(matchMedia('(prefers-color-scheme: dark)').matches)document.documentElement.dataset.theme='dark'" }} />
+        </head>
+      ) : null}
       <body className="flex min-h-screen flex-col font-sans">
         <a href="#main" className="sr-only z-[70] rounded-full bg-surface px-4 py-2 shadow-md focus:not-sr-only focus:fixed focus:left-3 focus:top-3">
           Bỏ qua tới nội dung chính
