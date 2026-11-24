@@ -9,6 +9,7 @@ import {
   unlinkGoogleAction,
 } from "@/modules/auth/actions";
 import { FormError } from "@/components/form-error";
+import { PasswordInput } from "@/components/password-input";
 import { Alert, Button, Field, Input } from "@/components/ui";
 import { formToObject, useAction } from "@/components/use-action";
 import { useConfirm } from "@/components/overlays";
@@ -28,13 +29,13 @@ export function ChangePasswordForm() {
       <FormError error={a.error} />
       {a.data && !a.pending ? <Alert tone="success">{a.data.message}</Alert> : null}
       <Field id="currentPassword" label="Mật khẩu hiện tại" errors={fe.currentPassword}>
-        <Input id="currentPassword" name="currentPassword" type="password" autoComplete="current-password" required />
+        <PasswordInput id="currentPassword" name="currentPassword" autoComplete="current-password" required />
       </Field>
       <Field id="newPassword" label="Mật khẩu mới" hint="Tối thiểu 12 ký tự." errors={fe.newPassword}>
-        <Input id="newPassword" name="newPassword" type="password" autoComplete="new-password" required />
+        <PasswordInput id="newPassword" name="newPassword" autoComplete="new-password" required meter />
       </Field>
       <Field id="confirmPassword" label="Xác nhận mật khẩu mới" errors={fe.confirmPassword}>
-        <Input id="confirmPassword" name="confirmPassword" type="password" autoComplete="new-password" required />
+        <PasswordInput id="confirmPassword" name="confirmPassword" autoComplete="new-password" required />
       </Field>
       <Button type="submit" pending={a.pending}>
         Đổi mật khẩu
@@ -69,7 +70,7 @@ export function LinkGoogleForm({ needsPassword }: { needsPassword: boolean }) {
       <FormError error={a.error} />
       {needsPassword ? (
         <Field id="linkPassword" label="Nhập lại mật khẩu để xác nhận" errors={a.fieldErrors.currentPassword}>
-          <Input id="linkPassword" name="currentPassword" type="password" autoComplete="current-password" required />
+          <PasswordInput id="linkPassword" name="currentPassword" autoComplete="current-password" required />
         </Field>
       ) : null}
       <Button type="submit" variant="outline" pending={a.pending}>

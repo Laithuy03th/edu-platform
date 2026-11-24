@@ -127,3 +127,10 @@ export function Logo({ className }: { className?: string }) {
     </span>
   );
 }
+
+export const IconEye = ({ size, ...p }: P) => (
+  <svg {...base(size, p)}><path d="M2.5 12S6 5 12 5s9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7Z" /><circle cx="12" cy="12" r="3" /></svg>
+);
+export const IconEyeOff = ({ size, ...p }: P) => (
+  <svg {...base(size, p)}><path d="M10.6 5.1A9.6 9.6 0 0 1 12 5c6 0 9.5 7 9.5 7a17 17 0 0 1-2.4 3.3M6.4 6.4C3.9 8.1 2.5 12 2.5 12S6 19 12 19c1.9 0 3.6-.7 5-1.6" /><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2M3 3l18 18" /></svg>
+);

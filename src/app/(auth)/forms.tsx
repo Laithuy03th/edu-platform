@@ -12,6 +12,7 @@ import {
   verifyEmailAction,
 } from "@/modules/auth/actions";
 import { FormError } from "@/components/form-error";
+import { PasswordInput } from "@/components/password-input";
 import { IconGoogle } from "@/components/icons";
 import { Alert, Button, Field, Input } from "@/components/ui";
 import { formToObject, useAction } from "@/components/use-action";
@@ -38,7 +39,7 @@ export function LoginForm({ callbackUrl, googleEnabled }: { callbackUrl?: string
           <Input {...aria("email", login.fieldErrors.email)} type="email" autoComplete="email" required />
         </Field>
         <Field id="password" label="Mật khẩu" errors={login.fieldErrors.password}>
-          <Input {...aria("password", login.fieldErrors.password)} type="password" autoComplete="current-password" required />
+          <PasswordInput {...aria("password", login.fieldErrors.password)} autoComplete="current-password" required />
         </Field>
         <div className="flex items-center justify-between">
           <Link href="/forgot-password" className="text-sm text-brand-700 hover:underline">
@@ -98,10 +99,10 @@ export function RegisterForm() {
         <Input {...aria("email", fe.email)} type="email" autoComplete="email" required />
       </Field>
       <Field id="password" label="Mật khẩu" hint="Tối thiểu 12 ký tự. Có thể dùng cụm từ dài, dấu cách và tiếng Việt có dấu." errors={fe.password}>
-        <Input {...aria("password", fe.password)} type="password" autoComplete="new-password" minLength={12} maxLength={128} required />
+        <PasswordInput {...aria("password", fe.password)} autoComplete="new-password" minLength={12} maxLength={128} required meter />
       </Field>
       <Field id="confirmPassword" label="Xác nhận mật khẩu" errors={fe.confirmPassword}>
-        <Input {...aria("confirmPassword", fe.confirmPassword)} type="password" autoComplete="new-password" required />
+        <PasswordInput {...aria("confirmPassword", fe.confirmPassword)} autoComplete="new-password" required />
       </Field>
       <Button type="submit" className="w-full" pending={reg.pending}>
         Tạo tài khoản
@@ -157,10 +158,10 @@ export function ResetForm({ token, mode }: { token: string; mode: "reset" | "set
     >
       <FormError error={r.error} />
       <Field id="password" label="Mật khẩu mới" hint="Tối thiểu 12 ký tự." errors={fe.password}>
-        <Input {...aria("password", fe.password)} type="password" autoComplete="new-password" required />
+        <PasswordInput {...aria("password", fe.password)} autoComplete="new-password" required meter />
       </Field>
       <Field id="confirmPassword" label="Xác nhận mật khẩu mới" errors={fe.confirmPassword}>
-        <Input {...aria("confirmPassword", fe.confirmPassword)} type="password" autoComplete="new-password" required />
+        <PasswordInput {...aria("confirmPassword", fe.confirmPassword)} autoComplete="new-password" required />
       </Field>
       <Button type="submit" className="w-full" pending={r.pending}>
         {mode === "set" ? "Đặt mật khẩu" : "Đặt lại mật khẩu"}
