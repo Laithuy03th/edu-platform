@@ -46,7 +46,9 @@ export type CloudResource = {
 /** Metadata THẬT từ Admin API (không tin dữ liệu client). null nếu không tồn tại. */
 export async function fetchResource(publicId: string, resourceType: "image" | "video", type: "upload" | "authenticated"): Promise<CloudResource | null> {
   try {
-    return (await cld().api.resource(publicId, { resource_type: resourceType, type })) as CloudResource;
+    // Đã kiểm chứng trên tài khoản thật (2026-11-24): KHÔNG có `media_metadata` thì Admin API không trả `duration` cho video
+    // (phản hồi upload thì có) → mọi video bị finalize từ chối. Ảnh không cần (width/height/bytes luôn có).
+    return (await cld().api.resource(publicId, { resource_type: resourceType, type, ...(resourceType === "video" ? { media_metadata: true } : {}) })) as CloudResource;
   } catch (err) {
     const status = (err as { error?: { http_code?: number } })?.error?.http_code;
     if (status === 404) return null;

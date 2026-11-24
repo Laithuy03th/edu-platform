@@ -19,6 +19,7 @@
 | Webhook | `notification_url`; header `X-Cld-Signature` + `X-Cld-Timestamp`; SHA-1/SHA-256 của `body + timestamp + api_secret`; khuyến nghị so timestamp (ví dụ trong 2 giờ) | notification_signatures |
 | Admin API | Free: **500 request/giờ**; Upload API không bị rate limit | admin_api_overview |
 | Usage API | Trả `plan`, `last_updated`, `transformations/bandwidth/storage {usage, limit, used_percent}`, `media_limits`...; mẫu tài liệu **không có trường credits** **[KC trên tài khoản thật]** | admin_api_usage |
+| Admin API `resource()` cho video **[KC 2026-11-24]** | Chỉ trả `duration` (và metadata video) khi có `media_metadata: true`; phản hồi upload thì luôn có | Thử thật trên tài khoản Free |
 | Vượt hạn mức Free | Không cắt ngay: email cảnh báo → nhắc nâng gói → "your account will eventually be automatically disabled" | billing_and_plans |
 
 Hệ quả thiết kế:

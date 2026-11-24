@@ -81,6 +81,13 @@
 | 2026-11-24 | curl dev :3000 (Atlas) | `/technologies` 200 (5 hub); `/technologies/js` → 308 `/javascript`; `/technologies/python` (planned) 404; `/courses?tech=js` ra 2 khóa; sitemap có 5 hub; bài học thử: khung code shiki + nút sao chép |
 | 2026-11-24 | Screenshot 375/1440 (/technologies, hub, khóa, bài học) | không tràn ngang; xem trực quan OK |
 | 2026-11-24 | `pnpm build` + `pnpm test:e2e` (Mongo cục bộ đã seed taxonomy, đã xóa `.next/cache`) | build pass; **10/10 pass** |
+| 2026-11-24 | `pnpm media:samples` (chỉ dựng, khóa Next.js) | Lần 1 dùng `recordVideo` của Playwright: VP8 ~0,6 Mbps, 3,8–5,8 MiB/video. Đổi sang CDP screencast + VP9 CRF 36 (ffmpeg đi kèm Playwright): **0,5–0,8 MiB/video**, chữ vẫn nét (kiểm bằng frame chụp khi phát) |
+| 2026-11-24 | `pnpm media:samples --apply --submit` (Atlas + Cloudinary thật; chủ dự án yêu cầu) | Ảnh bìa đầu tiên OK; video đầu tiên bị finalize **từ chối: "Không đọc được thời lượng video"** → Admin API thiếu `duration` khi không có `media_metadata: true` (đã kiểm chứng thật) → sửa `fetchResource` + unit test. Chạy lại: **2 ảnh bìa + 13 video** `ready`; 2 khóa gửi duyệt |
+| 2026-11-24 | Duyệt 2 khóa qua UI admin trên dev :3000 (Playwright) | Đã xuất bản; catalog và trang khóa hiện ảnh bìa mới |
+| 2026-11-24 | Kiểm tra phát video qua UI (học viên demo, :3000) | Preview `upload` và bài thường `authenticated` + URL ký: phát OK, có poster, resume 5→10→15 s. Khách mở bài thường → `/login`, không có URL video trong HTML |
+| 2026-11-24 | Sửa tổng thời lượng khóa (bài video có kèm bài đọc) | Tổng = độ dài video + thời gian đọc ước tính (`readingSeconds`, ~200 từ/phút); ngưỡng 90% video không đổi. Thẻ khóa bỏ dấu "~" vì font hiển thị giống dấu trừ. Duyệt lại: Next.js 14 phút, MongoDB 11 phút |
+| 2026-11-24 | `pnpm usage:sync` · `pnpm media:cleanup` (dry-run) | credits 0,17 → 0,2/25; transformations 34; storage provider chưa cập nhật (theo ngày); orphan 0 |
+| 2026-11-24 | `pnpm test` · typecheck · lint | **106/106** (12 file; thêm `cloudinary-adapter.test.ts`, `readingSeconds`) · pass · 0 lỗi |
 
 ## Chưa kiểm chứng / cần chủ dự án
 
@@ -88,7 +95,7 @@
 2. **Xoay vòng secret:** một phần đầu của `AUTH_SECRET` và `RATE_LIMIT_SECRET` đã bị in ra log của trợ lý trong phiên 2026-11-24 → nên tạo giá trị mới (`openssl rand -base64 32`).
 3. **Google OAuth:** đã điền; đăng nhập mới qua Google chạy thật trên Atlas. Còn thử: liên kết/hủy liên kết, user bị khóa (REMAINING_WORK P0-4).
 4. **SMTP:** đã cấu hình Gmail; đăng nhập + gửi thử OK (2026-11-24). Còn: chạy luồng đăng ký → xác minh → quên mật khẩu bằng email thật (REMAINING_WORK P0-2).
-5. **Cloudinary thật:** upload 1 video nhỏ đo chi phí xử lý (FREE_TIER_BUDGET §3.2), thử signed URL, `pnpm media:cleanup` dry-run.
+5. ~~**Cloudinary thật**~~ — đã có 13 video + 2 ảnh bìa thật (2026-11-24, [MEDIA_AUDIT](MEDIA_AUDIT.md)). Còn: thử nút upload trên trình duyệt với 1 file thật, data saver, webhook (cần URL công khai).
 6. **Deploy:** chưa làm (chỉ khi được yêu cầu) — [DEPLOYMENT](DEPLOYMENT.md).
 
 ## Giới hạn đã biết

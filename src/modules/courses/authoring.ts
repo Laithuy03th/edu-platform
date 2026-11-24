@@ -2,7 +2,7 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { ObjectId, type ClientSession } from "mongodb";
 import { AppError, isDuplicateKeyError, notFound } from "@/lib/errors";
-import { normalizeForSearch, slugify } from "@/lib/text";
+import { normalizeForSearch, readingSeconds, slugify } from "@/lib/text";
 import { withTransaction } from "@/server/db/client";
 import {
   cols,
@@ -497,7 +497,8 @@ export async function approveCourse(viewer: Viewer, courseId: ObjectId, submitte
         published = rest;
         lessonCount++;
         if (rest.isRequired) requiredLessonCount++;
-        totalDurationSeconds += rest.durationSeconds;
+        // Bài video có thể kèm bài đọc: tổng thời lượng khóa = video + thời gian đọc ước tính (durationSeconds của bài vẫn là độ dài video)
+        totalDurationSeconds += rest.durationSeconds + (rest.type === "video" ? readingSeconds(rest.content) : 0);
         if (rest.quizId) quizIds.add(rest.quizId.toHexString());
         if (rest.projectAssignmentId) assignmentIds.add(rest.projectAssignmentId.toHexString());
       }

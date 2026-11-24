@@ -10,7 +10,7 @@ Nền tảng học trực tuyến — Next.js 16 App Router + MongoDB Atlas + Cl
 
 ## Lệnh xác minh
 
-`pnpm lint` · `pnpm typecheck` · `pnpm test` · `pnpm build` · `pnpm test:e2e` (cần `pnpm dev:db` + seed; đổi DB thì xóa `.next/cache`) · `pnpm db:indexes` · `pnpm db:seed` · `pnpm mail:check`
+`pnpm lint` · `pnpm typecheck` · `pnpm test` · `pnpm build` · `pnpm test:e2e` (cần `pnpm dev:db` + seed; đổi DB thì xóa `.next/cache`) · `pnpm db:indexes` · `pnpm db:seed` · `pnpm mail:check` · `pnpm media:samples` (dựng media mẫu; `--apply` mới tải lên Cloudinary — chỉ khi chủ dự án yêu cầu)
 
 Script ngoài Next chạy bằng `tsx --conditions=react-server` (đã cấu hình trong package.json). `.env` của chủ dự án chứa credentials thật: khi chạy thử cục bộ, truyền `MONGODB_URI` của DB cục bộ trên dòng lệnh, không tạo `.env.local`, không in giá trị secret.
 

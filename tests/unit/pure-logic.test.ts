@@ -7,7 +7,7 @@ import { findCycle, pathProgress } from "@/modules/learning-paths/graph";
 import { rubricTotal } from "@/modules/projects/rubric";
 import { verifyWebhookSignature } from "@/server/cloudinary";
 import { validateResource } from "@/modules/media/service";
-import { normalizeForSearch, slugify } from "@/lib/text";
+import { normalizeForSearch, readingSeconds, slugify } from "@/lib/text";
 import { canReadLesson, canEditCourse } from "@/modules/courses/policy";
 import { startOfLocalDayPlus } from "@/lib/time";
 
@@ -143,5 +143,14 @@ describe("văn bản tiếng Việt", () => {
   it("bỏ dấu & slug", () => {
     expect(normalizeForSearch("  Lập Trình   ĐƯỜNG đi ")).toBe("lap trinh duong di");
     expect(slugify("Next.js cơ bản cho người mới!")).toBe("next-js-co-ban-cho-nguoi-moi");
+  });
+});
+
+describe("readingSeconds (tổng thời lượng khóa có bài video kèm bài đọc)", () => {
+  it("~200 từ/phút, tối thiểu 1 phút, bỏ khối code", () => {
+    expect(readingSeconds("")).toBe(0);
+    expect(readingSeconds("Một câu ngắn.")).toBe(60);
+    expect(readingSeconds(Array(400).fill("từ").join(" "))).toBe(120);
+    expect(readingSeconds("```ts\n" + Array(400).fill("x").join(" ") + "\n```\nHai từ")).toBe(60);
   });
 });

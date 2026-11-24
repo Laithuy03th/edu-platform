@@ -8,7 +8,7 @@ Ngày kiểm tra: **2026-11-24**. Mỗi dòng ghi bằng chứng thật và tr�
 
 | Ký hiệu | Nguồn | Kết quả lần chạy này |
 |---|---|---|
-| **INT** | Vitest + MongoDB in-memory replica set 8.2.6 (thật, không mock DB) | `pnpm test` **97/97 pass** (10 file, gồm 5 test mới cho SEO/mail) |
+| **INT** | Vitest + MongoDB in-memory replica set 8.2.6 (thật, không mock DB) | `pnpm test` **106/106 pass** (12 file; cập nhật 2026-11-24 chiều) |
 | **E2E** | Playwright trên build production + MongoDB **cục bộ** đã seed | `pnpm test:e2e` **10/10 pass** (21,2 s), chạy lại sau các sửa đổi hôm nay |
 | **ATLAS** | Quan sát trực tiếp trên Atlas `tuhoc_dev` (đếm/đọc, không ghi) | |
 | **LIVE** | HTTP thật tới dev :3000 (Atlas) hoặc build production :3100 (Atlas, chỉ đọc) | |
@@ -23,11 +23,11 @@ Ngày kiểm tra: **2026-11-24**. Mỗi dòng ghi bằng chứng thật và tr�
 
 | Trạng thái | Số ID | Danh sách |
 |---|---|---|
-| VERIFIED | 32 | A01, A03, A04, A06, A09, C01, C03, C04, C05, C06, L02, L03, L04, L06, L07, L08, L09, P02, P03, D02, T01, T02, T09, U01, U05, S01, S02, S03, O01, O04, O05, O06 |
+| VERIFIED | 34 | A01, A03, A04, A06, A09, C01, C03, C04, C05, C06, L02, L03, L04, L06, L07, L08, L09, P02, P03, D02, T01, T02, T09, U01, U05, S01, S02, S03, O01, O04, O05, O06, M01, M05 |
 | IMPLEMENTED_UNVERIFIED | 13 | A02, A05, A07, A08, L05, L11, P01, D01, D03, M06, M07, S04, O02 |
-| PARTIAL | 18 | C02, L01, L12, M03, M04, T03, T05, T06, T07, T08, U02, U03, U04, U06, S06, S07, O03, O07 |
-| MOCK_ONLY | 3 | M01, M02, M08 |
-| BLOCKED | 5 | M05, M09, S05, S08, S10 |
+| PARTIAL | 21 | C02, L01, L12, M02, M03, M04, M08, M09, T03, T05, T06, T07, T08, U02, U03, U04, U06, S06, S07, O03, O07 |
+| MOCK_ONLY | 0 | — (M01/M02/M08 đã chạy với Cloudinary thật ngày 2026-11-24) |
+| BLOCKED | 3 | S05, S08, S10 |
 | MISSING | 7 | L10, P04, P05, P06, T04, U07, S09 |
 | DEFERRED | 1 | O08 (deploy chỉ khi chủ dự án yêu cầu) |
 
@@ -98,15 +98,15 @@ Ngày kiểm tra: **2026-11-24**. Mỗi dòng ghi bằng chứng thật và tr�
 
 | ID | Yêu cầu | Trạng thái | Ghi chú |
 |---|---|---|---|
-| M01 | Reservation, signed upload, quota đồng thời | MOCK_ONLY | INT M1/M2/M11 với provider giả |
-| M02 | Finalize/webhook, idempotent | MOCK_ONLY | INT M3/M4; chưa nhận webhook thật |
-| M03 | Ảnh bìa/nội dung, alt, license, rendition | PARTIAL | 0 ảnh thật; thiếu field alt/license |
-| M04 | Player, poster, tốc độ, resume, caption, chương | PARTIAL | Dùng controls gốc của trình duyệt, có transcript; thiếu `<track>` và chương |
-| M05 | Delivery policy đã kiểm chứng trên tài khoản | BLOCKED | Cần M09 |
+| M01 | Reservation, signed upload, quota đồng thời | VERIFIED | INT M1/M2/M11 (quota nguyên tử trên Mongo thật); **thật 2026-11-24: 16 upload có chữ ký lên Cloudinary qua `requestUpload`, quota nội bộ 7,97 MB, 7+6 video/khóa** ([MEDIA_AUDIT](MEDIA_AUDIT.md)) |
+| M02 | Finalize/webhook, idempotent | PARTIAL | Finalize thật: tra Admin API, **phát hiện + sửa lỗi thiếu `duration`** (cần `media_metadata`), test hồi quy; webhook chưa nhận thật (cần URL công khai) |
+| M03 | Ảnh bìa/nội dung, alt, license, rendition | PARTIAL | 2 ảnh bìa thật (1280×720, rendition cố định); thiếu field alt/caption/license cho ảnh trong bài |
+| M04 | Player, poster, tốc độ, resume, caption, chương | PARTIAL | Thật: poster eager, phát, resume (5→10→15 s), transcript. Thiếu `<track>` và chương |
+| M05 | Delivery policy đã kiểm chứng trên tài khoản | VERIFIED | Thật: bài thường `authenticated` + URL ký cho học viên đã đăng ký; khách → /login, không lộ URL; preview/ảnh `upload` công khai. URL ký không hết hạn (ADR-010) |
 | M06 | Data saver, preload/autoplay, UI lỗi media | IMPLEMENTED_UNVERIFIED | Code có `preload="none"`, không autoplay; chưa có video để thử |
 | M07 | Usage dashboard, độ tươi, cảnh báo, kill switch | IMPLEMENTED_UNVERIFIED | Usage API **thật** OK (2 snapshot trên Atlas); fail-closed đã test với mock (M8); kill switch chưa thử thật |
-| M08 | Orphan, theo dõi tham chiếu, cleanup dry-run | MOCK_ONLY | INT M7 |
-| M09 | Ca thử nhỏ qua UI, có bằng chứng | BLOCKED | Cần chủ dự án cho phép và cung cấp 1 video nhỏ |
+| M08 | Orphan, theo dõi tham chiếu, cleanup dry-run | PARTIAL | INT M7; thật: `pnpm media:cleanup` dry-run 0 orphan; asset bị từ chối đã bị xóa trên Cloudinary. Chưa thử xóa thật theo hàng đợi |
+| M09 | Ca thử nhỏ qua UI, có bằng chứng | PARTIAL | Chủ dự án yêu cầu sinh media mẫu: 13 video + 2 ảnh lên Cloudinary thật; duyệt + phát qua UI. Upload đi qua hàm server trong script, **chưa qua nút upload trên trình duyệt** |
 
 ## T — Taxonomy và nội dung IT (chi tiết trong [CONTENT_COVERAGE.md](CONTENT_COVERAGE.md))
 

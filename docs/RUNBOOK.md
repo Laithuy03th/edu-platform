@@ -107,3 +107,16 @@ Lệnh chỉ in tên biến, có/thiếu, host/port. Không in mật khẩu. M�
 | Thư vào Spam | Bình thường với Gmail cá nhân khi gửi tự động. Domain riêng cần SPF/DKIM (làm khi deploy) |
 
 Khi production: `APP_ENV=production` bắt buộc dùng SMTP. Thiếu cấu hình thì gửi mail ném lỗi thiết lập rõ ràng, không giả lập thành công.
+
+## 11. Media mẫu (ảnh bìa + video minh họa)
+
+`pnpm media:samples` dựng cho mọi khóa đã xuất bản: ảnh bìa JPEG 1280×720 và mỗi bài một video WebM VP9 không lời, dựng từ nội dung bài (tiêu đề, mục tiêu, từng mục, khối code). File nằm trong `.data/media-samples/` (đã gitignore).
+
+- Không cờ: chỉ dựng file và in kích thước. Không cần mạng và không ghi DB.
+- `--apply`: tải lên Cloudinary qua `requestUpload` → `finalizeReservation`, gắn vào **bản nháp**. Bài đọc chuyển thành bài video, phần chữ giữ nguyên dưới video, transcript là nội dung trên màn hình. Mọi quota, kill switch và ngân sách vẫn áp dụng.
+- `--submit`: gửi duyệt. Admin duyệt ở `/admin/courses`. Duyệt qua UI để cache catalog của server đang chạy được làm mới.
+- `--course=<slug>`: chỉ chạy một khóa. `--rerender`: dựng lại file dù đã có.
+- Script idempotent: bỏ qua khóa đã có ảnh bìa và bài đã có video.
+- Cần trình duyệt và ffmpeg của Playwright (`pnpm exec playwright install chromium ffmpeg`).
+- Chi phí đo ngày 2026-11-24: 13 video + 2 ảnh ≈ 8 MB storage, +0,03 credits.
+- Gỡ một video: giảng viên đổi loại bài về "Bài đọc" trong trình soạn bài, gửi duyệt, rồi xóa asset trong thư viện media.

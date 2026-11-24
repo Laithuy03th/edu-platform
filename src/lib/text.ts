@@ -43,6 +43,15 @@ export function formatDuration(totalSeconds: number): string {
   return `${m}:${String(sec).padStart(2, "0")}`;
 }
 
+/**
+ * Thời gian đọc ước tính của phần chữ (markdown) — ~200 từ/phút, bỏ khối code (người học đọc code chậm hơn nhưng không đếm từ được).
+ * Dùng cho tổng thời lượng khóa khi bài video còn có bài đọc kèm; KHÔNG dùng cho ngưỡng hoàn thành video.
+ */
+export function readingSeconds(markdown: string): number {
+  const words = markdown.replace(/```[\s\S]*?```/g, " ").split(/\s+/).filter((w) => /[\p{L}\p{N}]/u.test(w)).length;
+  return words ? Math.max(60, Math.round((words / 200) * 60)) : 0;
+}
+
 export function formatMinutes(totalSeconds: number): string {
   const min = Math.round(totalSeconds / 60);
   if (min < 60) return `${min} phút`;

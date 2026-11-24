@@ -4,22 +4,24 @@ Ngày kiểm tra: 2026-11-24. Theo PROMPT V2 §35.6, §31.2 luồng 8. Không gh
 
 ## 1. Kết luận ngắn
 
-**Hiện chưa có ảnh hay video thật nào trong ứng dụng.** Pipeline upload → finalize → playback đã có code và đã có test tích hợp, nhưng đó là test với **provider giả (mock)**. Chưa chạy lần nào với Cloudinary thật qua UI. Bằng chứng duy nhất có tương tác với Cloudinary thật là lệnh gọi Usage API. Theo §31.1, lệnh gọi đó chỉ chứng minh lấy được số liệu sử dụng, không chứng minh upload hay phát video hoạt động.
+**Cập nhật 2026-11-24 (chiều): đã có media thật.** Theo yêu cầu của chủ dự án, `pnpm media:samples --apply --submit` sinh và tải lên **2 ảnh bìa + 13 video minh họa** (mỗi bài 1 video, không lời, dựng từ chính nội dung bài) qua **đúng các hàm server của web**: `requestUpload` → upload có chữ ký lên Cloudinary thật → `finalizeReservation` tra Admin API. Hai khóa được duyệt lại qua UI admin trên dev :3000 (Atlas). Ca thử này tìm ra **một lỗi thật mà test mock không bắt được** (§4).
+
+Trước đó (sáng cùng ngày): 0 asset; mọi kiểm tra media chỉ chạy với provider giả.
 
 | Hạng mục | Trạng thái | Bằng chứng |
 |---|---|---|
-| Asset thật trong MongoDB (`mediaAssets`) | **0 bản ghi** | Đếm trên Atlas `tuhoc_dev` ngày 2026-11-24 |
-| Reservation (`uploadReservations`) | 0 | như trên |
-| Bài học video | 0/13 bài, cả 13 đều là `reading` | Atlas: `lessons.published.type` |
-| Ảnh bìa khóa học | 0/2 khóa có `thumbnailMediaId`; card dùng bìa gradient + chữ cái đầu, chọn theo hash của tiêu đề (chưa theo công nghệ/cấp độ) | Atlas + [course-card.tsx](../src/components/course-card.tsx) |
-| Upload signed + reservation + quota | MOCK_ONLY | [media.test.ts](../tests/integration/media.test.ts) M1, M2, M11 (mock provider) |
-| Finalize đối chiếu metadata thật, idempotent | MOCK_ONLY | M3/M4, finalize khi reservation đã hết hạn, đổi resource_type |
-| Webhook Cloudinary (kiểm chữ ký, gọi lặp) | MOCK_ONLY | [route.ts](../src/app/api/webhooks/cloudinary/route.ts); chưa nhận webhook thật (cần URL public) |
-| Playback trong trang học | BLOCKED (không có video) | [video-player.tsx](../src/app/learn/[slug]/[lessonId]/video-player.tsx): `preload="none"`, không autoplay, data saver |
-| Usage snapshot | **Gọi thật OK** | Atlas `usageSnapshots`: 2 bản ghi (`cloudinary_admin_api`, `mongodb_dbstats`); Free 25 credits, đã dùng 0% |
-| Fail-closed khi usage cũ hoặc lỗi | MOCK_ONLY | M8 |
-| Dọn orphan / reconcile | MOCK_ONLY | M7; chưa chạy `pnpm media:cleanup` với Cloudinary thật |
-| Delivery / access policy | BLOCKED | ADR-010: URL delivery có chữ ký **không hết hạn**, có thể bị chia sẻ. Chưa thử với tài khoản thật |
+| Asset thật trong MongoDB (`mediaAssets`) | **15 `ready`** (2 `course_thumbnail`, 3 `preview_video`, 10 `lesson_video`) + 1 `rejected` (lần thử đầu, xem §4) | Atlas `tuhoc_dev`, aggregate theo status/purpose |
+| Bài học video | **13/13** bài là `video`, vẫn giữ bài đọc bên dưới video; transcript = nội dung trên màn hình theo mốc thời gian | Atlas `lessons.published.type` |
+| Ảnh bìa khóa học | **2/2** khóa có ảnh bìa 1280×720 JPEG (81 và 88 KiB) qua Cloudinary, rendition cố định | Screenshot `/courses` và `/courses/nextjs-co-ban` ở 1440 px |
+| Upload signed + reservation + quota | **VERIFIED** (thật) | 16 lần upload; quota nội bộ `storage:global` = 7.973.268 byte; `videos:course:*` = 7 và 6, trong giới hạn 10/khóa và 2 khóa |
+| Finalize đối chiếu metadata thật | **VERIFIED** (thật), sau khi sửa lỗi `duration` | §4 |
+| Webhook Cloudinary | MOCK_ONLY | Cần URL HTTPS công khai (chưa deploy) |
+| Playback trong trang học | **VERIFIED** | Học viên đã đăng ký: video `authenticated` + URL có chữ ký phát được (readyState 4, 53,12 s, có poster). Khách mở cùng bài bị chuyển về `/login`, HTML không chứa URL video. Bài học thử: `upload` công khai phát được |
+| Resume | **VERIFIED** | Mở lại cùng bài 3 lần: video tiếp tục từ 5 s → 10 s → 15 s |
+| Usage snapshot | Gọi thật OK | Credits 0,17 → **0,2**/25; transformations 0 → 34 (poster eager + rendition ảnh). `storageBytes` 177.506.273 không đổi vì provider chỉ cập nhật theo ngày (`last_updated` = 2026-11-23) và đã gồm asset có sẵn của tài khoản |
+| Dọn orphan | Chạy thật, dry-run | `pnpm media:cleanup` → `Orphan: 0`. Asset bị finalize từ chối đã bị xóa trên Cloudinary (Admin API trả 404) |
+| Delivery / access policy | **VERIFIED** (đúng thiết kế ADR-010) | Video bài thường: `authenticated` + `s--…--`; preview và ảnh: `upload` công khai. Giới hạn vẫn còn: URL có chữ ký không hết hạn |
+| Định dạng | WebM VP9, 1280×720, 25 fps, ~90 kbps (0,44–0,80 MiB/video, 45–75 giây) | Safari cũ (< 14.1, iOS < 17.4) không phát được WebM. Nếu cần hỗ trợ, giảng viên tải bản MP4 H.264 |
 
 ## 2. Những gì đã có trong code
 
@@ -42,14 +44,18 @@ Ngày kiểm tra: 2026-11-24. Theo PROMPT V2 §35.6, §31.2 luồng 8. Không gh
 
 | Trường | Giá trị |
 |---|---|
-| Asset / chủ sở hữu / license | _(file do chủ dự án tự quay hoặc có quyền dùng)_ |
-| Kích thước / bytes / thời lượng | |
-| `publicId` (không ghi chữ ký) | |
-| MongoDB `mediaAssets._id` và bài học tham chiếu | |
-| Route hiển thị và viewport đã kiểm tra | `/learn/<slug>/<lessonId>` ở 375 và 1440 |
-| Phát / resume / transcript / data saver | |
-| Usage trước → sau (`pnpm usage:sync`) | |
-| Xóa: `pnpm media:cleanup` (chạy thử trước, sau đó mới xóa thật) | |
+| Asset / chủ sở hữu / license | Do `scripts/media-samples.ts` sinh từ nội dung bài của chính dự án (không dùng tài nguyên bên ngoài). Font hệ thống Segoe UI và Cascadia Code chỉ dùng để render, không phân phối file font |
+| Kích thước / bytes / thời lượng | 13 video: 45–75 s, 0,44–0,80 MiB (tổng ~7,8 MB); 2 ảnh: 81/88 KiB |
+| `publicId` (không ghi chữ ký) | `lms/development/c/<courseId>/<reservationId>` |
+| MongoDB `mediaAssets._id` và bài học tham chiếu | Ví dụ bài 1.1 Next.js: asset `6b054fd1d0f275221204aa3f` (`preview_video`, 75,4 s, 839.364 byte) |
+| Route hiển thị và viewport đã kiểm tra | `/learn/nextjs-co-ban/<id>` ở 1440 (đăng nhập) và 375 (học thử); `/courses`, `/courses/nextjs-co-ban` ở 1440 |
+| Phát / resume / transcript / data saver | Phát OK (cả `authenticated` lẫn `upload`); resume OK; transcript hiển thị. **Data saver chưa thử** |
+| Usage trước → sau (`pnpm usage:sync`) | credits 0,17 → 0,2; transformations 0 → 34 |
+| Xóa: `pnpm media:cleanup` | Dry-run: 0 orphan. Chưa xóa thật (không cần) |
+
+**Lỗi thật tìm được:** Admin API `resource()` của Cloudinary **không trả `duration` cho video** nếu không truyền `media_metadata: true`; phản hồi upload thì có trả. Hệ quả: finalize từ chối **mọi** video với lỗi "Không đọc được thời lượng video". Trước khi sửa, giảng viên không tải được video nào. Đã sửa trong [cloudinary.ts](../src/server/cloudinary.ts) và thêm test hồi quy [cloudinary-adapter.test.ts](../tests/unit/cloudinary-adapter.test.ts). Đã thử thật với cả 3 tùy chọn: `media_metadata` và `image_metadata` đều trả `duration`; `video_metadata` thì không.
+
+**Giới hạn của ca thử:** file đi qua các hàm server trong script, không qua nút upload trên trình duyệt (`MediaUploader`). Phần ký, upload, finalize, quota là cùng một code; phần chọn file và kiểm tra phía trình duyệt chưa được thử với Cloudinary thật.
 
 ## 5. Giới hạn phải nói rõ
 

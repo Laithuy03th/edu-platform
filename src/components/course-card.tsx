@@ -82,7 +82,8 @@ export function CourseCard({ course }: { course: CourseCardDto }) {
             {course.lessonCount} bài
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <IconClock size={15} className="text-brand-600" />~{formatMinutes(course.totalDurationSeconds)}
+            <IconClock size={15} className="text-brand-600" />
+            <span title="Thời lượng ước tính">{formatMinutes(course.totalDurationSeconds)}</span>
           </span>
           <span className="inline-flex min-w-0 items-center gap-1.5">
             <IconUser size={15} className="text-brand-600" />

@@ -121,7 +121,7 @@ export default async function CourseDetailPage({ params }: Props) {
               <div className="flex items-center gap-1.5">
                 <IconClock size={16} className="text-brand-600" />
                 <dt className="sr-only">Thời lượng</dt>
-                <dd>~{formatMinutes(course.totalDurationSeconds)}</dd>
+                <dd>Khoảng {formatMinutes(course.totalDurationSeconds)}</dd>
               </div>
               <div className="flex items-center gap-2">
                 <dt className="sr-only">Giảng viên</dt>
