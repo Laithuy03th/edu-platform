@@ -283,6 +283,39 @@ export interface LessonProgressDoc {
   lastSavedAt: Date;
 }
 
+/* ---------- Bài tập đọc code / tìm lỗi (P04): chấm ở server, đáp án không rời server trước khi giải ---------- */
+export type ExerciseKind = "predict_output" | "find_bug";
+export interface CodeExerciseDoc {
+  courseId: ObjectId;
+  lessonId: ObjectId;
+  order: number;
+  kind: ExerciseKind;
+  language: string;
+  prompt: string;
+  code: string;
+  /** predict_output: lựa chọn; find_bug: rỗng (người học chọn dòng). */
+  options: { optionId: string; text: string }[];
+  answer: { optionId: string | null; lines: number[] };
+  hints: string[];
+  explanation: string;
+  fixedCode: string;
+  version: number;
+  status: "draft" | "published";
+  createdAt: Date;
+  updatedAt: Date;
+}
+export interface ExerciseAttemptDoc {
+  userId: ObjectId;
+  exerciseId: ObjectId;
+  courseId: ObjectId;
+  version: number;
+  attempts: number;
+  hintsUsed: number;
+  solved: boolean;
+  revealed: boolean;
+  updatedAt: Date;
+}
+
 /* ---------- Bài viết công khai: tutorial / reference / cheatsheet / troubleshooting / recipe (T04/T05) ---------- */
 export const ARTICLE_KINDS = ["tutorial", "reference", "cheatsheet", "troubleshooting", "recipe"] as const;
 export type ArticleKind = (typeof ARTICLE_KINDS)[number];
@@ -669,6 +702,8 @@ export async function cols() {
     notes: db.collection<NoteDoc>("notes"),
     bookmarks: db.collection<BookmarkDoc>("bookmarks"),
     articles: db.collection<ArticleDoc>("articles"),
+    codeExercises: db.collection<CodeExerciseDoc>("codeExercises"),
+    exerciseAttempts: db.collection<ExerciseAttemptDoc>("exerciseAttempts"),
     reviewItems: db.collection<ReviewItemDoc>("reviewItems"),
     learningPaths: db.collection<LearningPathDoc>("learningPaths"),
     pathEnrollments: db.collection<PathEnrollmentDoc>("pathEnrollments"),

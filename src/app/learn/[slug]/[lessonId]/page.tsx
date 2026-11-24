@@ -22,6 +22,8 @@ import { LessonActions } from "./lesson-actions";
 import { QaSection } from "./qa";
 import { LearnShell } from "./learn-shell";
 import { ReportIssue } from "./report-issue";
+import { CodeExercises } from "./exercises";
+import { lessonExercises } from "@/modules/exercises/service";
 import { ISSUE_KINDS, myIssuesForLesson } from "@/modules/content-issues/service";
 
 export const metadata: Metadata = { robots: { index: false } };
@@ -181,6 +183,8 @@ export default async function LearnPage({ params }: Props) {
               <div className="whitespace-pre-line px-5 pb-5 text-sm leading-relaxed text-ink-soft">{lesson.transcript}</div>
             </details>
           ) : null}
+
+          <CodeExercises items={await lessonExercises(viewer, id).catch(() => [])} canTrack={canTrack} loginHref={viewer ? `/courses/${course.slug}` : `/login?next=${encodeURIComponent(`/learn/${course.slug}/${lesson.id}`)}`} />
 
           {viewer ? <ReportIssue lessonId={lesson.id} kinds={ISSUE_KINDS} headings={toc.filter((x) => x.level === 2).map((x) => x.text)} mine={await myIssuesForLesson(viewer, id)} /> : null}
 

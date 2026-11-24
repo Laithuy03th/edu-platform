@@ -8,6 +8,8 @@ import { listCourseMedia } from "@/modules/media/service";
 import { getSettings } from "@/modules/media/settings";
 import { PageHeader } from "@/components/ui";
 import { LessonEditor } from "./lesson-editor";
+import { ExercisesEditor } from "./exercises-editor";
+import { exercisesForEditor } from "@/modules/exercises/service";
 
 export const metadata = { title: "Soạn bài học" };
 
@@ -25,7 +27,7 @@ export default async function LessonEditorPage({ params }: { params: Promise<{ i
     if (err instanceof AppError && err.code === "NOT_FOUND") notFound();
     throw err;
   }
-  const [media, settings] = await Promise.all([listCourseMedia(viewer, courseId), getSettings()]);
+  const [media, settings, exercises] = await Promise.all([listCourseMedia(viewer, courseId), getSettings(), exercisesForEditor(viewer, courseId, lid)]);
   const d = lesson.draft!;
   return (
     <>
@@ -56,6 +58,25 @@ export default async function LessonEditorPage({ params }: { params: Promise<{ i
         quizzes={data.quizzes.filter((q) => q.kind === "lesson").map((q) => ({ id: q._id.toHexString(), title: q.draft.title }))}
         assignments={data.assignments.map((a) => ({ id: a._id.toHexString(), title: a.draft.title }))}
         videos={media.filter((m) => m.resourceType === "video" && m.status === "ready").map((m) => ({ id: m.id, label: `${m.filename} · ${Math.round((m.durationSeconds ?? 0) / 60)} phút` }))}
+      />
+      <ExercisesEditor
+        courseId={id}
+        lessonId={lessonId}
+        items={exercises.map((e) => ({
+          id: e._id.toHexString(),
+          kind: e.kind,
+          language: e.language,
+          prompt: e.prompt,
+          code: e.code,
+          options: e.options.map((o) => o.text),
+          correctOption: e.answer.optionId ? e.options.findIndex((o) => o.optionId === e.answer.optionId) : null,
+          bugLines: e.answer.lines,
+          hints: e.hints,
+          explanation: e.explanation,
+          fixedCode: e.fixedCode,
+          status: e.status,
+          version: e.version,
+        }))}
       />
     </>
   );

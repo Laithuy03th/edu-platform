@@ -87,6 +87,14 @@ export const INDEXES: Record<string, IndexDescription[]> = {
       partialFilterExpression: { understanding: { $in: ["needs_review", "not_understood"] } },
     },
   ],
+  codeExercises: [
+    { key: { lessonId: 1, status: 1, order: 1 }, name: "lesson_status_order" },
+    { key: { courseId: 1, order: 1 }, name: "course_order" },
+  ],
+  exerciseAttempts: [
+    { key: { userId: 1, exerciseId: 1 }, name: "uniq_user_exercise", unique: true },
+    { key: { exerciseId: 1, solved: 1 }, name: "exercise_solved" },
+  ],
   articles: [
     { key: { slug: 1 }, name: "uniq_slug", unique: true },
     { key: { slugHistory: 1 }, name: "uniq_slug_history", unique: true, partialFilterExpression: { slugHistory: { $type: "string" } } },

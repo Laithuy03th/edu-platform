@@ -619,3 +619,56 @@ export const ARTICLES: SeedArticle[] = [
     testedOn: [{ os: "Windows 11 Home", tools: "Next.js 16.4.6 (build production của nền tảng này, kiểm tra status bằng curl)", testedAt: "2026-11-24" }],
   },
 ];
+
+/** Bài tập đọc code (P04) gắn theo tiêu đề bài học của khóa seed. Đáp án kiểm tra theo hành vi thật của JS/driver. */
+export type SeedExercise = { course: string; lesson: string; kind: "predict_output" | "find_bug"; language: string; prompt: string; code: string; options?: string[]; correct?: number; bugLines?: number[]; hints: string[]; explanation: string; fixedCode?: string };
+export const EXERCISES: SeedExercise[] = [
+  {
+    course: "nextjs-co-ban",
+    lesson: "App Router: thư mục là route",
+    kind: "predict_output",
+    language: "text",
+    prompt: "Trong App Router, file `app/(marketing)/gioi-thieu/page.tsx` hiển thị ở URL nào?",
+    code: "app/\n  (marketing)/\n    gioi-thieu/\n      page.tsx",
+    options: ["/gioi-thieu", "/(marketing)/gioi-thieu", "/marketing/gioi-thieu"],
+    correct: 0,
+    hints: ["Thư mục đặt trong ngoặc tròn có vai trò đặc biệt.", "Route group chỉ để tổ chức code, không thành một đoạn của URL."],
+    explanation: "Thư mục trong ngoặc tròn là route group: dùng để nhóm route (ví dụ dùng chung layout) và KHÔNG xuất hiện trong URL, nên trang ở /gioi-thieu.",
+  },
+  {
+    course: "nextjs-co-ban",
+    lesson: "Lấy dữ liệu trên server",
+    kind: "find_bug",
+    language: "tsx",
+    prompt: "Trang dưới đây báo lỗi `res.json is not a function`. Dòng nào gây lỗi?",
+    code: "export default async function Page() {\n  const res = fetch(\"https://api.example.com/posts\");\n  const posts = await res.json();\n  return <ul>{posts.map((p) => <li key={p.id}>{p.title}</li>)}</ul>;\n}",
+    bugLines: [2],
+    hints: ["fetch trả về gì khi chưa await?", "Một Promise không có phương thức json()."],
+    explanation: "fetch() trả về Promise<Response>. Thiếu await ở dòng 2 nên `res` là Promise, gọi res.json() ở dòng 3 báo lỗi. Sửa: `const res = await fetch(...)`.",
+    fixedCode: "const res = await fetch(\"https://api.example.com/posts\");\nconst posts = await res.json();",
+  },
+  {
+    course: "mongodb-cho-web-developer",
+    lesson: "CRUD với driver Node.js",
+    kind: "predict_output",
+    language: "js",
+    prompt: "Collection `posts` KHÔNG có document nào có title \"Không có\". Đoạn code in ra gì?",
+    code: "const r = await db.collection(\"posts\").updateOne(\n  { title: \"Không có\" },\n  { $set: { views: 1 } }\n);\nconsole.log(r.matchedCount, r.modifiedCount);",
+    options: ["0 0", "1 1", "1 0", "Ném lỗi vì không tìm thấy document"],
+    correct: 0,
+    hints: ["updateOne không ném lỗi khi không khớp document nào.", "Không có upsert: true thì cũng không tạo document mới."],
+    explanation: "Không document nào khớp bộ lọc nên matchedCount = 0 và modifiedCount = 0. updateOne không báo lỗi trong trường hợp này; muốn tạo mới khi chưa có thì thêm { upsert: true }.",
+  },
+  {
+    course: "mongodb-cho-web-developer",
+    lesson: "Chống NoSQL injection",
+    kind: "find_bug",
+    language: "js",
+    prompt: "API đăng nhập dưới đây có lỗ hổng NoSQL injection. Dòng nào là nguyên nhân?",
+    code: "app.post(\"/login\", async (req, res) => {\n  const { email, password } = req.body;\n  const user = await users.findOne({ email: email, password: password });\n  if (!user) return res.status(401).end();\n  res.json({ ok: true });\n});",
+    bugLines: [3],
+    hints: ["req.body có thể chứa object, không chỉ chuỗi.", "Thử gửi password là { \"$ne\": null }."],
+    explanation: "Dòng 3 đưa thẳng giá trị từ req.body vào bộ lọc. Kẻ tấn công gửi password = {\"$ne\": null} sẽ khớp mọi user. Cần validate kiểu (chỉ nhận chuỗi), tìm theo email rồi so mật khẩu bằng hàm băm (Argon2/bcrypt) — không lưu và không so mật khẩu dạng thô.",
+    fixedCode: "if (typeof email !== \"string\" || typeof password !== \"string\") return res.status(400).end();\nconst user = await users.findOne({ email });\nif (!user || !(await verifyPassword(user.passwordHash, password))) return res.status(401).end();",
+  },
+];

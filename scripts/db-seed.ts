@@ -8,7 +8,7 @@ import { ensureIndexes } from "@/server/db/indexes";
 import { cols, type QuizQuestion, type Role } from "@/server/db/models";
 import { hashPassword } from "@/server/auth/password";
 import { normalizeEmail } from "@/server/auth/email";
-import { ARTICLES, CATEGORIES, COURSES, COURSE_TECHNOLOGIES, PATH, TECHNOLOGIES, type SeedQuestion } from "./seed-content";
+import { ARTICLES, EXERCISES, CATEGORIES, COURSES, COURSE_TECHNOLOGIES, PATH, TECHNOLOGIES, type SeedQuestion } from "./seed-content";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import type { TechDomain, TechType } from "@/server/db/models";
@@ -271,6 +271,36 @@ async function main() {
     await c.courses.updateOne({ _id: course._id }, { $set: set });
     console.log(`~ Gắn công nghệ cho khóa ${slug}: ${techSlugs.join(", ")}`);
   }
+  // ---- Bài tập đọc code (P04): chỉ thêm cho bài học CHƯA có bài tập ----
+  let exAdded = 0;
+  for (const e of EXERCISES) {
+    const course = await c.courses.findOne({ slug: e.course });
+    if (!course) continue;
+    const lesson = await c.lessons.findOne({ courseId: course._id, "draft.title": e.lesson });
+    if (!lesson || (await c.codeExercises.countDocuments({ lessonId: lesson._id, prompt: e.prompt }))) continue;
+    const options = (e.options ?? []).map((text) => ({ optionId: randomUUID().slice(0, 8), text }));
+    const order = (await c.codeExercises.countDocuments({ lessonId: lesson._id })) + 1;
+    await c.codeExercises.insertOne({
+      courseId: course._id,
+      lessonId: lesson._id,
+      order,
+      kind: e.kind,
+      language: e.language,
+      prompt: e.prompt,
+      code: e.code,
+      options,
+      answer: { optionId: e.kind === "predict_output" ? options[e.correct ?? 0]!.optionId : null, lines: e.bugLines ?? [] },
+      hints: e.hints,
+      explanation: e.explanation,
+      fixedCode: e.fixedCode ?? "",
+      version: 1,
+      status: "published",
+      createdAt: now,
+      updatedAt: now,
+    });
+    exAdded++;
+  }
+  console.log(`Bài tập đọc code: thêm ${exAdded}`);
   console.log("✓ Seed xong.");
 }
 
