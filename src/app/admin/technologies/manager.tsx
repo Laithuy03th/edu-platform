@@ -8,8 +8,8 @@ import { FormError } from "@/components/form-error";
 import { Badge, Button, Card, Field, Input, Select, Table, Td, Th, Tr, Textarea } from "@/components/ui";
 import type { ActionError } from "@/lib/errors";
 
-type Row = { id?: string; name: string; slug: string; type: string; domain: string; aliases: string; description: string; officialUrl: string; status: "active" | "planned"; order: number };
-const empty: Row = { name: "", slug: "", type: "language", domain: "web", aliases: "", description: "", officialUrl: "", status: "planned", order: 100 };
+type Row = { id?: string; name: string; slug: string; type: string; domain: string; aliases: string; description: string; officialUrl: string; status: "active" | "planned"; order: number; prerequisites: string };
+const empty: Row = { name: "", slug: "", type: "language", domain: "web", aliases: "", description: "", officialUrl: "", status: "planned", order: 100, prerequisites: "" };
 
 export function TechnologyManager({ items, typeLabels, domainLabels }: { items: Row[]; typeLabels: Record<string, string>; domainLabels: Record<string, string> }) {
   const router = useRouter();
@@ -34,7 +34,7 @@ export function TechnologyManager({ items, typeLabels, domainLabels }: { items: 
 
   const fe = error?.fieldErrors ?? {};
   return (
-    <div className="grid gap-8 xl:grid-cols-[1fr_380px]">
+    <div className="grid grid-cols-1 gap-8 xl:grid-cols-[1fr_380px]">
       <div className="min-w-0 overflow-x-auto">
         <Table>
           <thead>
@@ -105,6 +105,9 @@ export function TechnologyManager({ items, typeLabels, domainLabels }: { items: 
           </Field>
           <Field id="t-url" label="Tài liệu chính thức (https)" optional errors={fe.officialUrl}>
             <Input id="t-url" type="url" value={form.officialUrl} onChange={(e) => set("officialUrl", e.target.value)} maxLength={300} />
+          </Field>
+          <Field id="t-prereq" label="Nên biết trước" hint="Slug công nghệ, cách nhau dấu phẩy (vd javascript, react). Hệ thống chặn vòng lặp." optional errors={fe.prerequisites}>
+            <Input id="t-prereq" value={form.prerequisites} onChange={(e) => set("prerequisites", e.target.value)} maxLength={400} />
           </Field>
           <Field id="t-desc" label="Mô tả ngắn" optional errors={fe.description}>
             <Textarea id="t-desc" rows={3} value={form.description} onChange={(e) => set("description", e.target.value)} maxLength={600} />

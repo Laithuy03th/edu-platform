@@ -84,6 +84,8 @@ export interface TechnologyDoc {
   /** active: được gắn vào khóa học; planned: chỉ xuất hiện trong roadmap, không có trang. */
   status: "active" | "planned";
   order: number;
+  /** T03: công nghệ nên biết trước (đồ thị không vòng). Thiếu ở document cũ. */
+  prerequisites?: ObjectId[];
   createdAt: Date;
   updatedAt: Date;
 }

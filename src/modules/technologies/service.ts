@@ -63,6 +63,13 @@ export const technologyInput = z.object({
     .transform((s) => [...new Set(s.split(/[,\n]/).map((x) => x.trim().toLowerCase()).filter(Boolean))])
     .pipe(z.array(z.string().regex(slugRe, "Alias chỉ gồm a-z, 0-9, . + # -")).max(10, "Tối đa 10 alias")),
   description: z.string().trim().max(600),
+  /** T03: slug công nghệ nên biết trước, cách nhau dấu phẩy. */
+  prerequisites: z
+    .string()
+    .max(400)
+    .default("")
+    .transform((s) => [...new Set(s.split(/[,\n]/).map((x) => x.trim().toLowerCase()).filter(Boolean))])
+    .pipe(z.array(z.string().regex(slugRe, "Slug không hợp lệ")).max(8, "Tối đa 8 công nghệ nền")),
   officialUrl: z
     .string()
     .trim()
@@ -83,6 +90,33 @@ export async function listTechnologiesAdmin() {
   return c.technologies.find({}).sort({ domain: 1, order: 1, name: 1 }).toArray();
 }
 
+/** T03: slug → id; chặn tự tham chiếu, slug không tồn tại và VÒNG LẶP (A cần B, B cần A). */
+async function resolvePrerequisites(id: ObjectId | null, slug: string, slugs: string[]): Promise<ObjectId[]> {
+  if (slugs.includes(slug)) throw new AppError("VALIDATION_FAILED", "Công nghệ không thể là kiến thức nền của chính nó.", { fieldErrors: { prerequisites: ["Tự tham chiếu"] } });
+  if (!slugs.length) return [];
+  const c = await cols();
+  const all = await c.technologies.find({}, { projection: { slug: 1, prerequisites: 1 } }).toArray();
+  const bySlug = new Map(all.map((t) => [t.slug, t]));
+  const missing = slugs.filter((s) => !bySlug.has(s));
+  if (missing.length) throw new AppError("VALIDATION_FAILED", `Không có công nghệ: ${missing.join(", ")}`, { fieldErrors: { prerequisites: ["Slug không tồn tại"] } });
+  const ids = slugs.map((s) => bySlug.get(s)!._id);
+  if (id) {
+    // DFS từ các kiến thức nền mới: nếu quay về chính công nghệ này → vòng lặp
+    const edges = new Map(all.map((t) => [t._id.toHexString(), (t.prerequisites ?? []).map((x) => x.toHexString())]));
+    const target = id.toHexString();
+    const seen = new Set<string>();
+    const stack = ids.map((x) => x.toHexString());
+    while (stack.length) {
+      const cur = stack.pop()!;
+      if (cur === target) throw new AppError("VALIDATION_FAILED", "Tạo vòng lặp kiến thức nền (A cần B, B lại cần A).", { fieldErrors: { prerequisites: ["Vòng lặp"] } });
+      if (seen.has(cur)) continue;
+      seen.add(cur);
+      stack.push(...(edges.get(cur) ?? []));
+    }
+  }
+  return ids;
+}
+
 export async function upsertTechnology(admin: Viewer, id: ObjectId | null, input: TechnologyInput) {
   requireAdmin(admin);
   const c = await cols();
@@ -95,7 +129,8 @@ export async function upsertTechnology(admin: Viewer, id: ObjectId | null, input
   });
   if (clash) throw new AppError("ALREADY_EXISTS", `Alias/slug trùng với "${clash.name}".`);
   const now = new Date();
-  const doc = { ...input, slug, aliases: input.aliases.filter((a) => a !== slug), updatedAt: now };
+  const prerequisites = await resolvePrerequisites(id, slug, input.prerequisites);
+  const doc = { ...input, slug, aliases: input.aliases.filter((a) => a !== slug), prerequisites, updatedAt: now };
   try {
     if (id) {
       const r = await c.technologies.updateOne({ _id: id }, { $set: doc });
@@ -173,6 +208,9 @@ export type TechnologyHubDto = {
   aliases: string[];
   courses: { slug: string; title: string; shortDescription: string; level: string; testedVersion: string; lessonCount: number }[];
   paths: { slug: string; title: string; goal: string }[];
+  /** T03: nên biết trước / học tiếp — hasHub: có trang hub (có khóa đã xuất bản). */
+  prerequisites: { slug: string; name: string; hasHub: boolean }[];
+  next: { slug: string; name: string; hasHub: boolean }[];
   lastUpdated: string;
 };
 
@@ -194,6 +232,15 @@ async function hubUncached(slugOrAlias: string): Promise<{ redirectTo: string } 
     .project<{ slug: string; title: string; goal: string }>({ slug: 1, title: 1, goal: 1 })
     .limit(20)
     .toArray();
+  // T03: đồ thị kiến thức nền quanh công nghệ này
+  const related = await c.technologies.find({ $or: [{ _id: { $in: tech.prerequisites ?? [] } }, { prerequisites: tech._id }] }, { projection: { slug: 1, name: 1, prerequisites: 1, status: 1 } }).toArray();
+  const relIds = related.map((r) => r._id);
+  const withCourses = new Set(
+    (await c.courses.distinct("published.technologies.technologyId", { status: "published", "published.technologies.technologyId": { $in: relIds } })).map(String),
+  );
+  const node = (r: (typeof related)[number]) => ({ slug: r.slug, name: r.name, hasHub: r.status === "active" && withCourses.has(r._id.toHexString()) });
+  const prerequisites = related.filter((r) => (tech.prerequisites ?? []).some((p) => p.equals(r._id))).map(node);
+  const next = related.filter((r) => (r.prerequisites ?? []).some((p) => p.equals(tech._id))).map(node);
   const last = courses.reduce((m, x) => Math.max(m, (x.published.contentUpdatedAt ?? x.published.publishedAt).getTime()), 0);
   return {
     slug: tech.slug,
@@ -212,10 +259,12 @@ async function hubUncached(slugOrAlias: string): Promise<{ redirectTo: string } 
       lessonCount: x.published.lessonCount,
     })),
     paths: paths.map((p) => ({ slug: p.slug, title: p.title, goal: p.goal })),
+    prerequisites,
+    next,
     lastUpdated: new Date(last).toISOString(),
   };
 }
-export const getTechnologyHub = unstable_cache(hubUncached, ["technology-hub-v1"], { tags: [CATALOG_TAG], revalidate: 3600 });
+export const getTechnologyHub = unstable_cache(hubUncached, ["technology-hub-v2"], { tags: [CATALOG_TAG], revalidate: 3600 });
 
 /** Danh mục: công nghệ CÓ hub (kèm số khóa) và roadmap các mục đã lên kế hoạch (không có link). */
 async function directoryUncached() {

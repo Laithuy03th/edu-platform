@@ -12,7 +12,7 @@ export function AppShell({ title, links, children }: { title: string; links: She
   const pathname = usePathname();
   const isActive = (l: ShellLink) => (l.exact ? pathname === l.href : pathname === l.href || pathname.startsWith(l.href + "/"));
   return (
-    <div className="mx-auto grid max-w-[1500px] lg:grid-cols-[240px_1fr]">
+    <div className="mx-auto grid max-w-[1500px] grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)]">
       <aside className="border-b border-line bg-surface lg:min-h-[calc(100dvh-4rem)] lg:border-b-0 lg:border-r">
         <div className="lg:sticky lg:top-16 lg:p-4">
           <p className="text-caption hidden px-3 pb-3 pt-2 text-ink-faint lg:block">{title}</p>

@@ -42,6 +42,15 @@ async function main() {
   }
   console.log(`Công nghệ: thêm ${techAdded}, đã có ${TECHNOLOGIES.length - techAdded}`);
   const techBySlug = new Map((await c.technologies.find({}).toArray()).map((x) => [x.slug, x]));
+  // T03: kiến thức nền mặc định — chỉ đặt cho công nghệ CHƯA có trường prerequisites (không ghi đè admin)
+  const PREREQ: Record<string, string[]> = { css: ["html"], javascript: ["html"], typescript: ["javascript"], react: ["javascript"], nextjs: ["react"], nodejs: ["javascript"], vue: ["javascript"], angular: ["typescript"], svelte: ["javascript"], django: ["python"], fastapi: ["python"], "spring-boot": ["java"], dotnet: ["csharp"], laravel: ["php"], postgresql: ["sql"], mysql: ["sql"], kubernetes: ["docker"], docker: ["linux"] };
+  let prereqSet = 0;
+  for (const [slug, deps] of Object.entries(PREREQ)) {
+    const ids = deps.map((d) => techBySlug.get(d)?._id).filter((x): x is ObjectId => Boolean(x));
+    const r = await c.technologies.updateOne({ slug, prerequisites: { $exists: false } }, { $set: { prerequisites: ids } });
+    prereqSet += r.modifiedCount;
+  }
+  console.log(`Kiến thức nền: đặt cho ${prereqSet} công nghệ`);
 
   // ---- Người dùng ----
   let instructorId: ObjectId;

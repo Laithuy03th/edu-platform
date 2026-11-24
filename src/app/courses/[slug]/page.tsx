@@ -19,6 +19,8 @@ import { formatDate } from "@/lib/time";
 import { EnrollButton } from "./enroll-button";
 import { BookmarkButton } from "@/components/bookmark-button";
 import { isBookmarked } from "@/modules/bookmarks/service";
+import { listPublicArticles } from "@/modules/articles/service";
+import { safeLoad } from "@/components/safe-load";
 import { CourseReviews } from "./reviews";
 import { JsonLd, breadcrumbLd, courseLd, pageOpenGraph, robotsUnless } from "@/lib/seo";
 
@@ -48,6 +50,9 @@ export default async function CourseDetailPage({ params }: Props) {
   }
   const viewer = await getViewer();
   const courseId = new ObjectId(course.id);
+  // C02: môi trường — bài "Cài đặt môi trường" có cùng công nghệ với khóa (chỉ bài đã xuất bản)
+  const techSlugs = new Set(course.technologies.map((t) => t.slug));
+  const setup = (await safeLoad(() => listPublicArticles({ kind: "recipe", limit: 50 }), [])).filter((a) => a.technologies.some((t) => techSlugs.has(t.slug))).slice(0, 3);
   const isOwner = viewer?.idStr === course.instructorId;
   const isAdmin = viewer?.roles.includes("admin");
   if (course.status === "suspended" && !isOwner && !isAdmin) {
@@ -205,7 +210,7 @@ export default async function CourseDetailPage({ params }: Props) {
                     <IconTarget size={18} /> Làm bài đánh giá đầu vào
                   </Link>
                 ) : null}
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   {firstPreview && enrollment?.status !== "active" ? (
                     <Link href={`/learn/${course.slug}/${firstPreview.id}`} className={buttonClass("outline", "flex-1")}>
                       <IconPlay size={16} /> Học thử miễn phí
@@ -323,6 +328,21 @@ export default async function CourseDetailPage({ params }: Props) {
                   <li key={p} className="flex gap-2">
                     <span className="mt-2 size-1.5 shrink-0 rounded-full bg-brand-400" />
                     {p}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+          {setup.length ? (
+            <section className="rounded-[var(--radius-lg)] border border-line bg-surface p-6">
+              <h2 className="text-h3 mb-1">Chuẩn bị môi trường</h2>
+              <p className="mb-3 text-xs text-ink-faint">Hướng dẫn cài đặt đã chạy thử, ghi rõ hệ điều hành và phiên bản.</p>
+              <ul className="space-y-2 text-sm">
+                {setup.map((a) => (
+                  <li key={a.slug}>
+                    <Link href={`/huong-dan/${a.slug}`} className="font-semibold text-brand-700 hover:underline">
+                      {a.title}
+                    </Link>
                   </li>
                 ))}
               </ul>

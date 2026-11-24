@@ -124,3 +124,27 @@ describe("review chuyên môn (T06)", () => {
     expect(new Date(d.contentUpdatedAt).getTime()).toBeGreaterThan(pc.published!.publishedAt.getTime());
   });
 });
+
+/** T03: kiến thức nền — chặn tự tham chiếu, slug không tồn tại, vòng lặp; hub hiển thị nên-biết-trước/học-tiếp. */
+describe("đồ thị kiến thức nền (T03)", () => {
+  it("A → B → C; C → A bị chặn; hub hiện quan hệ hai chiều", async () => {
+    const p = await publishedCourse();
+    const [a, b, cc] = [uniq(), uniq(), uniq()];
+    await createTech(p.admin, a);
+    const tb = await createTech(p.admin, b, { prerequisites: a });
+    const tc = await createTech(p.admin, cc, { prerequisites: b });
+    await expect(tech.upsertTechnology(p.admin, tc._id, input({ name: cc.toUpperCase(), slug: cc, prerequisites: cc }))).rejects.toMatchObject({ code: "VALIDATION_FAILED" });
+    await expect(tech.upsertTechnology(p.admin, tc._id, input({ name: cc.toUpperCase(), slug: cc, prerequisites: "khong-ton-tai-xyz" }))).rejects.toMatchObject({ code: "VALIDATION_FAILED" });
+    const ta = (await (await cols()).technologies.findOne({ slug: a }))!;
+    await expect(tech.upsertTechnology(p.admin, ta._id, input({ name: a.toUpperCase(), slug: a, prerequisites: cc }))).rejects.toMatchObject({ code: "VALIDATION_FAILED" });
+
+    // Gắn B vào khóa đã xuất bản → hub B có "nên biết trước A" và "học tiếp C"
+    await tech.setCourseTechnologies(p.instructor, p.courseId, await revision(p.courseId), [{ technologyId: tb._id, testedVersion: "" }]);
+    const rev = await revision(p.courseId);
+    await authoring.submitForReview(p.instructor, p.courseId, rev);
+    await authoring.approveCourse(p.admin, p.courseId, rev);
+    const hub = await tech.__uncached.hub(b);
+    expect(hub && "prerequisites" in hub ? hub.prerequisites.map((x) => x.slug) : []).toEqual([a]);
+    expect(hub && "next" in hub ? hub.next.map((x) => x.slug) : []).toEqual([cc]);
+  });
+});

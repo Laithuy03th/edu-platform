@@ -18,6 +18,7 @@ export default async function AdminTechnologiesPage() {
         typeLabels={TYPE_LABEL}
         domainLabels={DOMAIN_LABEL}
         items={items.map((t) => ({
+          prerequisites: (t.prerequisites ?? []).map((id) => items.find((x) => x._id.equals(id))?.slug ?? "").filter(Boolean).join(", "),
           id: t._id.toHexString(),
           name: t.name,
           slug: t.slug,

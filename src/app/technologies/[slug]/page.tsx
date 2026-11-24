@@ -53,6 +53,40 @@ export default async function TechnologyHubPage({ params }: Props) {
         />
         {hub.aliases.length ? <p className="-mt-4 mb-8 text-sm text-ink-faint">Còn gọi là: {hub.aliases.join(", ")}</p> : null}
 
+        {hub.prerequisites.length || hub.next.length ? (
+          <section aria-label="Kiến thức liên quan" className="mb-10 grid gap-4 sm:grid-cols-2">
+            {[
+              { title: "Nên biết trước", items: hub.prerequisites, empty: "Có thể bắt đầu ngay." },
+              { title: "Học tiếp sau " + hub.name, items: hub.next, empty: "" },
+            ]
+              .filter((g) => g.items.length || g.empty)
+              .map((g) => (
+                <div key={g.title} className="rounded-[var(--radius-lg)] border border-line bg-surface p-5">
+                  <h2 className="text-caption text-ink-faint">{g.title}</h2>
+                  {g.items.length ? (
+                    <ul className="mt-3 flex flex-wrap gap-2">
+                      {g.items.map((x) => (
+                        <li key={x.slug}>
+                          {x.hasHub ? (
+                            <Link href={`/technologies/${x.slug}`} className="inline-flex items-center gap-1 rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-sm font-semibold text-brand-800 transition hover:bg-brand-100">
+                              {x.name} <IconArrowRight size={13} />
+                            </Link>
+                          ) : (
+                            <span className="inline-flex rounded-full border border-dashed border-line-strong px-3 py-1 text-sm text-ink-faint" title="Nội dung đang biên soạn">
+                              {x.name} · sắp có
+                            </span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="mt-3 text-sm text-ink-soft">{g.empty}</p>
+                  )}
+                </div>
+              ))}
+          </section>
+        ) : null}
+
         <section aria-labelledby="khoa-hoc">
           <h2 id="khoa-hoc" className="text-h2 flex items-center gap-2 text-ink">
             <IconBook className="text-brand-600" /> Khóa học

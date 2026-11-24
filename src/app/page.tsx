@@ -133,7 +133,7 @@ export default async function HomePage() {
 
       {/* ---------------- DỰ ÁN TIÊU BIỂU ---------------- */}
       {project ? (
-        <Section className="bg-surface">
+        <Section className="overflow-hidden bg-surface">
           <Container>
             <ProjectShowcase p={project} />
           </Container>
