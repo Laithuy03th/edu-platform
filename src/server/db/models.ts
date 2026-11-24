@@ -567,6 +567,8 @@ export interface MediaAssetDoc {
   durationSeconds: number | null;
   version: number;
   posterPublicId: string | null;
+  /** M03: thông tin ảnh do giảng viên khai báo (alt cho trình đọc màn hình, chú thích, nguồn, giấy phép). */
+  imageMeta?: { alt: string; caption: string; credit: string; license: string } | null;
   ownerId: ObjectId;
   courseId: ObjectId;
   reservationId: ObjectId;

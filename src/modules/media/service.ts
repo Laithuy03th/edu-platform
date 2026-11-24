@@ -1,6 +1,7 @@
 import "server-only";
 import { ObjectId, type ClientSession } from "mongodb";
 import { env } from "@/lib/env";
+import { stripControlChars } from "@/lib/text";
 import { AppError, isDuplicateKeyError, notFound } from "@/lib/errors";
 import { logger } from "@/lib/logger";
 import { withTransaction } from "@/server/db/client";
@@ -10,6 +11,7 @@ import { destroyResource, fetchResource, listResources, signUpload, type CloudRe
 import type { Viewer } from "@/server/auth/viewer-core";
 import { loadEditableCourse } from "@/modules/courses/authoring";
 import { getSettings } from "./settings";
+import { mediaImageUrl } from "./urls";
 import { budgetStatus } from "./usage";
 
 export const RESERVATION_TTL_MS = 90 * 60_000; // chữ ký 60 phút + thời gian upload
@@ -457,6 +459,24 @@ export async function listCourseMedia(viewer: Viewer, courseId: ObjectId) {
     status: a.status,
     inUse: a.refs.length > 0,
     filename: a.originalFilename,
+    imageMeta: a.imageMeta ?? null,
+    imageUrl: a.resourceType === "image" && a.status === "ready" && a.deliveryType === "upload" ? mediaImageUrl(a.publicId, a.version, 960) : null,
     createdAt: a.createdAt.toISOString(),
   }));
+}
+
+/* ---------------- M03: thông tin ảnh ---------------- */
+
+export const IMAGE_LICENSES = ["Tự tạo cho khóa học", "CC0", "CC BY 4.0", "CC BY-SA 4.0", "Được tác giả cho phép", "Ảnh chụp màn hình phần mềm"] as const;
+
+export async function updateImageMeta(viewer: Viewer, mediaId: ObjectId, meta: { alt: string; caption: string; credit: string; license: string }) {
+  const c = await cols();
+  const a = await c.mediaAssets.findOne({ _id: mediaId, resourceType: "image", status: "ready" });
+  if (!a) throw notFound("Không tìm thấy ảnh");
+  await loadEditableCourse(viewer, a.courseId); // chỉ chủ khóa/admin
+  const clean = (s: string, n: number) => stripControlChars(s).replace(/\s+/g, " ").trim().slice(0, n);
+  const m = { alt: clean(meta.alt, 200), caption: clean(meta.caption, 300), credit: clean(meta.credit, 120), license: clean(meta.license, 80) };
+  if (a.purpose === "lesson_image" && m.alt.length < 3) throw new AppError("VALIDATION_FAILED", "Ảnh trong bài cần mô tả (alt) để người dùng trình đọc màn hình hiểu nội dung.", { fieldErrors: { alt: ["Bắt buộc"] } });
+  await c.mediaAssets.updateOne({ _id: mediaId }, { $set: { imageMeta: m, updatedAt: new Date() } });
+  await audit({ actorId: viewer.id, action: "media.image_meta", targetType: "mediaAsset", targetId: mediaId, meta: { license: m.license } });
 }

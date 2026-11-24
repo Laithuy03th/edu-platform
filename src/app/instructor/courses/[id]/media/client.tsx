@@ -2,10 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { deleteMediaAction } from "@/modules/media/actions";
+import { deleteMediaAction, updateImageMetaAction } from "@/modules/media/actions";
 import { MediaUploader } from "@/components/media-uploader";
-import { useConfirm, useToast } from "@/components/overlays";
-import { Select, Tooltip } from "@/components/ui";
+import { Dialog, useConfirm, useToast } from "@/components/overlays";
+import { Button, Field, Input, Select, Tooltip } from "@/components/ui";
 
 export function UploadPanel({ courseId, limits }: { courseId: string; limits: { imageMaxBytes: number; videoMaxBytes: number; videoMaxSeconds: number } }) {
   const router = useRouter();
@@ -52,5 +52,89 @@ export function MediaActions({ mediaId, courseId, inUse }: { mediaId: string; co
     >
       Xóa
     </button>
+  );
+}
+
+type ImageMeta = { alt: string; caption: string; credit: string; license: string };
+const LICENSES = ["Tự tạo cho khóa học", "CC0", "CC BY 4.0", "CC BY-SA 4.0", "Được tác giả cho phép", "Ảnh chụp màn hình phần mềm"];
+
+/** M03: alt/chú thích/nguồn/giấy phép cho ảnh + chép Markdown chèn vào bài (title = chú thích hiển thị dưới ảnh). */
+export function ImageMetaButton({ mediaId, purpose, url, initial }: { mediaId: string; purpose: string; url: string | null; initial: ImageMeta | null }) {
+  const router = useRouter();
+  const toast = useToast();
+  const [open, setOpen] = useState(false);
+  const [m, setM] = useState<ImageMeta>(initial ?? { alt: "", caption: "", credit: "", license: "Tự tạo cho khóa học" });
+  const [err, setErr] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+  const captionLine = [m.caption, [m.credit && `Nguồn: ${m.credit}`, m.license].filter(Boolean).join(" · ")].filter(Boolean).join(" — ");
+  const markdown = url ? `![${m.alt.replace(/[\[\]]/g, "")}](${url}${captionLine ? ` "${captionLine.replace(/"/g, "'")}"` : ""})` : "";
+  return (
+    <>
+      <button type="button" className="mr-3 text-sm font-semibold text-brand-700 hover:underline" onClick={() => setOpen(true)}>
+        {initial?.alt ? "Thông tin ảnh" : "Thêm alt/nguồn"}
+      </button>
+      <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
+        title="Thông tin ảnh"
+        description="Alt mô tả nội dung ảnh cho người dùng trình đọc màn hình. Ghi rõ nguồn và giấy phép nếu ảnh không do bạn tạo."
+        footer={
+          <>
+            {purpose === "lesson_image" && url ? (
+              <Button
+                variant="ghost"
+                onClick={async () => {
+                  await navigator.clipboard.writeText(markdown).catch(() => {});
+                  toast({ tone: "success", message: "Đã chép Markdown — dán vào nội dung bài." });
+                }}
+              >
+                Chép Markdown
+              </Button>
+            ) : null}
+            <Button
+              pending={pending}
+              onClick={async () => {
+                setPending(true);
+                setErr(null);
+                const r = await updateImageMetaAction({ mediaId, ...m }).catch(() => null);
+                setPending(false);
+                if (r?.ok) {
+                  toast({ tone: "success", message: "Đã lưu thông tin ảnh." });
+                  setOpen(false);
+                  router.refresh();
+                } else setErr(r && !r.ok ? r.error.message : "Không kết nối được máy chủ.");
+              }}
+            >
+              Lưu
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          {url ? <img src={url} alt="" className="max-h-48 w-full rounded-[var(--radius-sm)] object-contain bg-surface-muted" /> : null}
+          {err ? <p className="text-sm text-danger-700">{err}</p> : null}
+          <Field id={`alt-${mediaId}`} label="Mô tả (alt)" hint={purpose === "lesson_image" ? "Bắt buộc với ảnh trong bài." : "Ảnh bìa chỉ trang trí: có thể để trống."}>
+            <Input id={`alt-${mediaId}`} value={m.alt} maxLength={200} onChange={(e) => setM({ ...m, alt: e.target.value })} />
+          </Field>
+          <Field id={`cap-${mediaId}`} label="Chú thích" optional>
+            <Input id={`cap-${mediaId}`} value={m.caption} maxLength={300} onChange={(e) => setM({ ...m, caption: e.target.value })} />
+          </Field>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field id={`cr-${mediaId}`} label="Nguồn / tác giả" optional>
+              <Input id={`cr-${mediaId}`} value={m.credit} maxLength={120} onChange={(e) => setM({ ...m, credit: e.target.value })} />
+            </Field>
+            <Field id={`li-${mediaId}`} label="Giấy phép">
+              <Input id={`li-${mediaId}`} list={`lic-${mediaId}`} value={m.license} maxLength={80} onChange={(e) => setM({ ...m, license: e.target.value })} />
+              <datalist id={`lic-${mediaId}`}>
+                {LICENSES.map((l) => (
+                  <option key={l} value={l} />
+                ))}
+              </datalist>
+            </Field>
+          </div>
+          {purpose === "lesson_image" && url ? <p className="break-all rounded-[var(--radius-sm)] bg-surface-muted p-2 font-mono text-xs text-ink-soft">{markdown}</p> : null}
+        </div>
+      </Dialog>
+    </>
   );
 }

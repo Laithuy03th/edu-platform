@@ -10,7 +10,7 @@ import { listCourseMedia } from "@/modules/media/service";
 import { getSettings } from "@/modules/media/settings";
 import { budgetStatus } from "@/modules/media/usage";
 import { Alert, Badge, Card, PageHeader, Table, Td, Th, Tr } from "@/components/ui";
-import { MediaActions, UploadPanel } from "./client";
+import { ImageMetaButton, MediaActions, UploadPanel } from "./client";
 
 export const metadata = { title: "Thư viện media" };
 
@@ -59,7 +59,10 @@ export default async function MediaLibraryPage({ params }: { params: Promise<{ i
                     <Td className="text-right tabular-nums">{formatBytes(m.bytes)}</Td>
                     <Td>{m.status === "deletion_pending" ? <Badge tone="warning">Đang xóa</Badge> : m.inUse ? <Badge tone="success">Đang dùng</Badge> : <Badge>Chưa dùng</Badge>}</Td>
                     <Td className="text-xs text-ink-soft">{formatDateTime(m.createdAt, viewer.timezone)}</Td>
-                    <Td className="text-right">{m.status === "ready" ? <MediaActions mediaId={m.id} courseId={id} inUse={m.inUse} /> : null}</Td>
+                    <Td className="whitespace-nowrap text-right">
+                      {m.status === "ready" && m.resourceType === "image" ? <ImageMetaButton mediaId={m.id} purpose={m.purpose} url={m.imageUrl} initial={m.imageMeta} /> : null}
+                      {m.status === "ready" ? <MediaActions mediaId={m.id} courseId={id} inUse={m.inUse} /> : null}
+                    </Td>
                   </Tr>
                 ))}
               </tbody>

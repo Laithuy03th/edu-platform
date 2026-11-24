@@ -108,3 +108,24 @@ describe("độ phủ nội dung (T08)", async () => {
     expect(after.totals.reviewed).toBe(before.totals.reviewed + 1);
   });
 });
+
+/** M03: thông tin ảnh — chỉ chủ khóa; ảnh trong bài bắt buộc alt; ký tự điều khiển bị loại. */
+describe("thông tin ảnh (M03)", async () => {
+  const media = await import("@/modules/media/service");
+  it("quyền + alt bắt buộc + làm sạch", async () => {
+    const p = await publishedCourse();
+    const c = await cols();
+    const now = new Date();
+    const { ObjectId } = await import("mongodb");
+    const res = await c.mediaAssets.insertOne({
+      publicId: `lms/test/c/${p.courseId.toHexString()}/x`, assetId: "a", resourceType: "image", deliveryType: "upload", purpose: "lesson_image", format: "png",
+      bytes: 1000, width: 100, height: 100, durationSeconds: null, version: 1, posterPublicId: null, ownerId: p.instructor.id, courseId: p.courseId,
+      reservationId: new ObjectId(), status: "ready", refs: [], deletion: null, rejectReason: null, originalFilename: "so-do.png", createdAt: now, updatedAt: now,
+    });
+    const other = await makeUser(["instructor"]);
+    await expect(media.updateImageMeta(other, res.insertedId, { alt: "Sơ đồ", caption: "", credit: "", license: "" })).rejects.toMatchObject({ code: "NOT_FOUND" });
+    await expect(media.updateImageMeta(p.instructor, res.insertedId, { alt: "", caption: "", credit: "", license: "" })).rejects.toMatchObject({ code: "VALIDATION_FAILED" });
+    await media.updateImageMeta(p.instructor, res.insertedId, { alt: "Sơ đồ\u0007 luồng   request", caption: "Luồng request", credit: "Tự Học", license: "CC BY 4.0" });
+    expect((await c.mediaAssets.findOne({ _id: res.insertedId }))!.imageMeta).toEqual({ alt: "Sơ đồ luồng request", caption: "Luồng request", credit: "Tự Học", license: "CC BY 4.0" });
+  });
+});

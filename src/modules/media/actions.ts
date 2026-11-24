@@ -135,3 +135,17 @@ const reconcileA = defineAction({ auth: "admin", schema: z.object({ apply: z.boo
 export async function reconcileAction(input: unknown) {
   return reconcileA(input);
 }
+
+const imageMeta = defineAction(
+  {
+    schema: z.object({ mediaId: zId, alt: z.string().max(200), caption: z.string().max(300).default(""), credit: z.string().max(120).default(""), license: z.string().max(80).default("") }),
+    rate: (_i: unknown, ctx: { viewer: { idStr: string } }) => [[RULES.authoringUser, ctx.viewer.idStr]] as [typeof RULES.authoringUser, string][],
+  },
+  async ({ mediaId, ...meta }, { viewer }) => {
+    await svc.updateImageMeta(viewer, new ObjectId(mediaId), meta);
+    return { ok: true };
+  },
+);
+export async function updateImageMetaAction(input: unknown) {
+  return imageMeta(input);
+}

@@ -91,10 +91,16 @@ export async function LessonMarkdown({ children, allowImages = true }: { childre
         </a>
       );
     },
-    img: ({ src, alt }) => {
+    img: ({ src, alt, title }) => {
       const s = typeof src === "string" ? src : "";
       if (!allowImages || !/^https:\/\/res\.cloudinary\.com\//.test(s)) return <span className="text-ink-faint">[ảnh: {alt || "không hiển thị"}]</span>;
-      return <img src={s} alt={alt ?? ""} loading="lazy" decoding="async" className="max-w-full rounded" />;
+      // M03: title của ảnh Markdown = chú thích/nguồn/giấy phép, hiển thị dưới ảnh (span block vì ảnh nằm trong <p>).
+      return (
+        <span className="my-6 block">
+          <img src={s} alt={alt ?? ""} loading="lazy" decoding="async" className="mx-auto max-w-full rounded-[var(--radius-md)] border border-line" />
+          {title ? <span className="mt-2 block text-center text-sm text-ink-faint">{title}</span> : null}
+        </span>
+      );
     },
     h2: ({ node, children: c }) => {
       const id = headingId(textOf(node));
