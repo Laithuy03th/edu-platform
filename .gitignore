@@ -26,3 +26,6 @@ blob-report/
 Thumbs.db
 *.log
 .vercel
+
+# log chạy cục bộ
+.data-*.log

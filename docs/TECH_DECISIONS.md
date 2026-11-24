@@ -1,6 +1,6 @@
 # Quyết định kỹ thuật (ADR)
 
-> Ngày kiểm chứng phiên bản: **2026-11-23**. Phiên bản lấy trực tiếp từ npm registry (`npm view <pkg> dist-tags`) và tài liệu chính thức. Trạng thái: **Đề xuất — chờ duyệt Phase 0**. Các ADR đánh dấu ⚠️ cần chủ dự án chọn (xem mục "Câu hỏi mở" trong [PROGRESS.md](PROGRESS.md)).
+> Ngày kiểm chứng phiên bản: **2026-11-23**. Phiên bản lấy trực tiếp từ npm registry (`npm view <pkg> dist-tags`) và tài liệu chính thức. Trạng thái: **Đã áp dụng** (chủ dự án giao toàn quyền quyết định ngày 2026-11-23; các ADR ⚠️ chọn theo phương án đề xuất). Phiên bản đã khóa trong `pnpm-lock.yaml`.
 
 ## Bảng phiên bản dự kiến
 
@@ -17,9 +17,9 @@ Pin chính xác khi cài ở Phase 1 (commit `pnpm-lock.yaml`). Không nâng maj
 | @node-rs/argon2 | 2.2.2 | binary dựng sẵn cho win32-x64, linux-x64-gnu/musl (không cần node-gyp) |
 | cloudinary (Node SDK) | 2.11.0 | chỉ dùng phía server |
 | nodemailer | 10.6.x | adapter SMTP |
-| tailwindcss / @tailwindcss/postcss | 4.3.5 | |
-| shadcn (CLI) | 4.23.0 | sinh component vào repo, không phải runtime dependency |
-| react-hook-form | 7.92.x | chỉ cho form phức tạp (course editor, quiz editor, rubric) |
+| tailwindcss / @tailwindcss/turbopack | 4.3.3 | theo template create-next-app 16.4.6 |
+| shadcn (CLI) | — (không dùng) | primitive tự viết theo phong cách shadcn — ADR-021 |
+| react-hook-form | — (không dùng) | form dùng state cục bộ + Zod ở server là đủ; tránh dependency thừa |
 | react-markdown / remark-gfm | 10.1.0 / 4.0.1 | không bật raw HTML |
 | eslint / eslint-config-next | 10.x / 16.4.6 | eslint-config-next peer `eslint >=9` |
 | prettier | 3.10.x | |
@@ -32,14 +32,13 @@ Node.js: máy dev hiện có **v22.13.0**, pnpm **11.25.0**. Vercel hỗ trợ 2
 
 ---
 
-## ADR-001 — Next.js 16.4 App Router, bật Cache Components
+## ADR-001 (sửa đổi Phase 1) — Next.js 16.4 App Router, KHÔNG bật Cache Components
 
 - **Vấn đề:** Cần một ứng dụng duy nhất cho cả UI và backend, cache được catalog công khai mà không cache nhầm dữ liệu cá nhân.
-- **Quyết định:** Next.js 16.4.x, App Router, thư mục `src/`, bật `cacheComponents: true` (mặc định của `create-next-app` hiện hành). Catalog/chi tiết khóa học công khai dùng `'use cache'` + `cacheLife` + `cacheTag('catalog')`, `cacheTag('course:<id>')`; khi admin duyệt/gỡ khóa học gọi `revalidateTag(tag, 'max')` hoặc `updateTag` trong Server Action.
-- **Quy tắc bắt buộc:** Bất kỳ hàm nào đọc session/cookie **không** được nằm trong scope `'use cache'`. Dữ liệu cá nhân luôn render động.
-- **Thay thế đã cân nhắc:** Mô hình cache cũ (`fetch` cache/`unstable_cache`) — tài liệu Next 16 đã gọi là "Previous Model". Tắt toàn bộ cache — trái đặc tả (không vô hiệu hóa cache vô cớ).
-- **Rủi ro:** Cache Components bắt buộc bọc phần động trong `<Suspense>`; sai sót dễ sinh lỗi build. Chấp nhận vì lỗi hiện ra lúc build, không lặng lẽ.
-- Nguồn: https://nextjs.org/docs/app/getting-started/caching , https://nextjs.org/docs/app/getting-started/revalidating
+- **Quyết định ban đầu (Phase 0):** bật `cacheComponents`. **Đã đổi khi triển khai:** tài liệu đi kèm Next 16.4 (`node_modules/next/dist/docs/.../authentication-with-cache-components.md`) yêu cầu mọi lần đọc session phải nằm sau `<Suspense>` và "reading cookies() outside a boundary is a build error". Ứng dụng này cá nhân hóa ở hầu hết trang (header đọc phiên ở mọi trang) và next-auth đọc cookie sâu bên trong thư viện → rủi ro lỗi build/regression cao, lợi ích prerender thấp.
+- **Quyết định cuối:** `cacheComponents` tắt; mọi trang render động. Dữ liệu CÔNG KHAI duy nhất được cache bằng `unstable_cache` + tag (`catalog`, `paths`, `profile-handle:<handle>`, `admin-stats` 5 phút). Server Action làm thay đổi nội dung công khai gọi `updateTag(tag)` (hết hạn ngay, request sau chờ dữ liệu mới — đã sửa sau khi E2E phát hiện `revalidateTag(tag, "max")` phục vụ bản cũ một lần).
+- **Quy tắc bắt buộc:** hàm đọc session/cookie không bao giờ nằm trong hàm được cache; cache key/tag không chứa dữ liệu nhạy cảm.
+- Nguồn: https://nextjs.org/docs/app/getting-started/caching , tài liệu `updateTag`/`revalidateTag` trong `node_modules/next/dist/docs` (bản 16.4.6).
 
 ## ADR-002 ⚠️ — Thư viện xác thực: next-auth 5.0.0-beta.32 (bọc sau lớp `server/auth`)
 
@@ -69,7 +68,9 @@ Node.js: máy dev hiện có **v22.13.0**, pnpm **11.25.0**. Vercel hỗ trợ 2
 ## ADR-004 — Argon2id với `@node-rs/argon2`
 
 - **Lý do:** Có binary dựng sẵn cho Windows (dev) và linux-x64-gnu (Vercel), không cần toolchain build; API async không chặn event loop. `argon2` (node-gyp prebuild) là phương án thay thế.
-- Tham số khởi điểm theo OWASP: `memoryCost = 19456 KiB (19 MiB)`, `timeCost = 2`, `parallelism = 1`, algorithm Argon2id, salt do thư viện sinh. Phase 1 chạy script benchmark trên máy dev và (khi deploy) trên hosting; mục tiêu 150–400 ms/lần hash. Ghi kết quả thực đo vào đây, không ghi số giả định.
+- Tham số theo mức tối thiểu khuyến nghị của OWASP: `memoryCost = 19456 KiB (19 MiB)`, `timeCost = 2`, `parallelism = 1`, Argon2id, salt do thư viện sinh.
+- **Đo thực tế (2026-11-24, `pnpm bench:argon2`, Windows 11 x64, Node 22.13, máy 16 nhân):** hash TB **17,2 ms**, verify TB **12,8 ms**. Giữ mức tối thiểu OWASP (không tăng) vì: (1) hosting serverless có CPU yếu hơn nhiều và Vercel Hobby giới hạn 4 CPU-giờ/tháng; (2) đăng nhập đã được rate limit trước khi hash. Cần đo lại trên hosting khi deploy; nếu < 50 ms có thể tăng `memoryCost` lên 46 MiB (`t=1`, cũng là mức OWASP).
+- `@node-rs/argon2` nằm trong `serverExternalPackages` (đã build thành công).
 - Cần thêm `@node-rs/argon2` vào `serverExternalPackages` nếu Next không tự xử lý (kiểm chứng khi build Phase 1).
 - Nguồn: https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
 
@@ -117,7 +118,8 @@ Node.js: máy dev hiện có **v22.13.0**, pnpm **11.25.0**. Vercel hỗ trợ 2
 
 ## ADR-011 — Ảnh: kích thước cố định của Cloudinary, không dùng Vercel Image Optimization
 
-- `next/image` với **custom loader** ánh xạ width về tập cố định `[320, 640, 960]` + `f_auto,q_auto` → không tạo transformation vô hạn, không tốn quota tối ưu ảnh của hosting.
+- Triển khai: thẻ `<img loading="lazy">` với URL Cloudinary dựng ở server (`modules/media/urls.ts`), width ánh xạ về tập cố định `[320, 640, 960]` + `c_limit,f_auto,q_auto` → không tạo transformation vô hạn, không tốn quota tối ưu ảnh của hosting. (Không dùng `next/image` loader để tránh lớp tối ưu trùng lặp; rule `no-img-element` tắt có chủ đích.)
+- Ảnh bìa chưa có → hoa văn CSS sinh từ tên khóa (không request ảnh).
 - Bật **Strict transformations** trong Cloudinary Console nếu gói Free cho phép (kiểm chứng ở Phase 3) và dùng named transformation/eager cho các size cố định.
 - Avatar bản đầu: chữ cái đầu hoặc ảnh Google (`lh3.googleusercontent.com`, chỉ hiển thị, không lưu lại trên Cloudinary).
 
@@ -167,3 +169,29 @@ Node.js: máy dev hiện có **v22.13.0**, pnpm **11.25.0**. Vercel hỗ trợ 2
 
 - `AppError { code, status, message (an toàn, tiếng Việt), fieldErrors?, cause? }`. Server Action trả `ActionResult<T> = { ok: true, data } | { ok: false, error: { code, message, fieldErrors?, requestId } }`; Route Handler trả JSON cùng shape với HTTP status tương ứng (401/403/404/409/422/429/5xx).
 - Lỗi không xác định → log đầy đủ server-side (đã redact) + trả `INTERNAL_ERROR` kèm requestId; không lộ stack/query.
+
+## ADR-021 — Design system "đỏ nhạt ấm" không thêm thư viện UI/animation
+
+- **Vấn đề:** Brief thiết kế yêu cầu nhận diện đỏ nhạt, nhiều animation tinh tế, component đầy đủ trạng thái, chỉnh màu toàn site từ một nơi, không biến cả app thành Client Components.
+- **Quyết định:**
+  - Token tập trung trong `src/app/globals.css` (`@theme` Tailwind 4): màu thương hiệu `brand-50…900` (`#FFF1F2` → `#FCA5A5` → CTA `#B91C1C`/hover `#991B1B`), nền `canvas #FFFAF9`, `surface #FFF`, chữ `ink #18181B`/`ink-soft #52525B`, viền `line #EADDDD`; màu ngữ nghĩa success/warning/danger/info **tách khỏi** màu thương hiệu; 3–4 mức radius; bóng ấm phân lớp; thang chữ `text-display/h1/h2/h3/caption`; token motion (`--duration-micro 160ms`, `--duration-ui 240ms`, `--duration-reveal 520ms`, easing `ease-out-soft`).
+  - Font **Be Vietnam Pro** (thiết kế cho tiếng Việt) qua `next/font/google` → self-host lúc build, không request Google khi chạy.
+  - Primitive tự viết theo phong cách shadcn/ui trong `src/components/ui.tsx` (server-safe, không hook) thay vì CLI shadcn + Radix: ít dependency, API đơn giản. Overlay client tối thiểu trong `overlays.tsx`: `Dialog`/`Drawer` dùng `<dialog>` native (focus trap + Escape có sẵn) với animation vào/ra bằng `@starting-style`; `ConfirmProvider/useConfirm` thay `window.confirm`; `ToastProvider`; `Tabs` có indicator chuyển động + điều hướng phím mũi tên.
+  - Motion bằng CSS (opacity/transform). Hai component client rất nhỏ: `Reveal` (IntersectionObserver, reveal **một lần**, phần tử đã trong viewport không bị ẩn → không nhấp nháy, không JS vẫn hiển thị) và `PauseOffscreen` (dừng animation trang trí khi ngoài viewport/tab ẩn). `prefers-reduced-motion` tắt animation, nội dung vẫn đầy đủ (có E2E kiểm).
+  - Hành động nguy hiểm: nút viền đỏ + icon cảnh báo + dialog xác nhận (nền `danger-700`), khác nút CTA thương hiệu (nền đặc `brand-700`).
+- **Thay thế:** framer-motion/motion (≈ 30–50 KB, cần client component) — không cần cho các chuyển động hiện có; shadcn CLI + Radix — nhiều dependency cho số component nhỏ.
+- **Tương phản đã kiểm:** trắng trên `brand-700` ≈ 6,5:1; `ink-soft` trên `canvas` ≈ 7,4:1; `ink-faint #6B6B73` trên `canvas` ≈ 4,7:1.
+
+## ADR-022 — Ô mật khẩu
+
+- `PasswordInput` (client): nút con mắt hiện/ẩn có `aria-label`/`aria-pressed`, cảnh báo Caps Lock, thước đo **độ dài** cho mật khẩu mới (≥ 12, khuyến khích cụm từ dài — theo NIST, không ép ký tự đặc biệt). Không trim/đổi giá trị. Áp dụng cho mọi ô mật khẩu (đăng nhập, đăng ký, đặt lại, đổi mật khẩu, xác thực lại khi liên kết Google).
+
+## Kiểm chứng sau triển khai (2026-11-24)
+
+| Mục [KC] | Kết quả |
+|---|---|
+| JWE của Auth.js | `@auth/core@0.41.3/jwt.js`: `alg: "dir"`, `enc: "A256CBC-HS512"`, khóa dẫn xuất HKDF-SHA256 từ `AUTH_SECRET` với salt = tên cookie; giải mã thử mọi secret trong mảng → hỗ trợ xoay vòng. |
+| Cookie phiên | `__Secure-authjs.session-token` khi HTTPS, `authjs.session-token` khi HTTP; HttpOnly, SameSite=Lax. |
+| Checks Google | Mặc định chỉ `["pkce"]` (+`state`) → cấu hình thêm `nonce` trong `server/auth/nextauth.ts`. |
+| Cloudinary Usage API (tài khoản thật, 1 lần gọi) | Gói **Free**, có khối `credits {usage, limit: 25, used_percent}` → snapshot được đánh dấu `authoritative`; `media_limits`: video 104.857.600 byte (100 MB), ảnh 10.485.760 byte. |
+| Transaction trên Atlas | **Chưa kiểm được**: kết nối bị từ chối ở TLS (IP chưa được thêm vào Atlas Network Access). Transaction đã chạy thành công trên replica set cục bộ (mongodb 8.2.6) trong integration test. |

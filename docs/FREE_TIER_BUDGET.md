@@ -131,3 +131,23 @@ Hành động theo ngưỡng:
 - [ ] Kiểm tra Strict transformations có bật được trên Free.
 - [ ] Thí nghiệm chi phí upload video (§3.2).
 - [ ] Ghi Atlas Free cluster tier, region, storage hiện tại; thử transaction.
+
+## 7. Đối chiếu tài khoản thật (2026-11-24)
+
+| Mục | Kết quả | Cách lấy |
+|---|---|---|
+| Gói Cloudinary | **Free**, `credits.limit = 25`, `credits.usage = 0` (0%) | 1 lần gọi Admin API Usage (`last_updated` = 2026-11-23) |
+| Storage hiện tại | 120.253 byte (~117 KiB) | như trên |
+| Bandwidth / transformations | 0 / 0 | như trên |
+| Giới hạn file của gói | ảnh 10.485.760 byte, video 104.857.600 byte, 25 MP | `media_limits` trong response |
+| Cấu trúc response | **có** khối `credits` → ứng dụng dùng số liệu provider (authoritative), không cần ước tính | — |
+| MongoDB Atlas | **chưa kiểm được** — kết nối từ máy dev bị từ chối ở TLS (IP chưa có trong Network Access) | script kiểm tra kết nối |
+
+Checklist §6 cập nhật:
+
+- [x] Ghi số credits/limit của tài khoản + ngày.
+- [x] Gọi Usage API một lần, xác nhận cấu trúc response (mapping trong `modules/media/usage.ts`).
+- [ ] Kiểm tra `authenticated` + signed URL trên tài khoản thật (cần upload 1 file nhỏ — làm khi chủ dự án sẵn sàng).
+- [ ] Kiểm tra Strict transformations trên Free.
+- [ ] Thí nghiệm chi phí upload video (§3.2) — **bắt buộc trước khi upload hàng loạt**.
+- [ ] Atlas: thêm IP vào Network Access, chạy `pnpm db:indexes`, thử transaction, đo `dbStats`.

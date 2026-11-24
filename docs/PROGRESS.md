@@ -1,67 +1,78 @@
 # Tiến độ
 
-## Checkpoint hiện tại
+## Checkpoint (2026-11-24)
 
-- **Phase:** 0 — Khảo sát và chốt thiết kế. **Trạng thái: hoàn thành bản nháp, chờ chủ dự án duyệt.**
-- **Ngày:** 2026-11-23
-- **Git:** repo chưa được khởi tạo (sẽ `git init` ở P1.1).
-- **Code:** chưa có. Không có test/build nào được chạy (chưa có gì để chạy).
-- **Môi trường dev đã kiểm tra:** Node v22.13.0, pnpm 11.25.0, git 2.51.0, Windows 11.
+- **Nhánh:** `main` (git cục bộ, chưa có remote). Commit mới nhất: xem `git log --oneline`.
+- **Trạng thái:** Phase 1–6 đã triển khai. Build production thành công, chạy được với MongoDB cục bộ. Còn các mục **cần tài khoản/hạ tầng thật** (mục "Chưa kiểm chứng").
+- **Quyết định:** chủ dự án giao toàn quyền quyết định (2026-11-23) → 5 câu hỏi mở của Phase 0 chốt theo phương án đề xuất (ADR-002, ADR-010, ADR-016, ADR-018). Brief thiết kế đỏ nhạt + animation áp dụng toàn site (ADR-021); ô mật khẩu có nút hiện/ẩn (ADR-022).
 
-### Khảo sát repo (2026-11-23)
+## Ma trận feature (PRD §5) → màn hình / service / test
 
-Thư mục `d:\tuhoc` chỉ có `PROMPT_CLAUDE_LMS_NEXTJS.md` (đặc tả). Không có package manifest, không có git, không có hướng dẫn khác → repo trống, áp dụng nhánh "đề xuất cấu trúc, chưa cài package".
+| # | Feature | Màn hình | Service | Test | Trạng thái |
+|---|---|---|---|---|---|
+| F01 | Đăng ký email/mật khẩu | `/register` | `auth/service.registerUser` | A1, A2, E2E-1 | ✅ |
+| F02 | Đăng nhập/đăng xuất, chống open redirect | `/login` | `server/auth/nextauth`, `redirect.ts` | A4, A12, E2E | ✅ |
+| F03 | Google OIDC + liên kết an toàn | `/login`, `/settings/security` | `server/auth/google-policy` | A11, A14 | ⚠️ policy đã test; OAuth thật chưa chạy (chưa có `AUTH_GOOGLE_*`) |
+| F04 | Quên/đổi mật khẩu | `/forgot-password`, `/reset-password`, cài đặt | `auth/service` | A5, A6 | ✅ (email qua outbox file; SMTP thật chưa cấu hình) |
+| F05 | JWT + thu hồi `authVersion` | — | `viewer-core` | A6, A7 | ✅ |
+| F06 | Hồ sơ | `/settings/profile` | `users/service` | allowlist ở action | ✅ |
+| F07 | RBAC/ownership, rate limit | — | `courses/policy`, `server/rate-limit` | A4, A9, A10, policy unit | ✅ |
+| F08 | Soạn khóa/chương/bài | `/instructor/courses/[id]` | `courses/authoring` | C3, C4, A10, E2E-2 | ✅ |
+| F09 | Duyệt & xuất bản | `/admin/courses/[id]` | `approveCourse` (transaction) | C1–C3, E2E-2 | ✅ |
+| F10 | Catalog, tìm không dấu | `/courses`, `/courses/[slug]` | `courses/catalog` | C1, C17, C18 | ✅ |
+| F11 | Enrollment idempotent | chi tiết khóa | `enrollments/service` | C6, C7 | ✅ |
+| F12 | Seed 2 khóa | — | `scripts/db-seed.ts` | chạy lại không nhân đôi | ✅ |
+| F13 | Upload signed + reservation + quota | `/instructor/courses/[id]/media` | `media/service` | M1–M4, M7, M11 (mock provider) | ⚠️ upload Cloudinary thật chưa chạy |
+| F14 | Video lesson + delivery | trang học | `media/delivery` | C5 | ⚠️ signed URL chưa thử với tài khoản thật |
+| F15 | Data saver | trang học, cài đặt | `video-player.tsx` | preload="none" (thủ công) | ✅ |
+| F16 | Usage snapshot + kill switch | `/admin/media` | `media/usage`, `settings` | M8 | ✅ (Usage API thật đã gọi 1 lần) |
+| F17 | Resume/progress/completion | trang học | `learning/progress` | C8–C10, E2E-1 | ✅ |
+| F18 | Quiz | `/quiz/[id]` | `quizzes/service` | C11–C15 | ✅ |
+| F19 | Ghi chú timestamp | trang học, `/notes` | `notes/service` | D1, XSS, E2E-1 | ✅ |
+| F20 | Đánh giá đầu vào | `/courses/[slug]/placement` | `quizzes/grading` | D4 | ✅ |
+| F21 | Ôn tập câu sai | `/review` | `review/*` | D3 | ✅ |
+| F22 | Mức độ hiểu | trang học, dashboard | `setUnderstanding` | D5 | ✅ |
+| F23 | Dashboard học viên | `/dashboard` | nhiều module | E2E-1 | ✅ |
+| F24 | Learning paths | `/paths`, `/instructor/paths` | `learning-paths` | D8, D9 | ✅ |
+| F25 | Dự án + rubric | `/projects/[id]`, `/instructor/submissions` | `projects/service` | D6 | ✅ |
+| F26 | Hồ sơ thành quả | `/achievements`, `/u/[handle]` | `achievements/service` | D7 | ✅ |
+| F27 | Hỏi đáp theo bài | trang học, `/instructor/questions` | `discussions/service` | D11 | ✅ |
+| F28 | Review khóa học | chi tiết khóa | `reviews/service` | D10 | ✅ |
+| F29 | Báo cáo & kiểm duyệt | `/admin/moderation` | `discussions.moderate` | báo cáo idempotent | ✅ |
+| F30 | Admin: user/role, audit, thống kê | `/admin/*` | `admin/service` | A7 | ✅ |
+| F31 | Orphan cleanup/reconcile | `/admin/media`, `pnpm media:*` | `media/service` | M4, reservation hết hạn | ⚠️ `findOrphans` cần Cloudinary thật |
+| F32 | Xuất ghi chú Markdown | `/notes` | `exportNotesMarkdown` | thủ công | ✅ |
+| F33 | Responsive/a11y/SEO/CI | toàn site, `robots.ts`, `sitemap.ts`, CI | — | E2E 375 px, screenshot 375/768/1440 | ✅ (CI chưa chạy vì chưa có remote) |
 
-### File đã tạo ở Phase 0
-
-| File | Nội dung |
-|---|---|
-| `docs/PRD.md` | phạm vi MVP/mở rộng/ngoài phạm vi, ma trận feature → phase, màn hình |
-| `docs/ARCHITECTURE.md` | module, ranh giới server/client, caching, CSRF/origin, tradeoff |
-| `docs/DATA_MODEL.md` | 31 collection, field, index, retention, dữ liệu nhạy cảm, state machine khóa học |
-| `docs/AUTH_SECURITY.md` | Credentials/Google/JWT/cookie, revoke, linking, ma trận quyền, rate limit |
-| `docs/MEDIA_PIPELINE.md` | reservation/upload/finalize/delivery/xóa/reconcile, kill switch |
-| `docs/FREE_TIER_BUDGET.md` | hạn mức có nguồn + ngày kiểm tra, ngân sách nội bộ, phép tính |
-| `docs/API_CONTRACTS.md` | ma trận action/endpoint, mã lỗi |
-| `docs/TEST_PLAN.md` | ma trận rủi ro → test (tất cả `not-run`) |
-| `docs/TECH_DECISIONS.md` | ADR-001…020, bảng phiên bản |
-| `docs/IMPLEMENTATION_PLAN.md` | task theo phase, nghiệm thu, rủi ro |
-| `CLAUDE.md`, `README.md` | hướng dẫn ngắn |
-| `.env.example`, `.env` (giá trị trống), `.gitignore` | cấu hình mẫu |
-
-Chưa tạo (đúng kế hoạch): `docs/DEPLOYMENT.md`, `docs/RUNBOOK.md` (Phase 6).
-
-## Câu hỏi mở cho chủ dự án (ảnh hưởng thiết kế)
-
-1. **Thư viện auth (ADR-002):** Auth.js/next-auth v5 vẫn beta và chỉ nhận vá bảo mật (đã nhập vào Better Auth). Đề xuất: **dùng next-auth 5.0.0-beta.32 (pin exact) bọc sau `src/server/auth`** để giữ đúng yêu cầu JWT session. Phương án khác: Better Auth (bảo trì tích cực nhưng session lưu DB — trái đặc tả mục 6), hoặc tự quản session bằng `jose` + `openid-client`. Anh/chị chọn phương án nào?
-2. **Phát video (ADR-010):** Đề xuất video bài thường dùng `authenticated` + signed URL cấp theo quyền (URL không hết hạn, chia sẻ được — Free không có token/hết hạn). Hay chấp nhận tất cả video demo ở chế độ public cho đơn giản?
-3. **Video demo:** Ai cung cấp ~20 video (≤ 20 MiB, ≤ 5 phút, có quyền sử dụng)? Tôi không thể quay video thật; tôi có thể viết nội dung bài đọc/quiz/rubric và kịch bản video. Nếu chưa có video, đề xuất bắt đầu với 2–4 video ngắn để kiểm chứng pipeline.
-4. **Email:** Anh/chị có domain riêng để xác minh với nhà cung cấp email (vd Resend) không, hay dùng SMTP của một hộp thư có sẵn (vd Gmail + App Password)? Ảnh hưởng tới `MAIL_FROM` và khả năng gửi tới người nhận bất kỳ.
-5. **Hosting khi deploy sau này:** Dự án có phải phi thương mại (cá nhân/học tập) không? Vercel Hobby là ứng viên mặc định nhưng có điều kiện sử dụng; quyết định chỉ cần trước Phase 6.
-
-Phần không phụ thuộc các câu trả lời này có thể bắt đầu ngay khi thiết kế được duyệt (P1.1–P1.7, P1.9, P1.13).
-
-## Việc tiếp theo
-
-1. Chủ dự án review tài liệu Phase 0 và trả lời câu hỏi mở.
-2. Sau khi duyệt: bắt đầu Phase 1 theo [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
-
-## Blockers
-
-- Không có blocker cho Phase 1 phần không cần credentials.
-- Atlas URI đã có trong `.env` (cluster0, DB `tuhoc_dev`; user hiện có quyền Atlas Admin — nên đổi sang user chỉ `readWrite` trước khi deploy).
-- Cloudinary đã có trong `.env` (cloud `y15li99d`, môi trường Test, gói Free).
-- Còn thiếu credentials: Google OAuth, SMTP.
-- `scripts/db-indexes.ts`, `scripts/db-seed.ts` chưa tồn tại dù đã khai báo trong `package.json`.
-
-## Nhật ký kiểm tra (lệnh thực tế)
+## Nhật ký kiểm tra (lệnh thực tế, kết quả thật)
 
 | Ngày | Lệnh | Kết quả |
 |---|---|---|
-| 2026-11-23 | `node -v; pnpm -v; git --version` | v22.13.0; 11.25.0; 2.51.0 |
-| 2026-11-23 | `npm view <pkg> dist-tags` cho next, next-auth, better-auth, mongodb, zod, tailwindcss, vitest, @playwright/test, @node-rs/argon2, argon2, cloudinary, nodemailer, jose, typescript, eslint, prettier, react-hook-form | xem bảng phiên bản ở TECH_DECISIONS |
-| 2026-11-23 | `npm view next-auth@5.0.0-beta.32 peerDependencies` | `next: ^14 \|\| ^15 \|\| ^16` |
-| 2026-11-23 | `npm view typescript-eslint peerDependencies` | `typescript >=4.8.4 <6.1.0` |
-| 2026-11-23 | ping Atlas bằng driver `mongodb` với `MONGODB_URI` trong `.env` | `{"ok":1}`; DB `tuhoc_dev` chưa có collection |
-| 2026-11-23 | `pnpm db:indexes` | lỗi `ERR_MODULE_NOT_FOUND`: chưa có `scripts/db-indexes.ts` |
-| 2026-11-23 | `GET /v1_1/<cloud>/ping` Cloudinary Admin API với key/secret trong `.env` | HTTP 200 `{"status":"ok"}` (không upload) |
+| 2026-11-24 | `pnpm typecheck` | pass |
+| 2026-11-24 | `pnpm lint` | 0 lỗi, 0 cảnh báo (plugin jsx-a11y in 1 thông báo nội bộ, không phải lỗi) |
+| 2026-11-24 | `pnpm test` (Vitest + MongoDB in-memory replica set 8.2.6) | **92/92 pass**, 9 file |
+| 2026-11-24 | Quét `.next/static` tìm giá trị secret của `.env` (A16) | 0 lần xuất hiện trong 54 file |
+| 2026-11-24 | `pnpm build` (Next 16.4.6) | pass, 51 route |
+| 2026-11-24 | `pnpm test:e2e` (Playwright, build production + Mongo cục bộ đã seed) | **10/10 pass** |
+| 2026-11-24 | `pnpm db:seed` chạy lại | idempotent |
+| 2026-11-24 | `pnpm bench:argon2` | hash 17,2 ms, verify 12,8 ms (máy dev) |
+| 2026-11-24 | Kết nối Atlas (script kiểm tra) | **thất bại: TLS alert 80** → IP chưa có trong Network Access |
+| 2026-11-24 | Cloudinary Usage API (1 lần) | thành công: Free, 25 credits, usage 0% |
+| 2026-11-24 | Screenshot QA 375/768/1440 | không tràn ngang sau khi sửa; không có lỗi JS |
+
+## Chưa kiểm chứng / cần chủ dự án
+
+1. **Atlas Network Access:** thêm IP máy, rồi `pnpm db:indexes` và (tùy chọn) `pnpm db:seed` — [RUNBOOK §1](RUNBOOK.md).
+2. **Xoay vòng secret:** một phần đầu của `AUTH_SECRET` và `RATE_LIMIT_SECRET` đã bị in ra log của trợ lý trong phiên 2026-11-24 → nên tạo giá trị mới (`openssl rand -base64 32`).
+3. **Google OAuth:** điền `AUTH_GOOGLE_ID/SECRET`, redirect URI `<APP_URL>/api/auth/callback/google`, thử các nhánh đăng nhập/liên kết.
+4. **SMTP:** điền `SMTP_*`, `MAIL_FROM` (bắt buộc khi production).
+5. **Cloudinary thật:** upload 1 video nhỏ đo chi phí xử lý (FREE_TIER_BUDGET §3.2), thử signed URL, `pnpm media:cleanup` dry-run.
+6. **Deploy:** chưa làm (chỉ khi được yêu cầu) — [DEPLOYMENT](DEPLOYMENT.md).
+
+## Giới hạn đã biết
+
+- Signed URL video không hết hạn, có thể bị chia sẻ (ADR-010).
+- Cloudinary Free không có hard cap; chỉ giảm rủi ro bằng ngân sách nội bộ, fail-closed, kill switch.
+- next-auth v5 vẫn beta (ADR-002), đã bọc trong `src/server/auth`.
+- Catalog tìm theo từ; ghi chú tìm chuỗi con; không có semantic search.
+- Đổi email, xóa tài khoản, 2FA: ngoài phạm vi hiện tại.
