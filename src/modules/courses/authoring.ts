@@ -63,7 +63,7 @@ async function uniqueSlug(title: string): Promise<string> {
   const base = slugify(title) || "khoa-hoc";
   for (let i = 0; i < 50; i++) {
     const slug = i === 0 ? base : `${base}-${i + 1}`;
-    if (!(await c.courses.findOne({ slug }, { projection: { _id: 1 } }))) return slug;
+    if (!(await c.courses.findOne({ $or: [{ slug }, { slugHistory: slug }] }, { projection: { _id: 1 } }))) return slug;
   }
   return `${base}-${new ObjectId().toHexString().slice(-6)}`;
 }
@@ -643,4 +643,41 @@ export async function instructorCourses(viewer: Viewer) {
     .sort({ updatedAt: -1 })
     .limit(100)
     .toArray();
+}
+
+/* ---------- Đổi đường dẫn (S06) ---------- */
+
+const COURSE_SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+/**
+ * Đổi slug khóa học: chủ khóa/admin. Khóa đã từng xuất bản → slug cũ vào slugHistory để URL cũ
+ * (trang khóa, trang học, link đã chia sẻ) chuyển 308 sang URL mới. Không cho lấy slug/slug cũ của khóa khác.
+ */
+export async function changeCourseSlug(viewer: Viewer, courseId: ObjectId, newSlug: string) {
+  const course = await loadEditableCourse(viewer, courseId);
+  const slug = newSlug.trim().toLowerCase();
+  if (!COURSE_SLUG_RE.test(slug) || slug.length > 90) throw new AppError("VALIDATION_FAILED", "Đường dẫn chỉ gồm chữ thường không dấu, số và gạch ngang.", { fieldErrors: { slug: ["Không hợp lệ"] } });
+  if (slug === course.slug) return course.slug;
+  const c = await cols();
+  if (await c.courses.findOne({ _id: { $ne: courseId }, $or: [{ slug }, { slugHistory: slug }] }, { projection: { _id: 1 } })) {
+    throw new AppError("ALREADY_EXISTS", "Đường dẫn đã được dùng.", { fieldErrors: { slug: ["Đã được dùng"] } });
+  }
+  const prev = course.slugHistory ?? [];
+  const history = course.published ? [...new Set([...prev.filter((s) => s !== slug), course.slug])] : prev.filter((s) => s !== slug);
+  try {
+    await c.courses.updateOne({ _id: courseId, slug: course.slug }, { $set: { slug, slugHistory: history, updatedAt: new Date() } });
+  } catch (err) {
+    if (isDuplicateKeyError(err)) throw new AppError("ALREADY_EXISTS", "Đường dẫn đã được dùng.", { fieldErrors: { slug: ["Đã được dùng"] } });
+    throw err;
+  }
+  await audit({ actorId: viewer.id, action: "course.slug_change", targetType: "course", targetId: courseId, meta: { from: course.slug, to: slug } });
+  return slug;
+}
+
+/** URL cũ → slug hiện tại (chỉ khóa còn công khai). Gọi khi không tìm thấy khóa theo slug. */
+export async function resolveCourseSlugRedirect(oldSlug: string): Promise<string | null> {
+  if (!COURSE_SLUG_RE.test(oldSlug)) return null;
+  const c = await cols();
+  const course = await c.courses.findOne({ slugHistory: oldSlug, status: { $in: ["published", "archived"] } }, { projection: { slug: 1 } });
+  return course?.slug ?? null;
 }

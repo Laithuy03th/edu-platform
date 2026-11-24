@@ -248,3 +248,13 @@ const enrollA = defineAction(
 export async function enrollAction(input: unknown) {
   return enrollA(input);
 }
+
+const changeSlug = defineAction({ schema: z.object({ courseId: zId, slug: z.string().max(100) }), rate: authoringRate }, async (i, { viewer }) => {
+  const slug = await svc.changeCourseSlug(viewer, new ObjectId(i.courseId), i.slug);
+  updateTag(CATALOG_TAG);
+  revalidatePath(`/instructor/courses/${i.courseId}`);
+  return { slug };
+});
+export async function changeCourseSlugAction(input: unknown) {
+  return changeSlug(input);
+}

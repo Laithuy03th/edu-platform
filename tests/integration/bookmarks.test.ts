@@ -43,3 +43,22 @@ describe("bookmark (L10)", () => {
     expect(item.available).toBe(false);
   });
 });
+
+describe("đổi đường dẫn khóa học (S06)", () => {
+  it("slug cũ → redirect; không trùng slug/slug cũ của khóa khác; chỉ chủ khóa/admin", async () => {
+    const p = await publishedCourse();
+    const q = await publishedCourse();
+    const c = await cols();
+    const old = (await c.courses.findOne({ _id: p.courseId }))!.slug;
+    const other = await makeUser(["instructor"]);
+    await expect(authoring.changeCourseSlug(other, p.courseId, `${old}-x`)).rejects.toMatchObject({ code: "NOT_FOUND" });
+    await expect(authoring.changeCourseSlug(p.instructor, p.courseId, "Có Dấu")).rejects.toMatchObject({ code: "VALIDATION_FAILED" });
+    const qSlug = (await c.courses.findOne({ _id: q.courseId }))!.slug;
+    await expect(authoring.changeCourseSlug(p.instructor, p.courseId, qSlug)).rejects.toMatchObject({ code: "ALREADY_EXISTS" });
+    const next = `${old}-moi`;
+    await authoring.changeCourseSlug(p.instructor, p.courseId, next);
+    expect(await authoring.resolveCourseSlugRedirect(old)).toBe(next);
+    // khóa khác không được lấy slug cũ
+    await expect(authoring.changeCourseSlug(q.instructor, q.courseId, old)).rejects.toMatchObject({ code: "ALREADY_EXISTS" });
+  });
+});

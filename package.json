@@ -24,6 +24,7 @@
     "media:reconcile": "tsx --conditions=react-server scripts/media-reconcile.ts",
     "mail:check": "tsx --conditions=react-server scripts/mail-check.ts",
     "media:samples": "tsx --conditions=react-server scripts/media-samples.ts",
+    "content:check": "tsx --conditions=react-server scripts/content-check.ts",
     "usage:sync": "tsx --conditions=react-server scripts/usage-sync.ts",
     "bench:argon2": "tsx --conditions=react-server scripts/bench-argon2.ts"
   },

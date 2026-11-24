@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound, permanentRedirect, redirect } from "next/navigation";
+import { resolveCourseSlugRedirect } from "@/modules/courses/authoring";
 import { AppError } from "@/lib/errors";
 import { parseId } from "@/lib/ids";
 import { formatDuration } from "@/lib/text";
@@ -41,7 +42,11 @@ export default async function LearnPage({ params }: Props) {
   } catch (err) {
     if (err instanceof AppError) {
       if (err.code === "UNAUTHENTICATED") redirect(`/login?callbackUrl=${encodeURIComponent(`/learn/${slug}/${lessonId}`)}`);
-      if (err.code === "NOT_FOUND") notFound();
+      if (err.code === "NOT_FOUND") {
+        const to = await resolveCourseSlugRedirect(slug);
+        if (to) permanentRedirect(`/learn/${to}/${lessonId}`);
+        notFound();
+      }
       return (
         <Container className="py-16">
           <Alert

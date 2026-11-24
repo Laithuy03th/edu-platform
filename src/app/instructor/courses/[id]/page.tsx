@@ -9,6 +9,7 @@ import { PageHeader, buttonClass } from "@/components/ui";
 import { CourseStatusBadges } from "../../status";
 import { CourseEditor } from "./editor";
 import { TechnologiesForm } from "./technologies-form";
+import { CourseSlugForm } from "./slug-form";
 import { listActiveTechnologies } from "@/modules/technologies/service";
 
 export const metadata = { title: "Soạn khóa học" };
@@ -87,6 +88,9 @@ export default async function CourseEditorPage({ params }: { params: Promise<{ i
           options={techOptions}
           initial={(course.draft.technologies ?? []).map((t) => ({ technologyId: t.technologyId.toHexString(), testedVersion: t.testedVersion }))}
         />
+      </div>
+      <div className="mt-8 max-w-3xl">
+        <CourseSlugForm key={course.slug} courseId={id} slug={course.slug} published={Boolean(course.published)} />
       </div>
     </>
   );

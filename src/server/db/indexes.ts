@@ -38,6 +38,7 @@ export const INDEXES: Record<string, IndexDescription[]> = {
   ],
   courses: [
     { key: { slug: 1 }, name: "uniq_slug", unique: true },
+    { key: { slugHistory: 1 }, name: "uniq_slug_history", unique: true, partialFilterExpression: { slugHistory: { $type: "string" } } },
     { key: { instructorId: 1, updatedAt: -1 }, name: "instructor_updated" },
     {
       key: { status: 1, "published.categoryId": 1, "published.level": 1, "published.publishedAt": -1 },

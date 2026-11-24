@@ -121,6 +121,8 @@ export interface PublishedCourse extends CourseContent {
 export type CourseStatus = "draft" | "published" | "archived" | "suspended";
 export interface CourseDoc {
   slug: string;
+  /** Slug cũ (S06): URL cũ 308 về slug hiện tại; unique toàn collection. Document cũ có thể thiếu. */
+  slugHistory?: string[];
   instructorId: ObjectId;
   status: CourseStatus;
   review: {

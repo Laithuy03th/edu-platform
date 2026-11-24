@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
+import { resolveCourseSlugRedirect } from "@/modules/courses/authoring";
 import { ObjectId } from "mongodb";
 import { getViewer } from "@/server/auth";
 import { getCourseDetail, LEVEL_LABEL } from "@/modules/courses/catalog";
@@ -39,7 +40,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function CourseDetailPage({ params }: Props) {
   const { slug } = await params;
   const course = await getCourseDetail(slug);
-  if (!course) notFound();
+  if (!course) {
+    // S06: slug cũ của khóa đã đổi đường dẫn → 308 về URL mới
+    const to = await resolveCourseSlugRedirect(slug);
+    if (to) permanentRedirect(`/courses/${to}`);
+    notFound();
+  }
   const viewer = await getViewer();
   const courseId = new ObjectId(course.id);
   const isOwner = viewer?.idStr === course.instructorId;
