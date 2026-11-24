@@ -87,6 +87,15 @@ export const INDEXES: Record<string, IndexDescription[]> = {
       partialFilterExpression: { understanding: { $in: ["needs_review", "not_understood"] } },
     },
   ],
+  contentIssues: [
+    { key: { courseId: 1, status: 1, createdAt: -1 }, name: "course_status_recent" },
+    { key: { reporterId: 1, lessonId: 1, status: 1 }, name: "reporter_lesson_status" },
+    { key: { status: 1, createdAt: -1 }, name: "status_recent" },
+  ],
+  bookmarks: [
+    { key: { userId: 1, targetType: 1, targetId: 1 }, name: "uniq_user_target", unique: true },
+    { key: { userId: 1, createdAt: -1 }, name: "user_recent" },
+  ],
   notes: [
     { key: { userId: 1, updatedAt: -1 }, name: "user_updated" },
     { key: { userId: 1, courseId: 1, lessonId: 1, timestampSeconds: 1 }, name: "user_lesson_ts" },

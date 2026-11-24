@@ -23,6 +23,7 @@ export async function SiteHeader() {
         { href: "/dashboard", label: "Tổng quan" },
         { href: "/my-courses", label: "Khóa học của tôi" },
         { href: "/notes", label: "Ghi chú" },
+        { href: "/saved", label: "Đã lưu" },
         { href: "/projects", label: "Dự án" },
         { href: "/my-paths", label: "Lộ trình của tôi" },
         { href: "/achievements", label: "Hồ sơ thành quả" },
@@ -149,6 +150,7 @@ export function SiteFooter() {
           <Link href="/dashboard" className="block text-ink-soft hover:text-brand-700">Tổng quan</Link>
           <Link href="/review" className="block text-ink-soft hover:text-brand-700">Ôn tập hôm nay</Link>
           <Link href="/notes" className="block text-ink-soft hover:text-brand-700">Ghi chú</Link>
+          <Link href="/saved" className="block text-ink-soft hover:text-brand-700">Đã lưu</Link>
           <Link href="/settings/profile" className="block text-ink-soft hover:text-brand-700">Tiết kiệm dữ liệu</Link>
         </nav>
       </Container>

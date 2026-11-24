@@ -283,6 +283,15 @@ export interface LessonProgressDoc {
   lastSavedAt: Date;
 }
 
+/** Bookmark (L10): mỗi người lưu một mục tối đa một lần (unique userId+targetType+targetId). */
+export interface BookmarkDoc {
+  userId: ObjectId;
+  targetType: "course" | "lesson";
+  targetId: ObjectId;
+  courseId: ObjectId;
+  createdAt: Date;
+}
+
 export interface NoteDoc {
   userId: ObjectId;
   courseId: ObjectId;
@@ -452,6 +461,27 @@ export interface ContentReportDoc {
   createdAt: Date;
 }
 
+/**
+ * Báo lỗi NỘI DUNG (T06): người học báo bài sai/lỗi thời → hộp thư giảng viên của khóa.
+ * Khác contentReports (kiểm duyệt nội dung người dùng tạo). Gắn publishedVersion để biết lỗi thuộc bản nào.
+ */
+export type ContentIssueKind = "code_error" | "outdated" | "incorrect" | "unclear" | "typo" | "media" | "other";
+export interface ContentIssueDoc {
+  courseId: ObjectId;
+  lessonId: ObjectId;
+  reporterId: ObjectId;
+  kind: ContentIssueKind;
+  message: string;
+  location: string;
+  environment: string;
+  publishedVersion: number;
+  status: "open" | "resolved" | "wont_fix";
+  resolvedBy: ObjectId | null;
+  resolvedAt: Date | null;
+  resolution: string | null;
+  createdAt: Date;
+}
+
 export type MediaPurpose = "course_thumbnail" | "lesson_image" | "lesson_video" | "preview_video";
 export interface MediaRef {
   kind: "lesson_draft" | "lesson_published" | "course_draft" | "course_published";
@@ -607,6 +637,7 @@ export async function cols() {
     enrollments: db.collection<EnrollmentDoc>("enrollments"),
     lessonProgress: db.collection<LessonProgressDoc>("lessonProgress"),
     notes: db.collection<NoteDoc>("notes"),
+    bookmarks: db.collection<BookmarkDoc>("bookmarks"),
     reviewItems: db.collection<ReviewItemDoc>("reviewItems"),
     learningPaths: db.collection<LearningPathDoc>("learningPaths"),
     pathEnrollments: db.collection<PathEnrollmentDoc>("pathEnrollments"),
@@ -616,6 +647,7 @@ export async function cols() {
     answers: db.collection<AnswerDoc>("answers"),
     courseReviews: db.collection<CourseReviewDoc>("courseReviews"),
     contentReports: db.collection<ContentReportDoc>("contentReports"),
+    contentIssues: db.collection<ContentIssueDoc>("contentIssues"),
     mediaAssets: db.collection<MediaAssetDoc>("mediaAssets"),
     uploadReservations: db.collection<UploadReservationDoc>("uploadReservations"),
     quotaCounters: db.collection<QuotaCounterDoc>("quotaCounters"),

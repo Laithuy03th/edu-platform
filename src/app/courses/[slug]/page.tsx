@@ -16,6 +16,8 @@ import { Alert, Badge, Card, Container, ProgressBar, buttonClass } from "@/compo
 import { formatDuration, formatMinutes } from "@/lib/text";
 import { formatDate } from "@/lib/time";
 import { EnrollButton } from "./enroll-button";
+import { BookmarkButton } from "@/components/bookmark-button";
+import { isBookmarked } from "@/modules/bookmarks/service";
 import { CourseReviews } from "./reviews";
 import { JsonLd, breadcrumbLd, courseLd, pageOpenGraph, robotsUnless } from "@/lib/seo";
 
@@ -197,11 +199,14 @@ export default async function CourseDetailPage({ params }: Props) {
                     <IconTarget size={18} /> Làm bài đánh giá đầu vào
                   </Link>
                 ) : null}
-                {firstPreview && enrollment?.status !== "active" ? (
-                  <Link href={`/learn/${course.slug}/${firstPreview.id}`} className={buttonClass("outline", "w-full")}>
-                    <IconPlay size={16} /> Học thử miễn phí
-                  </Link>
-                ) : null}
+                <div className="flex gap-2">
+                  {firstPreview && enrollment?.status !== "active" ? (
+                    <Link href={`/learn/${course.slug}/${firstPreview.id}`} className={buttonClass("outline", "flex-1")}>
+                      <IconPlay size={16} /> Học thử miễn phí
+                    </Link>
+                  ) : null}
+                  <BookmarkButton type="course" id={course.id} initial={await isBookmarked(viewer, "course", courseId)} signedIn={Boolean(viewer)} nextPath={`/courses/${course.slug}`} />
+                </div>
                 <ul className="space-y-2 border-t border-line pt-4 text-sm text-ink-soft">
                   {["Lưu vị trí học tự động", "Ghi chú theo bài và thời điểm video", "Quiz chấm ngay, ôn lại câu sai"].map((t) => (
                     <li key={t} className="flex items-center gap-2">

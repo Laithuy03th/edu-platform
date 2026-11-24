@@ -5,6 +5,8 @@ import { AppError } from "@/lib/errors";
 import { parseId } from "@/lib/ids";
 import { formatDuration } from "@/lib/text";
 import { getViewer } from "@/server/auth";
+import { BookmarkButton } from "@/components/bookmark-button";
+import { isBookmarked } from "@/modules/bookmarks/service";
 import { getLearnPageData } from "@/modules/learning/queries";
 import { playbackSource } from "@/modules/media/delivery";
 import { lessonNotes } from "@/modules/notes/service";
@@ -19,6 +21,8 @@ import { NotesPanel } from "./notes-panel";
 import { LessonActions } from "./lesson-actions";
 import { QaSection } from "./qa";
 import { LearnShell } from "./learn-shell";
+import { ReportIssue } from "./report-issue";
+import { ISSUE_KINDS, myIssuesForLesson } from "@/modules/content-issues/service";
 
 export const metadata: Metadata = { robots: { index: false } };
 
@@ -114,7 +118,10 @@ export default async function LearnPage({ params }: Props) {
               </span>
               {!lesson.isRequired ? <Badge>Tùy chọn</Badge> : null}
             </div>
-            <h1 className="text-h1 mt-3">{lesson.title}</h1>
+            <div className="mt-3 flex flex-wrap items-start justify-between gap-3">
+              <h1 className="text-h1 min-w-0 flex-1">{lesson.title}</h1>
+              <BookmarkButton compact type="lesson" id={lesson.id} initial={await isBookmarked(viewer, "lesson", id)} signedIn={Boolean(viewer)} nextPath={`/learn/${course.slug}/${lesson.id}`} />
+            </div>
           </header>
 
           {lesson.objectives.length ? (
@@ -174,6 +181,8 @@ export default async function LearnPage({ params }: Props) {
               <div className="whitespace-pre-line px-5 pb-5 text-sm leading-relaxed text-ink-soft">{lesson.transcript}</div>
             </details>
           ) : null}
+
+          {viewer ? <ReportIssue lessonId={lesson.id} kinds={ISSUE_KINDS} headings={toc.filter((x) => x.level === 2).map((x) => x.text)} mine={await myIssuesForLesson(viewer, id)} /> : null}
 
           {data.quiz || (data.assignment && canTrack) ? (
             <div className="grid gap-4 sm:grid-cols-2">

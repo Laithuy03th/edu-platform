@@ -33,6 +33,8 @@ export const RULES = {
   quizUser: { name: "quiz:user", limit: 30, windowSec: 3600 },
   reviewAnswerUser: { name: "review-answer:user", limit: 300, windowSec: 3600 },
   notesUser: { name: "notes:user", limit: 60, windowSec: 3600 },
+  contentIssueUser: { name: "content-issue:user", limit: 10, windowSec: 86400 },
+  bookmarkUser: { name: "bookmark:user", limit: 120, windowSec: 3600 },
   qaUser: { name: "qa:user", limit: 10, windowSec: 3600 },
   courseReviewUser: { name: "course-review:user", limit: 10, windowSec: 86400 },
   reportUser: { name: "report:user", limit: 20, windowSec: 86400 },
