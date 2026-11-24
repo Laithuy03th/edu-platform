@@ -9,7 +9,7 @@ Ngày kiểm tra: **2026-11-24**. Mỗi dòng ghi bằng chứng thật và tr�
 | Ký hiệu | Nguồn | Kết quả lần chạy này |
 |---|---|---|
 | **INT** | Vitest + MongoDB in-memory replica set 8.2.6 (thật, không mock DB) | `pnpm test` **117/117 pass** (17 file; cập nhật 2026-11-24 tối) |
-| **E2E** | Playwright trên build production + MongoDB **cục bộ** đã seed | `pnpm test:e2e` **10/10 pass** (28,8 s), chạy lại sau đợt trang chủ/bookmark/bài viết/bài tập |
+| **E2E** | Playwright trên build production + MongoDB **cục bộ** đã seed | `pnpm test:e2e` **13/13 pass** (36,2 s, 2026-11-24 tối) |
 | **ATLAS** | Quan sát trực tiếp trên Atlas `tuhoc_dev` (đếm/đọc, không ghi) | |
 | **LIVE** | HTTP thật tới dev :3000 (Atlas) hoặc build production :3100 (Atlas, chỉ đọc) | |
 | **MOCK** | Test có provider giả (Cloudinary) | |
@@ -23,9 +23,9 @@ Ngày kiểm tra: **2026-11-24**. Mỗi dòng ghi bằng chứng thật và tr�
 
 | Trạng thái | Số ID | Danh sách |
 |---|---|---|
-| VERIFIED | 66 | A01, A02, A03, A04, A06, A07, A08, A09, C01, C02, C03, C04, C05, C06, L01, L02, L03, L04, L05, L06, L07, L08, L09, L10, L11, L12, P01, P02, P03, P04, P05, D01, D02, D03, M01, M03, M05, M06, M07, M08, M09, T01, T02, T03, T04, T05, T06, T07, T08, T09, U01, U02, U03, U05, U07, S01, S02, S03, S04, S06, O01, O03, O04, O05, O06, O07 |
+| VERIFIED | 67 | A01, A02, A03, A04, A06, A07, A08, A09, C01, C02, C03, C04, C05, C06, L01, L02, L03, L04, L05, L06, L07, L08, L09, L10, L11, L12, P01, P02, P03, P04, P05, D01, D02, D03, M01, M03, M04, M05, M06, M07, M08, M09, T01, T02, T03, T04, T05, T06, T07, T08, T09, U01, U02, U03, U05, U07, S01, S02, S03, S04, S06, O01, O03, O04, O05, O06, O07 |
 | IMPLEMENTED_UNVERIFIED | 2 | A05, O02 |
-| PARTIAL | 7 | P06, M02, M04, U04, U06, S07, S09 |
+| PARTIAL | 6 | P06, M02, U04, U06, S07, S09 |
 | MOCK_ONLY | 0 | — |
 | BLOCKED | 3 | S05, S08, S10 (cần URL public/Search Console/dữ liệu tìm kiếm thật) |
 | MISSING | 0 | — |
@@ -101,7 +101,7 @@ Ngày kiểm tra: **2026-11-24**. Mỗi dòng ghi bằng chứng thật và tr�
 | M01 | Reservation, signed upload, quota đồng thời | VERIFIED | INT M1/M2/M11 (quota nguyên tử trên Mongo thật); **thật 2026-11-24: 16 upload có chữ ký lên Cloudinary qua `requestUpload`, quota nội bộ 7,97 MB, 7+6 video/khóa** ([MEDIA_AUDIT](MEDIA_AUDIT.md)) |
 | M02 | Finalize/webhook, idempotent | PARTIAL | Finalize thật: tra Admin API, **phát hiện + sửa lỗi thiếu `duration`** (cần `media_metadata`), test hồi quy; webhook chưa nhận thật (cần URL công khai) |
 | M03 | Ảnh bìa/nội dung, alt, license, rendition | VERIFIED | 2 ảnh bìa thật (1280×720, rendition cố định); thiếu field alt/caption/license cho ảnh trong bài | imageMeta (alt/chú thích/nguồn/giấy phép), chép Markdown có chú thích; khai báo thật cho 2 ảnh bìa qua UI; INT quyền + alt bắt buộc |
-| M04 | Player, poster, tốc độ, resume, caption, chương | PARTIAL | Thật: poster eager, phát, resume (5→10→15 s), transcript. Thiếu `<track>` và chương | Thật: poster, phát, resume, mục lục video từ transcript (bấm → tua đúng mốc), tốc độ 0,75–2×. Phụ đề WebVTT: validate + <track> (unit), chưa chạy với file .vtt thật trên trình duyệt |
+| M04 | Player, poster, tốc độ, resume, caption, chương | VERIFIED | Thật: poster eager, phát, resume (5→10→15 s), transcript. Thiếu `<track>` và chương | Thật: poster, phát, resume, mục lục video từ transcript (bấm → tua đúng mốc), tốc độ 0,75–2×; phụ đề WebVTT: build production + DB cục bộ với video Cloudinary thật → 1 track captions vi, 2 cue nạp đúng |
 | M05 | Delivery policy đã kiểm chứng trên tài khoản | VERIFIED | Thật: bài thường `authenticated` + URL ký cho học viên đã đăng ký; khách → /login, không lộ URL; preview/ảnh `upload` công khai. URL ký không hết hạn (ADR-010) |
 | M06 | Data saver, preload/autoplay, UI lỗi media | VERIFIED | Code có `preload="none"`, không autoplay; chưa có video để thử | UI thật trên Atlas: bật tiết kiệm dữ liệu → không có thẻ video tới khi bấm, hiện dung lượng ~0,5 MiB; tắt lại |
 | M07 | Usage dashboard, độ tươi, cảnh báo, kill switch | VERIFIED | Usage API **thật** OK (2 snapshot trên Atlas); fail-closed đã test với mock (M8); kill switch chưa thử thật | UI thật: tắt cấp link phát → học viên thấy "Tạm dừng phát video", không có video, transcript vẫn đọc; bật lại → có video |
