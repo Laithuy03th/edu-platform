@@ -23,9 +23,9 @@ Ngày kiểm tra: **2026-11-24**. Mỗi dòng ghi bằng chứng thật và tr�
 
 | Trạng thái | Số ID | Danh sách |
 |---|---|---|
-| VERIFIED | 64 | A01, A02, A03, A04, A06, A07, A08, A09, C01, C02, C03, C04, C05, C06, L01, L02, L03, L04, L05, L06, L07, L08, L09, L10, L11, L12, P01, P02, P03, P04, P05, D01, D02, D03, M01, M03, M05, M06, M07, M08, M09, T01, T02, T03, T04, T05, T06, T07, T08, T09, U01, U02, U05, U07, S01, S02, S03, S06, O01, O03, O04, O05, O06, O07 |
-| IMPLEMENTED_UNVERIFIED | 3 | A05, S04, O02 |
-| PARTIAL | 7 | M02, M04, U03, U04, U06, S07, S09 |
+| VERIFIED | 66 | A01, A02, A03, A04, A06, A07, A08, A09, C01, C02, C03, C04, C05, C06, L01, L02, L03, L04, L05, L06, L07, L08, L09, L10, L11, L12, P01, P02, P03, P04, P05, D01, D02, D03, M01, M03, M05, M06, M07, M08, M09, T01, T02, T03, T04, T05, T06, T07, T08, T09, U01, U02, U03, U05, U07, S01, S02, S03, S04, S06, O01, O03, O04, O05, O06, O07 |
+| IMPLEMENTED_UNVERIFIED | 2 | A05, O02 |
+| PARTIAL | 6 | M02, M04, U04, U06, S07, S09 |
 | MOCK_ONLY | 0 | — |
 | BLOCKED | 3 | S05, S08, S10 (cần URL public/Search Console/dữ liệu tìm kiếm thật) |
 | MISSING | 1 | P06 (Python/SQL chạy trong trình duyệt — roadmap; tải nặng, đặc tả xếp P2/roadmap) |
@@ -141,7 +141,7 @@ Ngày kiểm tra: **2026-11-24**. Mỗi dòng ghi bằng chứng thật và tr�
 | S01 | Rendering, status code, indexability | VERIFIED | **Sửa hôm nay:** slug không tồn tại trước trả 200, nay trả 404 (kể cả với Googlebot) |
 | S02 | Title, description, OG, canonical | VERIFIED | Canonical tuyệt đối; OG image: bìa khóa học cho trang khóa, `og-default.jpg` 1200×630 tĩnh cho trang khác; `summary_large_image` |
 | S03 | Sitemap, robots, noindex, chính sách filter/pagination | VERIFIED | Trang có filter → `noindex,follow`; trang phân trang canonical về chính nó; lastmod = ngày xuất bản |
-| S04 | Structured data | IMPLEMENTED_UNVERIFIED | Thêm hôm nay: Organization, WebSite, Course, BreadcrumbList. Chưa chạy Rich Results Test (cần URL public) |
+| S04 | Structured data | VERIFIED | Organization, WebSite, Course, TechArticle, BreadcrumbList; `pnpm seo:check` trên :3200: 17 URL sitemap đạt (JSON-LD parse + trường bắt buộc + không rating/giá giả + canonical tuyệt đối), 3 URL lạ → 404. Google Rich Results Test cần URL public (sau deploy) |
 | S05 | Trang xem video, image SEO | BLOCKED | Chưa có media |
 | S06 | Internal link, breadcrumb, hub, redirect khi đổi slug | VERIFIED | Breadcrumb hiển thị + JSON-LD ở bài viết/hub; hub ↔ khóa ↔ bài viết; **slugHistory + 308** cho bài viết (INT); khóa học chưa có lịch sử slug | slugHistory + 308 cho khóa học (trang khóa + trang học) và bài viết; INT chặn trùng slug/slug cũ; breadcrumb hiển thị + JSON-LD |
 | S07 | Core Web Vitals | PARTIAL | Đã đo lab; chưa có dữ liệu field vì site chưa public |

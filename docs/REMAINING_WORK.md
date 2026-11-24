@@ -46,23 +46,23 @@ Cập nhật: 2026-11-24, sau đợt audit (FEATURE/MEDIA/UI/SEO/CONTENT).
 |---|---|---|
 | P1-U1 | Hệ bìa khóa học theo technology/cấp độ (SVG xác định, 16:9) thay cho gradient theo hash | Screenshot 375/1440 |
 | P1-U2 | Profile và giảm TBT của `/courses` trên mobile (660 ms trong lab) | TBT~ < 300 ms ở cùng phương pháp đo |
-| P1-U3 | Screenshot audit learning workspace và admin ở 375/768/1440; zoom 200% | UI_AUDIT cập nhật |
+| ~~P1-U3~~ ✅ quét tràn ngang 29 trang × 320–1440 | Screenshot audit learning workspace và admin ở 375/768/1440; zoom 200% | UI_AUDIT cập nhật |
 | ~~P1-S1~~ ✅ | OG image mặc định 1200×630 (tĩnh) | Thẻ `og:image` có mặt |
-| P1-S2 (✅ bài viết; còn khóa học) | Lịch sử slug và redirect 308 khi đổi slug | Integration test |
-| P1-M1 (M03) | Media: alt/caption/license/source cho ảnh; ảnh bìa từ Cloudinary với rendition cố định | Sau P0-3 |
-| P1-M2 (M04) | Caption `<track>` (WebVTT do giảng viên cung cấp), chương/mốc thời gian | Sau P0-3 |
+| ~~P1-S2~~ ✅ (bài viết + khóa học) | Lịch sử slug và redirect 308 khi đổi slug | Integration test |
+| ~~P1-M1 (M03)~~ ✅ | Media: alt/caption/license/source cho ảnh; ảnh bìa từ Cloudinary với rendition cố định | Sau P0-3 |
+| P1-M2 (M04) ✅ chương + tốc độ; còn thử phụ đề với file .vtt thật | Caption `<track>` (WebVTT do giảng viên cung cấp), chương/mốc thời gian | Sau P0-3 |
 | ~~P1-L1 (L10)~~ ✅ | Bookmark course/lesson/reference, unique theo user+target | Integration test |
 | ~~P1-P1 (P04)~~ ✅ | Bài tập đọc code / tìm lỗi / sửa code có hints nhiều mức và lời giải mở chủ động | Chấm ở server; đáp án không nằm trong payload trước khi nộp |
-| P1-A1 | Test còn thiếu: A08 (đơn giảng viên), D01 (chấp nhận câu trả lời), L05 E2E, L11 export | Test pass |
+| ~~P1-A1~~ ✅ (A08, D01, L05, L11 + A02, A07, P01, D03) | Test còn thiếu: A08 (đơn giảng viên), D01 (chấp nhận câu trả lời), L05 E2E, L11 export | Test pass |
 
 ## P2
 
 | ID | Việc |
 |---|---|
-| P2-1 (P05) | Playground HTML/CSS/JS cách ly: sandbox iframe với origin riêng, CSP, không có cookie; có nút stop/reset. Chỉ làm sau khi có thiết kế |
+| ~~P2-1 (P05)~~ ✅ 2026-11-24 | Playground HTML/CSS/JS cách ly: sandbox iframe với origin riêng, CSP, không có cookie; có nút stop/reset. Chỉ làm sau khi có thiết kế |
 | P2-2 (P06) | Python/SQL WASM (roadmap; chỉ tải khi người học mở) |
-| P2-3 (U07) | Dark theme |
-| P2-4 (L12) | Mục tiêu tuần do người học tự đặt, không gây áp lực |
+| ~~P2-3 (U07)~~ ✅ | Dark theme |
+| ~~P2-4 (L12)~~ ✅ | Mục tiêu tuần do người học tự đặt, không gây áp lực |
 | P2-5 (S05) | Trang xem video public và VideoObject, khi có video thật và đã tính ngân sách băng thông |
 
 ## Cần chủ dự án quyết định

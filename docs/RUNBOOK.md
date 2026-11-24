@@ -125,3 +125,16 @@ Khi production: `APP_ENV=production` bắt buộc dùng SMTP. Thiếu cấu hìn
 - Cần trình duyệt và ffmpeg của Playwright (`pnpm exec playwright install chromium ffmpeg`).
 - Chi phí đo ngày 2026-11-24: 13 video + 2 ảnh ≈ 8 MB storage, +0,03 credits.
 - Gỡ một video: giảng viên đổi loại bài về "Bài đọc" trong trình soạn bài, gửi duyệt, rồi xóa asset trong thư viện media.
+
+## 12. Kiểm tra định kỳ nội dung và SEO
+
+- `pnpm content:check`: phân tích cú pháp mọi khối code js/ts/tsx/json trong bài học và bài hướng dẫn đã xuất bản, chỉ đọc DB. Chạy sau mỗi đợt duyệt nội dung.
+- `pnpm seo:check --base=<url>`: với mọi URL trong sitemap, kiểm tra:
+  - status 200;
+  - canonical tuyệt đối và khớp URL;
+  - có title và description;
+  - JSON-LD parse được, đủ trường bắt buộc, không có rating/giá giả;
+  - URL không tồn tại trả 404 thật.
+
+  Sau khi deploy, chạy thêm `--production` để bắt lỗi trang trong sitemap bị noindex. Lệnh này không thay cho Search Console.
+- `/admin/coverage`: hàng đợi nội dung cần review hoặc cập nhật (chưa review, nội dung đổi sau review, quá 180 ngày, có báo lỗi mở).

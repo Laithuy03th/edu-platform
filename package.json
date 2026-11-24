@@ -26,6 +26,7 @@
     "media:samples": "tsx --conditions=react-server scripts/media-samples.ts",
     "content:check": "tsx --conditions=react-server scripts/content-check.ts",
     "db:backup": "tsx --conditions=react-server scripts/db-backup.ts",
+    "seo:check": "tsx scripts/seo-check.ts",
     "usage:sync": "tsx --conditions=react-server scripts/usage-sync.ts",
     "bench:argon2": "tsx --conditions=react-server scripts/bench-argon2.ts"
   },

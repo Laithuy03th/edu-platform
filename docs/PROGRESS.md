@@ -94,6 +94,15 @@
 | 2026-11-24 | Bài tập đọc code (P04) | 4 bài tập trên Atlas; qua UI: trước khi nộp HTML không chứa lời giải, sai → gợi ý → đúng → lời giải |
 | 2026-11-24 | Đo tải cục bộ (build production + Mongo cục bộ, autocannon) | Trang bài học 24 → 18 thao tác DB/lượt; 0 lỗi ở 50 kết nối; chi tiết [CAPACITY](CAPACITY.md) |
 | 2026-11-24 | `pnpm test` · typecheck · lint · `pnpm test:e2e` | **117/117** (17 file) · pass · 0 lỗi · **10/10** (lần đầu 9/10: chữ "Đã lưu" của menu mới trùng thông báo lưu ghi chú → đổi tên mục thành "Đánh dấu của tôi") |
+| 2026-11-24 | Playground (P05) | UI thật: ví dụ chạy; code trong khung → cookie/localStorage/parent/top-nav `SecurityError`, fetch bị chặn; `while(true)` treo cả tab → thêm bảo vệ vòng lặp (unit) → tự dừng sau ~1,5 s |
+| 2026-11-24 | Dark theme (U07) | Screenshot trang chủ/khóa/dashboard; sửa chữ hồng trên thẻ đỏ; header tràn ở 1024–1280 → 0 px |
+| 2026-11-24 | Đổi slug khóa (S06), `pnpm content:check` (T07) | INT redirect; Atlas 16 khối code 0 lỗi cú pháp; bộ kiểm bắt đúng lỗi cố ý |
+| 2026-11-24 | Trình phát (M04) | Mục lục video 7 chương, bấm chương 4 → tua 0:20; tốc độ 1,5×; phụ đề WebVTT validate (unit), chưa thử với file thật |
+| 2026-11-24 | `pnpm db:backup` (O07) | Atlas 36 collection/181 document → khôi phục vào Mongo cục bộ 36/36 khớp; từ chối ghi đè DB có dữ liệu |
+| 2026-11-24 | Dev server :3000 của chủ dự án đã dừng (không do trợ lý) | Kiểm tra trên dev server riêng :3200 (`APP_URL` ghi đè trên dòng lệnh, không sửa .env) |
+| 2026-11-24 | Media thật qua UI (M03/M06/M07/M08/M09) | Upload 2 ảnh qua nút trên trình duyệt; alt/nguồn cho ảnh bìa; tiết kiệm dữ liệu: không tải video tới khi bấm; kill switch tắt → "Tạm dừng phát video", bật lại OK; xóa ảnh thử → Cloudinary 404 |
+| 2026-11-24 | Quét tràn ngang 29 trang × 5 độ rộng (320–1440) | 3 lỗi (glow trang chủ, nút Lưu trang khóa, bảng admin do nhãn sr-only absolute) → đã sửa |
+| 2026-11-24 | Đăng nhập admin bị chặn 15 phút sau nhiều lần đăng nhập tự động | Rate limit 5 lần/15 phút/email hoạt động đúng |
 
 ## Chưa kiểm chứng / cần chủ dự án
 
