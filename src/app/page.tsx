@@ -1,14 +1,16 @@
 import Link from "next/link";
-import { CourseCard } from "@/components/course-card";
-import { HeroIllustration } from "@/components/hero-illustration";
+import { HomeHero } from "@/components/home/hero";
+import { GoalTabs } from "@/components/home/goal-tabs";
+import { buildGoals, FeaturedEditorial, ProjectShowcase, TechMarquee } from "@/components/home/sections";
 import { Reveal } from "@/components/motion";
 import { safeLoad } from "@/components/safe-load";
-import { IconArrowRight, IconCheck, IconClock, IconLeaf, IconNote, IconRepeat, IconRoute, IconRubric, IconTarget } from "@/components/icons";
+import { IconArrowRight, IconClock, IconNote, IconRepeat, IconRoute, IconRubric, IconTarget } from "@/components/icons";
 import { Container, EmptyState, Section, SectionHeading, buttonClass } from "@/components/ui";
-import { listCategories, listFeatured } from "@/modules/courses/catalog";
+import { listFeatured } from "@/modules/courses/catalog";
 import { listFeaturedPaths } from "@/modules/learning-paths/service";
 import { JsonLd, organizationLd, websiteLd } from "@/lib/seo";
-import { getTechnologyDirectory, TYPE_LABEL } from "@/modules/technologies/service";
+import { getTechnologyDirectory } from "@/modules/technologies/service";
+import { getPlatformStats, getProjectShowcase } from "@/modules/site/stats";
 
 export const metadata = { alternates: { canonical: "/" } };
 
@@ -20,57 +22,52 @@ const STEPS = [
   { icon: <IconRubric size={20} />, title: "Dự án có rubric", body: "Nộp link GitHub/demo, tự đánh giá rồi nhận phản hồi theo tiêu chí." },
 ];
 
+const EMPTY_STATS = { courses: 0, lessons: 0, videoLessons: 0, videoMinutes: 0, quizzes: 0, projects: 0, technologies: 0 };
+
 export default async function HomePage() {
-  const [featured, paths, categories, techDir] = await Promise.all([
+  const [featured, paths, techDir, stats, project] = await Promise.all([
     safeLoad(() => listFeatured(), []),
     safeLoad(() => listFeaturedPaths(), []),
-    safeLoad(() => listCategories(), []),
     safeLoad(() => getTechnologyDirectory(), { hubs: [], planned: [] }),
+    safeLoad(() => getPlatformStats(), EMPTY_STATS),
+    safeLoad(() => getProjectShowcase(), null),
   ]);
+  const allTech = [...techDir.hubs, ...techDir.planned];
+  const goals = buildGoals(featured, techDir.hubs, allTech);
   return (
     <>
       <JsonLd data={[organizationLd(), websiteLd()]} />
-      {/* ---------------- HERO ---------------- */}
-      <section className="bg-grain-warm relative overflow-hidden">
-        <Container className="grid items-center gap-12 pb-16 pt-10 sm:pt-16 lg:grid-cols-[1.05fr_1fr] lg:gap-8 lg:pb-24">
-          <div className="stagger-in">
-            <p style={{ "--i": 0 } as React.CSSProperties} className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-surface/80 px-3 py-1 text-sm font-medium text-brand-800 shadow-xs backdrop-blur">
-              <IconLeaf size={16} /> Miễn phí trong phạm vi demo
-            </p>
-            <h1 style={{ "--i": 1 } as React.CSSProperties} className="text-display mt-5 text-ink">
-              Học lập trình <span className="relative whitespace-nowrap text-brand-700">
-                nhớ lâu hơn
-                <svg className="absolute -bottom-2 left-0 w-full text-brand-300" viewBox="0 0 300 12" preserveAspectRatio="none" aria-hidden>
-                  <path d="M2 9c60-6 150-8 296-3" fill="none" stroke="currentColor" strokeWidth="5" strokeLinecap="round" />
-                </svg>
-              </span>
-              , không chỉ xem xong.
-            </h1>
-            <p style={{ "--i": 2 } as React.CSSProperties} className="mt-6 max-w-xl text-lg leading-relaxed text-ink-soft">
-              Bài đọc ngắn, video vừa đủ, ghi chú đúng giây đang xem, quiz chấm ngay và lịch ôn câu sai. Kết thúc mỗi khóa bằng một dự án thật có rubric.
-            </p>
-            <div style={{ "--i": 3 } as React.CSSProperties} className="mt-8 flex flex-wrap gap-3">
-              <Link href="/courses" className={buttonClass("primary", undefined, "lg")}>
-                Khám phá khóa học <IconArrowRight size={18} className="transition-transform group-hover/btn:translate-x-0.5" />
-              </Link>
-              <Link href="/paths" className={buttonClass("outline", undefined, "lg")}>
-                Chọn lộ trình theo mục tiêu
-              </Link>
-            </div>
-            <ul style={{ "--i": 4 } as React.CSSProperties} className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-ink-soft">
-              {["Không tự phát video", "Chế độ tiết kiệm dữ liệu", "Lưu vị trí học tự động"].map((t) => (
-                <li key={t} className="inline-flex items-center gap-1.5">
-                  <span className="grid size-5 place-items-center rounded-full bg-brand-100 text-brand-700">
-                    <IconCheck size={12} />
-                  </span>
-                  {t}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <HeroIllustration />
+      <HomeHero stats={stats} teaching={techDir.hubs.map((h) => h.name)} />
+      <TechMarquee hubs={techDir.hubs} planned={techDir.planned} />
+
+      {/* ---------------- CHỌN MỤC TIÊU ---------------- */}
+      <Section>
+        <Container>
+          <Reveal>
+            <SectionHeading eyebrow="Bắt đầu từ mục tiêu" title="Bạn muốn làm được gì?" description="Chọn hướng đi — chỉ hiện khóa học đã xuất bản; kỹ năng ghi “sắp có” đang được biên soạn và review." />
+          </Reveal>
+          <GoalTabs goals={goals} />
         </Container>
-      </section>
+      </Section>
+
+      {/* ---------------- KHÓA HỌC NỔI BẬT ---------------- */}
+      <Section className="bg-surface">
+        <Container>
+          <Reveal>
+            <SectionHeading
+              eyebrow="Khóa học"
+              title="Khóa học nổi bật"
+              description="Đã qua duyệt nội dung, mỗi bài có video minh họa và bài đọc kèm code; học thử được vài bài trước khi đăng ký."
+              action={
+                <Link href="/courses" className={buttonClass("ghost")}>
+                  Xem tất cả <IconArrowRight size={16} />
+                </Link>
+              }
+            />
+          </Reveal>
+          {featured.length ? <FeaturedEditorial courses={featured} /> : <EmptyState title="Chưa có khóa học nào được xuất bản">Khóa học sẽ xuất hiện ở đây sau khi được quản trị viên duyệt.</EmptyState>}
+        </Container>
+      </Section>
 
       {/* ---------------- KHÁC BIỆT (bento) ---------------- */}
       <Section>
@@ -133,82 +130,12 @@ export default async function HomePage() {
         </Container>
       </Section>
 
-      {/* ---------------- KHÓA HỌC NỔI BẬT ---------------- */}
-      <Section className="bg-surface">
-        <Container>
-          <Reveal>
-            <SectionHeading
-              eyebrow="Khóa học"
-              title="Khóa học nổi bật"
-              description="Các khóa đã qua duyệt nội dung, học thử được một số bài trước khi đăng ký."
-              action={
-                <Link href="/courses" className={buttonClass("ghost")}>
-                  Xem tất cả <IconArrowRight size={16} />
-                </Link>
-              }
-            />
-          </Reveal>
-          {featured.length ? (
-            <Reveal group className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {featured.map((c) => (
-                <CourseCard key={c.id} course={c} />
-              ))}
-            </Reveal>
-          ) : (
-            <EmptyState title="Chưa có khóa học nào được xuất bản">Khóa học sẽ xuất hiện ở đây sau khi được quản trị viên duyệt.</EmptyState>
-          )}
-        </Container>
-      </Section>
 
-      {/* ---------------- CÔNG NGHỆ (hub có nội dung thật; fallback: chủ đề) ---------------- */}
-      {techDir.hubs.length ? (
-        <Section>
+      {/* ---------------- DỰ ÁN TIÊU BIỂU ---------------- */}
+      {project ? (
+        <Section className="bg-surface">
           <Container>
-            <Reveal>
-              <SectionHeading
-                eyebrow="Công nghệ"
-                title="Học theo công nghệ bạn cần"
-                description="Chỉ hiện công nghệ đã có khóa học xuất bản. Các mảng khác nằm trong lộ trình nội dung."
-                action={
-                  <Link href="/technologies" className={buttonClass("outline", undefined, "sm")}>
-                    Tất cả công nghệ
-                  </Link>
-                }
-              />
-            </Reveal>
-            <Reveal group className="flex flex-wrap gap-3">
-              {techDir.hubs.map((t) => (
-                <Link
-                  key={t.slug}
-                  href={`/technologies/${t.slug}`}
-                  className="group inline-flex items-center gap-2 rounded-full border border-line bg-surface px-5 py-3 font-semibold text-ink shadow-xs transition hover:-translate-y-0.5 hover:border-brand-300 hover:bg-brand-50 hover:shadow-sm"
-                >
-                  {t.name}
-                  <span className="text-xs font-medium text-ink-faint">{TYPE_LABEL[t.type]}</span>
-                  <IconArrowRight size={16} className="text-brand-600 transition-transform group-hover:translate-x-0.5" />
-                </Link>
-              ))}
-            </Reveal>
-          </Container>
-        </Section>
-      ) : categories.length ? (
-        <Section>
-          <Container>
-            <Reveal>
-              <SectionHeading eyebrow="Chủ đề" title="Bắt đầu từ điều bạn cần" />
-            </Reveal>
-            <Reveal group className="flex flex-wrap gap-3">
-              {categories.map((c) => (
-                <Link
-                  key={c.id}
-                  href={`/courses?category=${c.slug}`}
-                  className="group inline-flex items-center gap-2 rounded-full border border-line bg-surface px-5 py-3 font-semibold text-ink shadow-xs transition hover:-translate-y-0.5 hover:border-brand-300 hover:bg-brand-50 hover:shadow-sm"
-                >
-                  {c.name}
-                  <IconArrowRight size={16} className="text-brand-600 transition-transform group-hover:translate-x-0.5" />
-                </Link>
-              ))}
-            </Reveal>
+            <ProjectShowcase p={project} />
           </Container>
         </Section>
       ) : null}

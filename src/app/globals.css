@@ -373,3 +373,156 @@ dialog[open]::backdrop {
 :where(.grid) > * {
   min-width: 0;
 }
+
+/* =============================================================================
+   HERO / TRANG CHỦ (V2 §36.4) — chuyển động trang trí: chỉ transform/opacity, dừng khi ngoài viewport
+   (PauseOffscreen) và tắt theo prefers-reduced-motion (khối ở trên). Nội dung luôn đọc được khi không có JS.
+   ============================================================================= */
+.hero-stage {
+  background:
+    radial-gradient(60rem 40rem at 85% -10%, rgb(252 165 165 / 0.55), transparent 60%),
+    radial-gradient(40rem 30rem at -5% 30%, rgb(254 226 226 / 0.9), transparent 65%),
+    linear-gradient(180deg, #fff6f5 0%, var(--color-canvas) 70%);
+}
+.hero-grid {
+  background-image:
+    linear-gradient(to right, rgb(185 28 28 / 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(185 28 28 / 0.07) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 70% 60% at 60% 30%, #000 30%, transparent 75%);
+}
+.hero-blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(60px);
+  opacity: 0.55;
+  animation: blob-drift 18s ease-in-out infinite alternate;
+  will-change: transform;
+}
+@keyframes blob-drift {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(4%, -6%, 0) scale(1.08); }
+  100% { transform: translate3d(-5%, 4%, 0) scale(0.96); }
+}
+.text-gradient-brand {
+  background: linear-gradient(100deg, #b91c1c 0%, #ef4444 45%, #f97316 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Khung "studio": nghiêng nhẹ có chiều sâu, các lớp vào lần lượt */
+.studio-tilt {
+  transform: perspective(1600px) rotateY(-9deg) rotateX(4deg);
+  transform-style: preserve-3d;
+  transition: transform 700ms var(--ease-out-soft);
+}
+.studio-tilt:hover {
+  transform: perspective(1600px) rotateY(-4deg) rotateX(2deg);
+}
+.layer-in {
+  animation: layer-in 800ms var(--ease-out-soft) both;
+  animation-delay: var(--d, 0ms);
+}
+@keyframes layer-in {
+  from { opacity: 0; transform: translate3d(0, 26px, 0) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+.float-a { animation: float 7s ease-in-out infinite; }
+.float-b { animation: float 9s ease-in-out -3s infinite; }
+.float-c { animation: float 11s ease-in-out -6s infinite; }
+
+/* Code "đang gõ": từng dòng hiện lần lượt (dòng có sẵn trong HTML → SEO/không JS vẫn thấy) */
+.code-typing .line {
+  display: inline-block;
+  clip-path: inset(0 100% 0 0);
+  animation: type-line 700ms steps(28, end) forwards;
+  animation-delay: calc(900ms + var(--i, 0) * 420ms);
+}
+@keyframes type-line {
+  to { clip-path: inset(0 0 0 0); }
+}
+.caret::after {
+  content: "";
+  display: inline-block;
+  width: 0.55em;
+  height: 1.05em;
+  margin-left: 2px;
+  vertical-align: -0.15em;
+  background: #fca5a5;
+  animation: caret-blink 1s steps(1) infinite;
+}
+@keyframes caret-blink {
+  50% { opacity: 0; }
+}
+
+/* Chuỗi hành trình 5 bước: mỗi bước sáng lên theo vòng 10 s */
+.journey-step {
+  animation: journey 10s var(--ease-out-soft) infinite;
+  animation-delay: calc(var(--i, 0) * 2s);
+}
+@keyframes journey {
+  0%, 18% { background: var(--color-brand-600); color: #fff; box-shadow: var(--shadow-cta); transform: translateY(-2px); }
+  22%, 100% { background: var(--color-surface); color: var(--color-ink-soft); box-shadow: none; transform: none; }
+}
+.journey-bar {
+  transform-origin: left;
+  animation: journey-bar 10s linear infinite;
+}
+@keyframes journey-bar {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+/* Thanh rubric/tiến độ chạy tới giá trị thật */
+.grow-x {
+  transform-origin: left;
+  animation: grow-x 1.2s var(--ease-out-soft) both;
+  animation-delay: var(--d, 600ms);
+}
+@keyframes grow-x {
+  from { transform: scaleX(0); }
+}
+
+/* Dải công nghệ chạy ngang (vòng lặp liền mạch: nội dung nhân đôi, bản sao aria-hidden) */
+.marquee {
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 38s linear infinite;
+}
+.marquee:hover .marquee-track,
+.marquee:focus-within .marquee-track {
+  animation-play-state: paused;
+}
+@keyframes marquee {
+  to { transform: translateX(-50%); }
+}
+
+/* Chữ chạy dọc (công nghệ đang dạy) */
+.ticker {
+  display: inline-grid;
+  height: 1.25em;
+  overflow: hidden;
+  vertical-align: bottom;
+}
+.ticker > span {
+  grid-area: 1 / 1;
+  animation: ticker var(--ticker-dur, 10s) var(--ease-out-soft) infinite;
+  animation-delay: calc(var(--i) * var(--ticker-step, 2s));
+  opacity: 0;
+  transform: translateY(100%);
+}
+@keyframes ticker {
+  0% { opacity: 0; transform: translateY(100%); }
+  4%, 18% { opacity: 1; transform: none; }
+  22%, 100% { opacity: 0; transform: translateY(-100%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ticker > span { opacity: 0; transform: none; }
+  .ticker > span:first-child { opacity: 1; }
+  .code-typing .line { clip-path: none; }
+  .studio-tilt { transform: none; }
+}

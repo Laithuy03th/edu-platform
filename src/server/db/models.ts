@@ -556,7 +556,19 @@ export interface AppSettingsKillSwitches {
   updatedBy: ObjectId | null;
   updatedAt: Date;
 }
-export type AppSettingsDoc = AppSettingsLimits | AppSettingsBudget | AppSettingsKillSwitches;
+/** Banner thông báo toàn site do admin bật/tắt (vd ra mắt khóa mới, bảo trì). Chỉ chữ thuần + 1 link đã validate. */
+export interface AppSettingsAnnouncement {
+  _id: "announcement";
+  enabled: boolean;
+  message: string;
+  linkHref: string;
+  linkLabel: string;
+  tone: "brand" | "info" | "warning";
+  version: number;
+  updatedBy: ObjectId | null;
+  updatedAt: Date;
+}
+export type AppSettingsDoc = AppSettingsLimits | AppSettingsBudget | AppSettingsKillSwitches | AppSettingsAnnouncement;
 
 export interface AuditLogDoc {
   at: Date;

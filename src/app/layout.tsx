@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Be_Vietnam_Pro } from "next/font/google";
 import "./globals.css";
 import { SiteFooter, SiteHeader } from "@/components/site-header";
+import { AnnouncementBar } from "@/components/announcement-bar";
 import { Providers } from "@/components/providers";
 import { env } from "@/lib/env";
 import { SITE_NAME } from "@/lib/seo";
@@ -38,6 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Bỏ qua tới nội dung chính
         </a>
         <Providers>
+          <AnnouncementBar />
           <SiteHeader />
           <main id="main" className="flex-1">
             {children}
