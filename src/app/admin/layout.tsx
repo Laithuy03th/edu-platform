@@ -20,6 +20,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         { href: "/admin/instructor-applications", label: "Đơn giảng viên", icon: <IconShield size={18} /> },
         { href: "/admin/categories", label: "Chủ đề", icon: <IconLayout size={18} /> },
         { href: "/admin/technologies", label: "Công nghệ", icon: <IconGrid size={18} /> },
+        { href: "/admin/coverage", label: "Độ phủ nội dung", icon: <IconChart size={18} /> },
         { href: "/admin/site", label: "Banner thông báo", icon: <IconSparkle size={18} /> },
         { href: "/instructor/articles", label: "Bài hướng dẫn", icon: <IconBook size={18} /> },
         { href: "/instructor/issues", label: "Báo lỗi nội dung", icon: <IconFlag size={18} /> },
