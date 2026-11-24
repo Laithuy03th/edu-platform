@@ -12,14 +12,23 @@ export const DEV_OUTBOX = path.join(process.cwd(), ".data", "mail");
 
 let transport: Transporter | null = null;
 
+/**
+ * Gmail hiển thị App Password thành 4 nhóm "abcd efgh ijkl mnop"; dấu cách chỉ để dễ đọc, không thuộc mật khẩu.
+ * Chỉ bỏ khoảng trắng với Gmail; provider khác giữ nguyên giá trị người dùng nhập.
+ */
+export function smtpPassword(host: string, password: string): string {
+  return /(^|\.)gmail\.com$/i.test(host) ? password.replace(/\s+/g, "") : password;
+}
+
 function smtp(): Transporter {
   if (transport) return transport;
   const e = env();
+  const host = requireEnv("SMTP_HOST", "Cần cấu hình SMTP để gửi email.");
   transport = nodemailer.createTransport({
-    host: requireEnv("SMTP_HOST", "Cần cấu hình SMTP để gửi email."),
+    host,
     port: e.SMTP_PORT,
     secure: e.smtpSecure,
-    auth: e.SMTP_USER ? { user: e.SMTP_USER, pass: requireEnv("SMTP_PASSWORD") } : undefined,
+    auth: e.SMTP_USER ? { user: e.SMTP_USER, pass: smtpPassword(host, requireEnv("SMTP_PASSWORD")) } : undefined,
   });
   return transport;
 }

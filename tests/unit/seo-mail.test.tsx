@@ -44,3 +44,11 @@ describe("mailSettings", () => {
     expect(mailSettings({ SMTP_PORT: 465, SMTP_SECURE: "false" }, false).smtpSecure).toBe(false);
   });
 });
+
+describe("smtpPassword", () => {
+  it("Gmail: bỏ dấu cách hiển thị của App Password; provider khác giữ nguyên", async () => {
+    const { smtpPassword } = await import("@/server/mail");
+    expect(smtpPassword("smtp.gmail.com", "abcd efgh ijkl mnop")).toBe("abcdefghijklmnop");
+    expect(smtpPassword("smtp-relay.brevo.com", "a b")).toBe("a b");
+  });
+});

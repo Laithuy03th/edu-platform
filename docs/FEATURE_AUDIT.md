@@ -24,10 +24,10 @@ Ngày kiểm tra: **2026-11-24**. Mỗi dòng ghi bằng chứng thật và tr�
 | Trạng thái | Số ID | Danh sách |
 |---|---|---|
 | VERIFIED | 29 | A01, A03, A04, A06, A09, C01, C03, C04, C05, C06, L02, L03, L04, L06, L07, L08, L09, P02, P03, D02, U01, U05, S01, S02, S03, O01, O04, O05, O06 |
-| IMPLEMENTED_UNVERIFIED | 12 | A02, A05, A07, A08, L05, L11, P01, D01, D03, M06, M07, S04 |
+| IMPLEMENTED_UNVERIFIED | 13 | A02, A05, A07, A08, L05, L11, P01, D01, D03, M06, M07, S04, O02 |
 | PARTIAL | 15 | C02, L01, L12, M03, M04, T03, T08, U02, U03, U04, U06, S06, S07, O03, O07 |
 | MOCK_ONLY | 3 | M01, M02, M08 |
-| BLOCKED | 6 | M05, M09, S05, S08, S10, O02 |
+| BLOCKED | 5 | M05, M09, S05, S08, S10 |
 | MISSING | 13 | L10, P04, P05, P06, T01, T02, T04, T05, T06, T07, T09, U07, S09 |
 | DEFERRED | 1 | O08 (deploy chỉ khi chủ dự án yêu cầu) |
 
@@ -154,7 +154,7 @@ Ngày kiểm tra: **2026-11-24**. Mỗi dòng ghi bằng chứng thật và tr�
 | ID | Yêu cầu | Trạng thái | Atlas | Ghi chú |
 |---|---|---|---|---|
 | O01 | Schema, index, connection, seed | VERIFIED | ✓ | `db:indexes` (29 collection) và `db:seed` idempotent chạy trên Atlas; data+index 1,58 MiB |
-| O02 | SMTP gửi thật | **BLOCKED** | — | `.env`: SMTP_HOST/PORT/SECURE/USER/PASSWORD và MAIL_FROM **trống cả 6**. Hôm nay đã sửa lỗi chọn transport và thêm `pnpm mail:check` (xem PROGRESS) |
+| O02 | SMTP gửi thật | IMPLEMENTED_UNVERIFIED | — | Gmail SMTP: đăng nhập OK, gửi 1 thư thử được chấp nhận (2026-11-24). Còn chạy luồng xác minh/reset bằng email thật |
 | O03 | Admin: taxonomy, user, duyệt, quota, audit | PARTIAL | — | Taxonomy mới có categories |
 | O04 | DTO riêng tư, tách cache, che log, retention | VERIFIED | — | INT C11 (DTO quiz), D1 (ghi chú), A16; `unstable_cache` chỉ dùng cho dữ liệu công khai |
 | O05 | Unit/integration/E2E, CI | VERIFIED | — | 92 + 10 pass; workflow CI có nhưng **chưa chạy** vì repo chưa có remote |

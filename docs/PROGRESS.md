@@ -74,13 +74,15 @@
 | 2026-11-24 | No-JS / reduced-motion / Tab (Playwright) | 0 phần tử chữ bị ẩn; 0 animation chạy khi reduce; focus ring ở mọi điểm dừng Tab |
 | 2026-11-24 | `pnpm typecheck` · `pnpm lint` · `pnpm test` | pass · 0 lỗi · **97/97** (10 file; thêm 5 test SEO/mail) |
 | 2026-11-24 | `pnpm build` + `pnpm test:e2e` (Mongo cục bộ) | build pass; lần 1: 9/10 (E2E-1 lỗi vì `.next/cache` còn dữ liệu Atlas từ lần chạy :3100 → ID khóa không khớp DB cục bộ); xóa `.next/cache` → **10/10 pass** |
+| 2026-11-24 | `pnpm mail:check` sau khi chủ dự án điền SMTP (Gmail, 465) | đăng nhập SMTP **OK**; App Password có dấu cách → adapter bỏ dấu cách với Gmail |
+| 2026-11-24 | `pnpm mail:check --self` | Gmail chấp nhận 1 thư thử tới địa chỉ MAIL_FROM (log `mail.sent`); chủ dự án cần xác nhận đã nhận trong hộp thư |
 
 ## Chưa kiểm chứng / cần chủ dự án
 
 1. ~~**Atlas Network Access**~~ — đã xong 2026-11-24 (index + seed trên `tuhoc_dev`). Đổi mạng/IP thì phải thêm lại IP — [RUNBOOK §1](RUNBOOK.md). Tài khoản demo do seed tạo: đổi mật khẩu hoặc xóa trước khi công khai.
 2. **Xoay vòng secret:** một phần đầu của `AUTH_SECRET` và `RATE_LIMIT_SECRET` đã bị in ra log của trợ lý trong phiên 2026-11-24 → nên tạo giá trị mới (`openssl rand -base64 32`).
 3. **Google OAuth:** đã điền; đăng nhập mới qua Google chạy thật trên Atlas. Còn thử: liên kết/hủy liên kết, user bị khóa (REMAINING_WORK P0-4).
-4. **SMTP:** `.env` còn **trống** → điền theo [RUNBOOK §Email](RUNBOOK.md) rồi chạy `pnpm mail:check` (REMAINING_WORK P0-1).
+4. **SMTP:** đã cấu hình Gmail; đăng nhập + gửi thử OK (2026-11-24). Còn: chạy luồng đăng ký → xác minh → quên mật khẩu bằng email thật (REMAINING_WORK P0-2).
 5. **Cloudinary thật:** upload 1 video nhỏ đo chi phí xử lý (FREE_TIER_BUDGET §3.2), thử signed URL, `pnpm media:cleanup` dry-run.
 6. **Deploy:** chưa làm (chỉ khi được yêu cầu) — [DEPLOYMENT](DEPLOYMENT.md).
 
