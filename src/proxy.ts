@@ -19,7 +19,7 @@ function buildCsp(nonce: string): string {
     // style-src cho phép inline vì React dùng thuộc tính style (thanh tiến độ); rủi ro thấp hơn script.
     "style-src 'self' 'unsafe-inline'",
     `img-src 'self' data: blob: ${cloud} https://lh3.googleusercontent.com`,
-    `media-src 'self' ${cloud}`,
+    `media-src 'self' blob: ${cloud}`,
     `connect-src 'self' https://api.cloudinary.com${isDev ? " ws:" : ""}`,
     "font-src 'self'",
     "object-src 'none'",

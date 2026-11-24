@@ -23,6 +23,7 @@ import { LessonActions } from "./lesson-actions";
 import { QaSection } from "./qa";
 import { LearnShell } from "./learn-shell";
 import { ReportIssue } from "./report-issue";
+import { parseChapters } from "@/lib/transcript";
 import { CodeExercises } from "./exercises";
 import { lessonExercises } from "@/modules/exercises/service";
 import { ISSUE_KINDS, myIssuesForLesson } from "@/modules/content-issues/service";
@@ -155,6 +156,8 @@ export default async function LearnPage({ params }: Props) {
               canTrack={canTrack}
               dataSaver={Boolean(viewer?.dataSaver)}
               transcriptAvailable={Boolean(lesson.transcript)}
+              chapters={parseChapters(lesson.transcript, data.media.durationSeconds || Infinity)}
+              captionsVtt={lesson.captionsVtt}
             />
           ) : isVideo ? (
             <Alert tone="warning">Bài video chưa có video.</Alert>

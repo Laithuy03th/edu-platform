@@ -10,7 +10,7 @@ import { Tabs, useToast } from "@/components/overlays";
 import { Alert, Button, Card, Checkbox, Field, Input, Select, Textarea } from "@/components/ui";
 import { useAction } from "@/components/use-action";
 
-type L = { chapterId: string; title: string; type: "reading" | "video"; objectives: string; content: string; durationMinutes: number; isPreview: boolean; isRequired: boolean; mediaId: string; transcript: string; quizId: string; projectAssignmentId: string };
+type L = { chapterId: string; title: string; type: "reading" | "video"; objectives: string; content: string; durationMinutes: number; isPreview: boolean; isRequired: boolean; mediaId: string; transcript: string; captionsVtt: string; quizId: string; projectAssignmentId: string };
 
 export function LessonEditor(p: {
   courseId: string;
@@ -101,6 +101,14 @@ export function LessonEditor(p: {
         {l.type === "video" ? (
           <Field id="transcript" label="Transcript / phụ đề dạng văn bản" optional hint="Giúp học viên học khi không xem được video.">
             <Textarea id="transcript" rows={6} value={l.transcript} onChange={(e) => set("transcript", e.target.value)} maxLength={100000} />
+          </Field>
+        ) : null}
+        {l.type === "video" ? (
+          <p className="-mt-2 text-xs text-ink-faint">Dòng bắt đầu bằng mốc như <code>[1:05] Tiêu đề</code> tự thành “Mục lục video” bấm để tua.</p>
+        ) : null}
+        {l.type === "video" ? (
+          <Field id="captionsVtt" label="Phụ đề WebVTT" optional hint="Dán nội dung file .vtt (bắt đầu bằng WEBVTT). Hiển thị qua nút CC của trình phát." errors={save.fieldErrors.captionsVtt}>
+            <Textarea id="captionsVtt" rows={5} value={l.captionsVtt} onChange={(e) => set("captionsVtt", e.target.value)} maxLength={200000} className="font-mono text-xs" />
           </Field>
         ) : null}
       </fieldset>

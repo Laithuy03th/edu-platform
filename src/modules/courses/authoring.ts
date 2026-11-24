@@ -317,6 +317,7 @@ export async function updateLesson(viewer: Viewer, courseId: ObjectId, lessonId:
         "draft.isRequired": input.isRequired,
         "draft.mediaId": input.type === "video" ? input.mediaId : null,
         "draft.transcript": input.transcript,
+        "draft.captionsVtt": input.type === "video" ? (input.captionsVtt ?? null) : null,
         "draft.quizId": input.quizId ?? null,
         "draft.projectAssignmentId": input.projectAssignmentId ?? null,
         updatedAt: new Date(),

@@ -179,6 +179,8 @@ export interface LessonContent {
   isRequired: boolean;
   mediaId: ObjectId | null;
   transcript: string | null;
+  /** M04: phụ đề WebVTT do giảng viên cung cấp (đã validate); thiếu ở document cũ. */
+  captionsVtt?: string | null;
   quizId: ObjectId | null;
   projectAssignmentId: ObjectId | null;
 }

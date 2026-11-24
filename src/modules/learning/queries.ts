@@ -66,6 +66,7 @@ export async function getLearnPageData(viewer: Viewer | null, slug: string, less
       content: p.content,
       objectives: p.objectives,
       transcript: p.transcript,
+      captionsVtt: p.type === "video" ? (p.captionsVtt ?? null) : null,
       durationSeconds: p.durationSeconds,
       isPreview: p.isPreview,
       isRequired: p.isRequired,

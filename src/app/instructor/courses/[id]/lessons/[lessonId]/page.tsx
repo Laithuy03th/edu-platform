@@ -51,6 +51,7 @@ export default async function LessonEditorPage({ params }: { params: Promise<{ i
           isRequired: d.isRequired,
           mediaId: d.mediaId?.toHexString() ?? "",
           transcript: d.transcript ?? "",
+          captionsVtt: d.captionsVtt ?? "",
           quizId: d.quizId?.toHexString() ?? "",
           projectAssignmentId: d.projectAssignmentId?.toHexString() ?? "",
         }}

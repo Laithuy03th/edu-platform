@@ -7,6 +7,7 @@ import { AppError } from "@/lib/errors";
 import { defineAction, zId, zText } from "@/server/action";
 import { RULES } from "@/server/rate-limit";
 import { CATALOG_TAG } from "./catalog";
+import { validateVtt } from "@/lib/transcript";
 import * as svc from "./authoring";
 import { enroll } from "@/modules/enrollments/service";
 
@@ -136,6 +137,15 @@ const saveLesson = defineAction(
       isRequired: zBool,
       mediaId: zOptId,
       transcript: z.string().max(100000).transform((s) => (s.trim() ? s : null)),
+      captionsVtt: z
+        .string()
+        .max(200_000, "Phụ đề tối đa 200 KB")
+        .default("")
+        .transform((s) => (s.trim() ? s.trim() : null))
+        .superRefine((s, ctx) => {
+          const err = s ? validateVtt(s) : null;
+          if (err) ctx.addIssue({ code: "custom", message: err });
+        }),
       quizId: zOptId,
       projectAssignmentId: zOptId,
     }),
@@ -153,6 +163,7 @@ const saveLesson = defineAction(
       isRequired: i.isRequired,
       mediaId: i.mediaId,
       transcript: i.transcript,
+      captionsVtt: i.captionsVtt,
       quizId: i.quizId,
       projectAssignmentId: i.projectAssignmentId,
     });
