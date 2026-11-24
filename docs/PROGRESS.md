@@ -103,6 +103,12 @@
 | 2026-11-24 | Media thật qua UI (M03/M06/M07/M08/M09) | Upload 2 ảnh qua nút trên trình duyệt; alt/nguồn cho ảnh bìa; tiết kiệm dữ liệu: không tải video tới khi bấm; kill switch tắt → "Tạm dừng phát video", bật lại OK; xóa ảnh thử → Cloudinary 404 |
 | 2026-11-24 | Quét tràn ngang 29 trang × 5 độ rộng (320–1440) | 3 lỗi (glow trang chủ, nút Lưu trang khóa, bảng admin do nhãn sr-only absolute) → đã sửa |
 | 2026-11-24 | Đăng nhập admin bị chặn 15 phút sau nhiều lần đăng nhập tự động | Rate limit 5 lần/15 phút/email hoạt động đúng |
+| 2026-11-24 | Playground SQL (P06 phần SQL) | sql.js WASM trong Worker: kết quả đúng, lỗi cú pháp rõ, CTE vô hạn dừng ~3,4 s; E2E |
+| 2026-11-24 | `pnpm seo:check --base=:3200` | 17 URL sitemap đạt (canonical, title/description, JSON-LD), 3 URL lạ → 404 |
+| 2026-11-24 | Phụ đề WebVTT (M04) | Build production + DB cục bộ với video Cloudinary thật: 1 track captions vi, 2 cue |
+| 2026-11-24 | `pnpm test:e2e` (DB cục bộ) | **13/13** (36,2 s) |
+| 2026-11-24 | Mật khẩu admin/giảng viên demo trên Atlas đã được đổi lúc 21:14/21:18 (không do trợ lý) | Trợ lý không đăng nhập/không đặt lại; bài "Server Component và Client Component" (chèn sơ đồ) đang CHỜ DUYỆT ở /admin/courses |
+| 2026-11-24 | Quét tràn ngang 34 trang × 5 độ rộng (build production, DB cục bộ, admin) | 0 tràn ngang |
 
 ## Chưa kiểm chứng / cần chủ dự án
 

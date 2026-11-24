@@ -23,9 +23,9 @@ Ngày kiểm tra: **2026-11-24**. Mỗi dòng ghi bằng chứng thật và tr�
 
 | Trạng thái | Số ID | Danh sách |
 |---|---|---|
-| VERIFIED | 67 | A01, A02, A03, A04, A06, A07, A08, A09, C01, C02, C03, C04, C05, C06, L01, L02, L03, L04, L05, L06, L07, L08, L09, L10, L11, L12, P01, P02, P03, P04, P05, D01, D02, D03, M01, M03, M04, M05, M06, M07, M08, M09, T01, T02, T03, T04, T05, T06, T07, T08, T09, U01, U02, U03, U05, U07, S01, S02, S03, S04, S06, O01, O03, O04, O05, O06, O07 |
-| IMPLEMENTED_UNVERIFIED | 2 | A05, O02 |
-| PARTIAL | 6 | P06, M02, U04, U06, S07, S09 |
+| VERIFIED | 69 | A01, A02, A03, A04, A06, A07, A08, A09, C01, C02, C03, C04, C05, C06, L01, L02, L03, L04, L05, L06, L07, L08, L09, L10, L11, L12, P01, P02, P03, P04, P05, D01, D02, D03, M01, M03, M04, M05, M06, M07, M08, M09, T01, T02, T03, T04, T05, T06, T07, T08, T09, U01, U02, U03, U04, U05, U06, U07, S01, S02, S03, S04, S06, O01, O03, O04, O05, O06, O07 |
+| IMPLEMENTED_UNVERIFIED | 2 | A05, O02 (cần chủ dự án: liên kết Google thật, luồng email thật) |
+| PARTIAL | 4 | P06, M02, S07, S09 |
 | MOCK_ONLY | 0 | — |
 | BLOCKED | 3 | S05, S08, S10 (cần URL public/Search Console/dữ liệu tìm kiếm thật) |
 | MISSING | 0 | — |
@@ -129,9 +129,9 @@ Ngày kiểm tra: **2026-11-24**. Mỗi dòng ghi bằng chứng thật và tr�
 | U01 | Token đỏ nhạt, font, spacing, component | VERIFIED | Token trùng bảng §36.2; tương phản đo hôm nay đạt AA cho chữ |
 | U02 | Home, hero, nav, footer | VERIFIED | Hero nhiều lớp (code tô màu ở server, thẻ quiz/ghi chú/rubric, chuỗi 5 bước), số liệu thật từ DB, dải công nghệ, tab mục tiêu (WAI-ARIA), khóa editorial, showcase dự án thật, banner thông báo do admin quản lý; screenshot 375/1440 |
 | U03 | Layout catalog/course/technology/tutorial/project | VERIFIED | Catalog, trang khóa, hub công nghệ, hướng dẫn/tham khảo, playground, trang dự án của người học (đề, yêu cầu, rubric đạt/chưa đạt, checklist, nộp + tự đánh giá) — screenshot 1440; quét tràn ngang 320–1440 |
-| U04 | Learning, dashboard, instructor, admin | PARTIAL | Có đủ màn; chưa có screenshot audit cho admin/learning ở cả 3 viewport |
+| U04 | Learning, dashboard, instructor, admin | VERIFIED | Có đủ màn học/dashboard/giảng viên/admin; quét 34 trang × 320/375/768/1024/1440 (đăng nhập admin, build production): 0 tràn ngang; screenshot dark/light |
 | U05 | Motion và reduced motion | VERIFIED | LIVE: tắt JS hoặc bật reduce → 0 phần tử chữ bị ẩn, 0 animation chạy |
-| U06 | Mobile/tablet/desktop, bàn phím, focus, contrast, states | PARTIAL | Không tràn ngang ở 375/1440; thứ tự Tab đúng và có focus ring; chưa test zoom 200% và touch |
+| U06 | Mobile/tablet/desktop, bàn phím, focus, contrast, states | VERIFIED | 0 tràn ngang ở 320–1440 (320px ≈ zoom 400% trên 1280 — reflow WCAG 1.4.10); focus ring, thứ tự Tab, menu mobile Escape (E2E); nút ≥ 44px; reduced motion (E2E); dark theme đủ tương phản |
 | U07 | Dark theme | VERIFIED | P2 | Sáng/Tối/Theo hệ thống, cookie + render server; E2E: chuyển và nhớ sau reload; screenshot trang chủ/khóa/dashboard ở chế độ tối |
 
 ## S — SEO (chi tiết trong [SEO_AUDIT.md](SEO_AUDIT.md))
