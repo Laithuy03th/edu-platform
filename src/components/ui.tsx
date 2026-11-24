@@ -297,7 +297,8 @@ export function SectionHeading({ eyebrow, title, description, action, align = "l
 /* ---------------- Table ---------------- */
 export function Table({ className, ...props }: ComponentProps<"table">) {
   return (
-    <div className="overflow-x-auto rounded-[var(--radius-md)] border border-line bg-surface shadow-xs">
+    // relative: phần tử absolute bên trong (vd nhãn sr-only ở cột cuối) bị cắt theo khung cuộn, không kéo rộng trang
+    <div className="relative overflow-x-auto rounded-[var(--radius-md)] border border-line bg-surface shadow-xs">
       <table className={cn("w-full min-w-[640px] border-collapse text-left text-sm", className)} {...props} />
     </div>
   );
