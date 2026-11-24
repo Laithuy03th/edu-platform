@@ -18,7 +18,7 @@ export function NavLink({ href, children }: { href: string; children: ReactNode 
       href={href}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "relative rounded-full px-3.5 py-2 text-sm font-semibold transition-colors after:absolute after:inset-x-3.5 after:-bottom-0.5 after:h-0.5 after:origin-left after:scale-x-0 after:rounded-full after:bg-brand-700 after:transition-transform after:duration-300 hover:text-ink hover:after:scale-x-100",
+        "relative whitespace-nowrap rounded-full px-3.5 py-2 text-sm font-semibold transition-colors after:absolute after:inset-x-3.5 after:-bottom-0.5 after:h-0.5 after:origin-left after:scale-x-0 after:rounded-full after:bg-brand-700 after:transition-transform after:duration-300 hover:text-ink hover:after:scale-x-100",
         active ? "text-brand-800 after:scale-x-100" : "text-ink-soft",
       )}
     >
@@ -35,7 +35,7 @@ export function MobileMenu({ main, account, user }: { main: L[]; account: L[]; u
   const pathname = usePathname();
   return (
     <>
-      <button type="button" aria-label="Mở menu" aria-expanded={open} onClick={() => setOpen(true)} className="grid size-10 place-items-center rounded-full text-ink hover:bg-brand-50 md:hidden">
+      <button type="button" aria-label="Mở menu" aria-expanded={open} onClick={() => setOpen(true)} className="grid size-10 place-items-center rounded-full text-ink hover:bg-brand-50 lg:hidden">
         <IconMenu size={22} />
       </button>
       <Drawer open={open} onClose={() => setOpen(false)} title="Menu">

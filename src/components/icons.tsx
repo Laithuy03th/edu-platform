@@ -121,8 +121,8 @@ export function Logo({ className }: { className?: string }) {
           <path d="M12 6.5v13" />
         </svg>
       </span>
-      <span className="font-display text-lg font-extrabold tracking-tight text-ink">
-        Tự <span className="text-brand-700">Học</span>
+      <span className="whitespace-nowrap font-display text-lg font-extrabold tracking-tight text-ink">
+        Tự<span className="ml-[0.28em] text-brand-700">Học</span>
       </span>
     </span>
   );

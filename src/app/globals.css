@@ -368,3 +368,8 @@ dialog[open]::backdrop {
     transform: none;
   }
 }
+
+/* Phần tử con của grid không bị nội dung dài (tiêu đề tiếng Việt, truncate) đẩy tràn ngang. */
+:where(.grid) > * {
+  min-width: 0;
+}

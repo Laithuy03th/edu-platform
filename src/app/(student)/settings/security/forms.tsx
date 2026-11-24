@@ -10,7 +10,7 @@ import {
 } from "@/modules/auth/actions";
 import { FormError } from "@/components/form-error";
 import { PasswordInput } from "@/components/password-input";
-import { Alert, Button, Field, Input } from "@/components/ui";
+import { Alert, Button, Field } from "@/components/ui";
 import { formToObject, useAction } from "@/components/use-action";
 import { useConfirm } from "@/components/overlays";
 

@@ -35,12 +35,12 @@ export async function SiteHeader() {
     <>
       <ScrollState className="group/header sticky top-0 z-40 border-b border-transparent bg-canvas/70 backdrop-blur-xl transition-[background-color,border-color,box-shadow] duration-300 data-[scrolled=true]:border-line data-[scrolled=true]:bg-surface/85 data-[scrolled=true]:shadow-sm">
         <header>
-          <Container className="flex h-16 items-center justify-between gap-4 transition-[height] duration-300 group-data-[scrolled=true]/header:h-14">
+          <Container className="flex h-16 items-center justify-between gap-3 transition-[height] duration-300 group-data-[scrolled=true]/header:h-14">
             <div className="flex items-center gap-8">
               <Link href="/" aria-label="Tự Học — trang chủ" className="transition-transform hover:scale-[1.02]">
                 <Logo />
               </Link>
-              <nav aria-label="Điều hướng chính" className="hidden items-center gap-1 md:flex">
+              <nav aria-label="Điều hướng chính" className="hidden items-center gap-1 lg:flex">
                 {main.map((l) => (
                   <NavLink key={l.href} href={l.href}>
                     {l.label}
@@ -69,7 +69,7 @@ export async function SiteHeader() {
               </Link>
 
               {viewer ? (
-                <details className="group relative hidden md:block">
+                <details className="group relative hidden lg:block">
                   <summary className="flex cursor-pointer items-center gap-2 rounded-full py-1 pl-1 pr-3 transition hover:bg-brand-50" aria-label="Mở menu tài khoản">
                     <Avatar name={viewer.displayName} url={viewer.avatarUrl} size={34} />
                     <span className="max-w-36 truncate text-sm font-semibold">{viewer.displayName}</span>
@@ -93,7 +93,7 @@ export async function SiteHeader() {
                   </div>
                 </details>
               ) : (
-                <div className="hidden items-center gap-2 md:flex">
+                <div className="hidden items-center gap-2 sm:flex">
                   <Link href="/login" className={buttonClass("ghost", undefined, "sm")}>
                     Đăng nhập
                   </Link>

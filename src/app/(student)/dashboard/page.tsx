@@ -123,7 +123,7 @@ export default async function DashboardPage() {
         </div>
 
         <div className="mt-12 grid gap-10 lg:grid-cols-[1.6fr_1fr]">
-          <section aria-labelledby="my-courses-h">
+          <section aria-labelledby="my-courses-h" className="min-w-0">
             <div className="mb-4 flex items-end justify-between">
               <h2 id="my-courses-h" className="text-h2">
                 Khóa đang học
@@ -154,7 +154,7 @@ export default async function DashboardPage() {
             )}
           </section>
 
-          <div className="space-y-10">
+          <div className="min-w-0 space-y-10">
             <section aria-labelledby="needs-h">
               <h2 id="needs-h" className="text-h3 mb-3">
                 Bài bạn đánh dấu cần ôn
