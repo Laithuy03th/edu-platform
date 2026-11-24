@@ -64,7 +64,12 @@ Chặn upload/cấp link không chặn băng thông từ link đã cấp hoặc 
 
 ## 8. Sao lưu và khôi phục thủ công
 
-Atlas Free không có backup tự động. Định kỳ dùng `mongodump` để xuất database, rồi `mongorestore` thử vào một database riêng (ví dụ `tuhoc_restore_test`) để chắc bản sao dùng được. Không commit file backup vì chứa dữ liệu cá nhân.
+Atlas Free không có backup tự động. Repo có lệnh sao lưu/khôi phục không cần mongodump (dùng driver, định dạng EJSON nén):
+
+- Sao lưu: `pnpm db:backup` → `.data/backup/<db>-<thời gian>/` (mỗi collection một file `.ejson.gz` + `manifest.json` số document).
+- Khôi phục: `pnpm db:backup --restore=<thư mục> --to-uri=<mongodb://…> --to-db=<tên DB mới>`. Chỉ ghi vào DB chưa có dữ liệu (muốn ghi đè phải thêm `--force`), sau đó tự tạo index và đối chiếu số document từng collection.
+- Đã thử thật 2026-11-24: sao lưu Atlas `tuhoc_dev` (36 collection, 181 document) → khôi phục vào Mongo cục bộ: 36/36 khớp, ObjectId/Date giữ đúng kiểu, 10 index trên `courses`; khôi phục vào DB có dữ liệu bị từ chối.
+- Bản sao chứa dữ liệu cá nhân (email, hash mật khẩu): không commit (`.data/` đã gitignore), lưu nơi an toàn, xóa bản cũ không cần.
 
 ## 9. Rollback release
 
