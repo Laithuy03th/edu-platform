@@ -66,6 +66,8 @@ export function SqlPlayground() {
   }, [call]);
 
   useEffect(() => {
+    // Khởi tạo Web Worker (hệ thống bên ngoài React) khi mở trang; boot cập nhật trạng thái tải.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void boot();
     return () => worker.current?.terminate();
   }, [boot]);
