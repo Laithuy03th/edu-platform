@@ -129,3 +129,100 @@ describe("thông tin ảnh (M03)", async () => {
     expect((await c.mediaAssets.findOne({ _id: res.insertedId }))!.imageMeta).toEqual({ alt: "Sơ đồ luồng request", caption: "Luồng request", credit: "Tự Học", license: "CC BY 4.0" });
   });
 });
+
+/** A02/A07/P01: gửi lại email có cooldown; hồ sơ kiểm múi giờ; đề dự án giữ id tiêu chí và chỉ công khai sau duyệt. */
+describe("tài khoản & dự án (A02, A07, P01)", async () => {
+  const auth = await import("@/modules/auth/service");
+  const projects = await import("@/modules/projects/service");
+  const authoring = await import("@/modules/courses/authoring");
+  it("A02: gửi lại ngay sau đăng ký → RATE_LIMITED; đã xác minh → INVALID_STATE", async () => {
+    const mails: { text: string }[] = [];
+    const deliver = (m: { text: string }) => void mails.push(m);
+    const email = `resend_${Date.now()}@test.local`;
+    const { userId } = await auth.registerUser({ displayName: "Người thử", email, password: "mat-khau-du-dai-123" }, { ip: `10.9.${Date.now() % 250}.1` }, deliver);
+    await expect(auth.resendVerification(userId!, deliver)).rejects.toMatchObject({ code: "RATE_LIMITED" });
+    const token = mails[0]!.text.match(/token=([A-Za-z0-9_-]+)/)![1]!;
+    await auth.verifyEmail(token);
+    await expect(auth.resendVerification(userId!, deliver)).rejects.toMatchObject({ code: "INVALID_STATE" });
+    await expect(auth.verifyEmail(token)).rejects.toThrow(); // token một lần
+  });
+
+  it("A07: múi giờ không hợp lệ bị từ chối; hợp lệ được lưu", async () => {
+    const u = await makeUser(["student"]);
+    const base = { displayName: "Tên Mới", bio: "", timezone: "Mars/Olympus", learningGoal: "", dataSaver: true };
+    await expect(users.updateProfile(u.id, base)).rejects.toMatchObject({ code: "VALIDATION_FAILED" });
+    await users.updateProfile(u.id, { ...base, timezone: "Asia/Tokyo" });
+    const c = await cols();
+    expect((await c.users.findOne({ _id: u.id }))).toMatchObject({ displayName: "Tên Mới", timezone: "Asia/Tokyo", dataSaver: true, roles: ["student"] });
+  });
+
+  it("P01: chỉ chủ khóa soạn; id tiêu chí rubric ổn định qua các lần lưu; công khai sau khi duyệt", async () => {
+    const p = await publishedCourse();
+    const c = await cols();
+    const rev = async () => (await c.courses.findOne({ _id: p.courseId }))!.draftRevision;
+    const other = await makeUser(["instructor"]);
+    await expect(projects.createAssignment(other, p.courseId, await rev(), "Đề lạ")).rejects.toMatchObject({ code: "NOT_FOUND" });
+    const { assignmentId } = await projects.createAssignment(p.instructor, p.courseId, await rev(), "Blog cá nhân");
+    const content = {
+      title: "Blog cá nhân", brief: "Xây blog bằng Next.js", objectives: ["Routing"], requirements: ["Có trang 404"], checklist: ["Build được"], resources: [], maxRounds: 3,
+      rubric: [{ title: "Routing", maxPoints: 50, passDescription: "Đủ route", failDescription: "Thiếu route", skillTag: "routing" }],
+    };
+    await projects.saveAssignmentDraft(p.instructor, p.courseId, assignmentId, await rev(), content);
+    const id1 = (await c.projectAssignments.findOne({ _id: assignmentId }))!.draft!.rubric[0]!.criterionId;
+    await projects.saveAssignmentDraft(p.instructor, p.courseId, assignmentId, await rev(), { ...content, rubric: [{ ...content.rubric[0]!, criterionId: id1, maxPoints: 60 }] });
+    const after = (await c.projectAssignments.findOne({ _id: assignmentId }))!;
+    expect(after.draft!.rubric[0]).toMatchObject({ criterionId: id1, maxPoints: 60 });
+    expect(after.published).toBeNull();
+    // Đề chưa gắn vào bài nào → duyệt khóa KHÔNG xuất bản đề (không lộ đề "mồ côi")
+    let r = await rev();
+    await authoring.submitForReview(p.instructor, p.courseId, r);
+    await authoring.approveCourse(p.admin, p.courseId, r);
+    expect((await c.projectAssignments.findOne({ _id: assignmentId }))!.published).toBeNull();
+    // Gắn vào một bài → duyệt → công khai
+    const lesson = (await c.lessons.findOne({ courseId: p.courseId, "draft.deleted": false }))!;
+    const { order: _o, deleted: _d, ...ld } = lesson.draft!;
+    await authoring.updateLesson(p.instructor, p.courseId, lesson._id, await rev(), { ...ld, projectAssignmentId: assignmentId });
+    r = await rev();
+    await authoring.submitForReview(p.instructor, p.courseId, r);
+    await authoring.approveCourse(p.admin, p.courseId, r);
+    expect((await c.projectAssignments.findOne({ _id: assignmentId }))!.published?.rubric[0]?.maxPoints).toBe(60);
+  });
+});
+
+/** L05: bài đánh giá đầu vào — tạo → xuất bản → học viên làm → gợi ý theo chủ đề; payload trước khi nộp không có đáp án. */
+describe("đánh giá đầu vào (L05)", async () => {
+  const quiz = await import("@/modules/quizzes/service");
+  const authoring = await import("@/modules/courses/authoring");
+  it("chủ đề dưới ngưỡng → học trước, đạt → ôn nhanh", async () => {
+    const p = await publishedCourse();
+    const c = await cols();
+    const rev = async () => (await c.courses.findOne({ _id: p.courseId }))!.draftRevision;
+    const chapters = await c.chapters.find({ courseId: p.courseId }).toArray();
+    const { quizId } = (await quiz.createQuiz(p.instructor, p.courseId, await rev(), "placement", "Đánh giá đầu vào")) as unknown as { quizId: import("mongodb").ObjectId };
+    const q = (topic: string, i: number) => ({ prompt: `Câu ${topic} ${i}`, options: [{ text: "Đúng" }, { text: "Sai" }], correctIndex: 0, explanation: "Giải thích", topicKey: topic });
+    await quiz.saveQuizDraft(p.instructor, p.courseId, quizId, await rev(), {
+      title: "Đánh giá đầu vào",
+      passPercent: 50,
+      showExplanations: "after_submit",
+      questions: [q("routing", 1), q("routing", 2), q("data", 1), q("data", 2)],
+      rules: [
+        { topicKey: "routing", chapterId: chapters[0]!._id, thresholdPercent: 70 },
+        { topicKey: "data", chapterId: (chapters[1] ?? chapters[0])!._id, thresholdPercent: 70 },
+      ],
+    });
+    const r = await rev();
+    await authoring.submitForReview(p.instructor, p.courseId, r);
+    await authoring.approveCourse(p.admin, p.courseId, r);
+
+    const learner = await makeUser(["student"]);
+    await enroll.enroll(learner, p.courseId);
+    const attempt = await quiz.getQuizForAttempt(learner, quizId);
+    expect(JSON.stringify(attempt)).not.toMatch(/correctOptionId|Giải thích/);
+    const v = (await c.quizVersions.findOne({ quizId, version: attempt.version }))!;
+    const answers = v.questions.map((qq) => ({ questionId: qq.questionId, optionId: qq.topicKey === "routing" ? qq.correctOptionId : qq.options.find((o) => o.optionId !== qq.correctOptionId)!.optionId }));
+    const res = (await quiz.submitQuiz(learner, quizId, { quizVersion: attempt.version, submissionId: `sub-${Date.now()}`, answers })) as unknown as { recommendations?: { topicKey: string; kind: string }[]; placement?: { recommendations: { topicKey: string; kind: string }[] } };
+    const recs = res.recommendations ?? res.placement?.recommendations ?? [];
+    expect(recs.find((x) => x.topicKey === "routing")?.kind).toBe("quick_review");
+    expect(recs.find((x) => x.topicKey === "data")?.kind).toBe("study_first");
+  });
+});
