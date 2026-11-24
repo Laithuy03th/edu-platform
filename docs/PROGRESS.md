@@ -88,6 +88,12 @@
 | 2026-11-24 | Sửa tổng thời lượng khóa (bài video có kèm bài đọc) | Tổng = độ dài video + thời gian đọc ước tính (`readingSeconds`, ~200 từ/phút); ngưỡng 90% video không đổi. Thẻ khóa bỏ dấu "~" vì font hiển thị giống dấu trừ. Duyệt lại: Next.js 14 phút, MongoDB 11 phút |
 | 2026-11-24 | `pnpm usage:sync` · `pnpm media:cleanup` (dry-run) | credits 0,17 → 0,2/25; transformations 34; storage provider chưa cập nhật (theo ngày); orphan 0 |
 | 2026-11-24 | `pnpm test` · typecheck · lint | **106/106** (12 file; thêm `cloudinary-adapter.test.ts`, `readingSeconds`) · pass · 0 lỗi |
+| 2026-11-24 | Trang chủ mới + banner thông báo (admin) | Hero nhiều lớp, số liệu thật, tab mục tiêu, khóa editorial, showcase dự án; banner bật qua UI admin trên Atlas (link `javascript:` bị từ chối); screenshot 375/1440 |
+| 2026-11-24 | Bookmark (L10), báo lỗi nội dung (T06) | Test tích hợp pass; `pnpm db:indexes` trên Atlas |
+| 2026-11-24 | Bài hướng dẫn công khai (T05/T04/S06) | create-next-app thật (Next 16.4.6/React 19.3.0, 62 s), `npm run dev` HTTP 200, `npm run build` exit 0 trên Windows 11; tái hiện 4 lỗi kết nối bằng driver mongodb 7.9.1; seed 3 bài lên Atlas; `/huong-dan/*` 200, slug sai 404, sitemap có 3 bài |
+| 2026-11-24 | Bài tập đọc code (P04) | 4 bài tập trên Atlas; qua UI: trước khi nộp HTML không chứa lời giải, sai → gợi ý → đúng → lời giải |
+| 2026-11-24 | Đo tải cục bộ (build production + Mongo cục bộ, autocannon) | Trang bài học 24 → 18 thao tác DB/lượt; 0 lỗi ở 50 kết nối; chi tiết [CAPACITY](CAPACITY.md) |
+| 2026-11-24 | `pnpm test` · typecheck · lint · `pnpm test:e2e` | **117/117** (17 file) · pass · 0 lỗi · **10/10** (lần đầu 9/10: chữ "Đã lưu" của menu mới trùng thông báo lưu ghi chú → đổi tên mục thành "Đánh dấu của tôi") |
 
 ## Chưa kiểm chứng / cần chủ dự án
 

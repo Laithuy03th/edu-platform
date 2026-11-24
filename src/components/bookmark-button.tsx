@@ -34,7 +34,7 @@ export function BookmarkButton({ type, id, initial, signedIn, nextPath, compact 
         const r = await a.run({ type, id, saved: !saved });
         if (r?.ok) {
           setSaved(r.data.saved);
-          toast({ tone: "success", message: r.data.saved ? "Đã lưu — xem lại trong mục Đã lưu." : "Đã bỏ lưu." });
+          toast({ tone: "success", message: r.data.saved ? "Đã thêm vào Đánh dấu của tôi." : "Đã bỏ lưu." });
         } else toast({ tone: "error", message: r?.ok === false ? r.error.message : "Không kết nối được máy chủ." });
       }}
     >

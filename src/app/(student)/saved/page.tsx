@@ -6,7 +6,7 @@ import { BookmarkButton } from "@/components/bookmark-button";
 import { IconBook, IconBookmark, IconPlay } from "@/components/icons";
 import { Badge, Container, EmptyState, PageHeader, buttonClass } from "@/components/ui";
 
-export const metadata = { title: "Đã lưu" };
+export const metadata = { title: "Đánh dấu của tôi" };
 
 export default async function SavedPage() {
   const viewer = await requireViewer();
@@ -15,7 +15,7 @@ export default async function SavedPage() {
   const lessons = items.filter((i) => i.type === "lesson");
   return (
     <Container className="py-10 sm:py-12">
-      <PageHeader title="Đã lưu" description="Khóa học và bài học bạn đánh dấu để quay lại. Riêng tư — chỉ bạn thấy." />
+      <PageHeader title="Đánh dấu của tôi" description="Khóa học và bài học bạn đánh dấu để quay lại. Riêng tư — chỉ bạn thấy." />
       {items.length === 0 ? (
         <EmptyState
           icon={<IconBookmark />}

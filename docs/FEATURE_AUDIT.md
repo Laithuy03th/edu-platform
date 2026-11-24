@@ -8,8 +8,8 @@ Ngày kiểm tra: **2026-11-24**. Mỗi dòng ghi bằng chứng thật và tr�
 
 | Ký hiệu | Nguồn | Kết quả lần chạy này |
 |---|---|---|
-| **INT** | Vitest + MongoDB in-memory replica set 8.2.6 (thật, không mock DB) | `pnpm test` **106/106 pass** (12 file; cập nhật 2026-11-24 chiều) |
-| **E2E** | Playwright trên build production + MongoDB **cục bộ** đã seed | `pnpm test:e2e` **10/10 pass** (21,2 s), chạy lại sau các sửa đổi hôm nay |
+| **INT** | Vitest + MongoDB in-memory replica set 8.2.6 (thật, không mock DB) | `pnpm test` **117/117 pass** (17 file; cập nhật 2026-11-24 tối) |
+| **E2E** | Playwright trên build production + MongoDB **cục bộ** đã seed | `pnpm test:e2e` **10/10 pass** (28,8 s), chạy lại sau đợt trang chủ/bookmark/bài viết/bài tập |
 | **ATLAS** | Quan sát trực tiếp trên Atlas `tuhoc_dev` (đếm/đọc, không ghi) | |
 | **LIVE** | HTTP thật tới dev :3000 (Atlas) hoặc build production :3100 (Atlas, chỉ đọc) | |
 | **MOCK** | Test có provider giả (Cloudinary) | |
@@ -23,12 +23,12 @@ Ngày kiểm tra: **2026-11-24**. Mỗi dòng ghi bằng chứng thật và tr�
 
 | Trạng thái | Số ID | Danh sách |
 |---|---|---|
-| VERIFIED | 34 | A01, A03, A04, A06, A09, C01, C03, C04, C05, C06, L02, L03, L04, L06, L07, L08, L09, P02, P03, D02, T01, T02, T09, U01, U05, S01, S02, S03, O01, O04, O05, O06, M01, M05 |
+| VERIFIED | 40 | A01, A03, A04, A06, A09, C01, C03, C04, C05, C06, L02, L03, L04, L06, L07, L08, L09, P02, P03, D02, T01, T02, T09, U01, U05, S01, S02, S03, O01, O04, O05, O06, M01, M05, L10, P04, T04, T05, T06, U02 |
 | IMPLEMENTED_UNVERIFIED | 13 | A02, A05, A07, A08, L05, L11, P01, D01, D03, M06, M07, S04, O02 |
-| PARTIAL | 21 | C02, L01, L12, M02, M03, M04, M08, M09, T03, T05, T06, T07, T08, U02, U03, U04, U06, S06, S07, O03, O07 |
+| PARTIAL | 18 | C02, L01, L12, M02, M03, M04, M08, M09, T03, T07, T08, U03, U04, U06, S06, S07, O03, O07 |
 | MOCK_ONLY | 0 | — (M01/M02/M08 đã chạy với Cloudinary thật ngày 2026-11-24) |
 | BLOCKED | 3 | S05, S08, S10 |
-| MISSING | 7 | L10, P04, P05, P06, T04, U07, S09 |
+| MISSING | 4 | P05, P06 (playground/runtime trình duyệt — P2), U07 (dark theme — P2), S09 (quy trình cụm nội dung/review liên tục — cần reviewer thật) |
 | DEFERRED | 1 | O08 (deploy chỉ khi chủ dự án yêu cầu) |
 
 > Không công bố "% hoàn thành". Theo §31.1, nếu tính phần trăm thì phải công bố trọng số; tài liệu này không đặt trọng số. Bảng tổng hợp chỉ đếm theo trạng thái. Số liệu chính xác cho từng dòng nằm trong các bảng chi tiết bên dưới.
@@ -71,7 +71,7 @@ Ngày kiểm tra: **2026-11-24**. Mỗi dòng ghi bằng chứng thật và tr�
 | L07 | Ôn câu sai, lịch ôn, chống nộp đôi | `/review`, `review/*` | INT D3 | VERIFIED | — | — |
 | L08 | Mức độ hiểu tách khỏi hoàn thành | trang học, dashboard | INT D5 | VERIFIED | — | — |
 | L09 | Lộ trình, prerequisite, tiến độ | `/paths`, `learning-paths` | INT D8/D9 (không đếm trùng, phát hiện vòng lặp, mục bị gỡ); LIVE 200 | VERIFIED | ✓ (đọc) | Milestone/capstone theo nghề (§32.3) |
-| L10 | Bookmark | — | Không có code | MISSING | — | Collection `bookmarks` unique(userId, target) |
+| L10 | Bookmark | `modules/bookmarks`, `/saved`, nút Lưu ở khóa/bài | INT `bookmarks.test.ts`: lưu song song → 1 bản ghi, bỏ lưu idempotent, chỉ nội dung công khai, khóa bị đình chỉ → không khả dụng, riêng tư theo user | VERIFIED | ✓ index | — |
 | L11 | Xuất ghi chú Markdown | `/api/notes/export` | Chỉ thử thủ công | IMPLEMENTED_UNVERIFIED | — | Test scope theo user |
 | L12 | Mục tiêu tuần/streak | dashboard (`WEEKLY_GOAL` là hằng số) | Có vòng tiến độ tuần | PARTIAL | — | P2: cho người học tự đặt mục tiêu; không gây áp lực |
 
@@ -82,7 +82,7 @@ Ngày kiểm tra: **2026-11-24**. Mỗi dòng ghi bằng chứng thật và tr�
 | P01 | Đề dự án, starter, checklist, rubric | `/instructor/courses/[id]/projects/...` | Seed có 1 dự án kèm rubric 4 tiêu chí | IMPLEMENTED_UNVERIFIED | ✓ (seed) | Starter repo thật cho dự án |
 | P02 | Nộp bài, tự đánh giá, nộp lại, phản hồi | `/projects/[id]`, `/instructor/submissions` | INT D6 (các vòng nộp, chấm rubric, người lạ không xem được) | VERIFIED | — | — |
 | P03 | Hồ sơ thành quả opt-in | `/achievements`, `/u/[handle]` | INT D7; LIVE `/u/khong-co` → 404 | VERIFIED | — | — |
-| P04 | Đọc code, tìm lỗi, hints, lời giải có version | — | Không có loại bài tập này | MISSING | — | Thêm loại exercise (§34.1) |
+| P04 | Đọc code, tìm lỗi, hints, lời giải có version | `modules/exercises`, khối "Luyện đọc code" ở trang học, soạn trong trình soạn bài | INT `exercises.test.ts`: payload không chứa đáp án/giải thích trước khi giải, chấm server, gợi ý từng mức, sửa → version mới; **UI thật trên Atlas**: sai → gợi ý → đúng → lời giải (không lộ trước khi nộp) | VERIFIED | ✓ 4 bài tập | Thêm bài tập cho các bài còn lại |
 | P05 | Playground HTML/CSS/JS cách ly | — | — | MISSING | — | P2, sau khi có thiết kế sandbox |
 | P06 | Python/SQL chạy trên trình duyệt | — | — | MISSING | — | Roadmap |
 
@@ -115,9 +115,9 @@ Ngày kiểm tra: **2026-11-24**. Mỗi dòng ghi bằng chứng thật và tr�
 | T01 | Taxonomy domain/topic/technology/type/version | VERIFIED | `technologies` (type × domain × alias, active/planned), admin `/admin/technologies`; INT `technologies.test.ts` (slug/alias không trùng, chỉ admin); Atlas: 35 công nghệ (8 active) |
 | T02 | Technology hub, ánh xạ course/reference/project | VERIFIED | `/technologies`, `/technologies/[slug]`: chỉ tồn tại khi có khóa đã xuất bản; alias → 308; LIVE: 5 hub 200, `python` (planned) 404, `js` → `javascript`; INT hub biến mất khi khóa bị lưu trữ. Chưa có reference/project riêng (T05) |
 | T03 | Prerequisite/concept graph, alias tìm kiếm | PARTIAL | Alias tìm kiếm **xong** (`?q=js`, `?tech=js`, INT); prerequisite + chống vòng lặp ở lộ trình; còn thiếu concept graph |
-| T04 | Environment recipe theo OS | MISSING | |
-| T05 | Template article/reference/cheatsheet/troubleshooting | PARTIAL | Bài học có mục lục + heading anchor + khung code; chưa có loại nội dung tutorial/reference public riêng |
-| T06 | Author/reviewer/testedVersion, báo lỗi nội dung | PARTIAL | `testedVersion` theo công nghệ của khóa (qua duyệt), **review chuyên môn** do admin ghi tên người thật, tự báo "đã đổi sau review"; `contentUpdatedAt` thật (INT). Thiếu: nút báo lỗi nội dung, reviewer theo từng bài |
+| T04 | Environment recipe theo OS | VERIFIED | Loại bài `recipe` bắt buộc `testedOn` mới xuất bản; bài "Cài Node.js và tạo dự án Next.js trên Windows": đã chạy thật create-next-app (Next 16.4.6/React 19.3.0), dev (HTTP 200), build (exit 0) trên Windows 11; lệnh macOS/Linux ghi rõ **chưa chạy thử** |
+| T05 | Template article/reference/cheatsheet/troubleshooting | VERIFIED | `articles` (draft/published + duyệt admin), `/huong-dan`, `/huong-dan/[slug]` (mục lục, anchor, code copy, breadcrumb, khóa/bài liên quan, TechArticle JSON-LD); INT `articles.test.ts`; 3 bài thật trên Atlas, cả 3 **chưa review chuyên môn** |
+| T06 | Author/reviewer/testedVersion, báo lỗi nội dung | VERIFIED | `testedVersion` theo công nghệ của khóa (qua duyệt), **review chuyên môn** do admin ghi tên người thật, tự báo "đã đổi sau review"; `contentUpdatedAt` thật (INT). Thiếu: nút báo lỗi nội dung, reviewer theo từng bài | **Báo lỗi nội dung** → hộp thư `/instructor/issues` (INT `content-issues.test.ts`: chỉ giảng viên của khóa/admin, không lộ email, người báo thấy trạng thái). |
 | T07 | Code: copy, highlight, output, smoke check | PARTIAL | shiki tô màu **ở server** (0 KB highlighter xuống client), nút sao chép, `title="file"`, khối ` ```output `; LIVE trên bài học thử. Thiếu smoke-check tự động cho snippet |
 | T08 | Bản đồ độ phủ published/reviewed/planned | PARTIAL | Đã có tài liệu thủ công [CONTENT_COVERAGE.md](CONTENT_COVERAGE.md); chưa có màn admin |
 | T09 | Bản đồ nhiều mảng IT, không public placeholder | VERIFIED | Mục "Lộ trình nội dung" ở `/technologies` liệt kê công nghệ planned theo mảng, **không có link/trang riêng**, không vào sitemap (INT + LIVE) |
@@ -127,8 +127,8 @@ Ngày kiểm tra: **2026-11-24**. Mỗi dòng ghi bằng chứng thật và tr�
 | ID | Yêu cầu | Trạng thái | Ghi chú |
 |---|---|---|---|
 | U01 | Token đỏ nhạt, font, spacing, component | VERIFIED | Token trùng bảng §36.2; tương phản đo hôm nay đạt AA cho chữ |
-| U02 | Home, hero, nav, footer | PARTIAL | Đã thêm "Công nghệ" vào header/footer và khối hub trên trang chủ; chưa có project showcase |
-| U03 | Layout catalog/course/technology/tutorial/project | PARTIAL | Có catalog và course; chưa có technology/tutorial/reference |
+| U02 | Home, hero, nav, footer | VERIFIED | Hero nhiều lớp (code tô màu ở server, thẻ quiz/ghi chú/rubric, chuỗi 5 bước), số liệu thật từ DB, dải công nghệ, tab mục tiêu (WAI-ARIA), khóa editorial, showcase dự án thật, banner thông báo do admin quản lý; screenshot 375/1440 |
+| U03 | Layout catalog/course/technology/tutorial/project | PARTIAL | Có catalog, course, technology hub, tutorial/reference; trang project công khai chưa có (project nằm trong khóa) |
 | U04 | Learning, dashboard, instructor, admin | PARTIAL | Có đủ màn; chưa có screenshot audit cho admin/learning ở cả 3 viewport |
 | U05 | Motion và reduced motion | VERIFIED | LIVE: tắt JS hoặc bật reduce → 0 phần tử chữ bị ẩn, 0 animation chạy |
 | U06 | Mobile/tablet/desktop, bàn phím, focus, contrast, states | PARTIAL | Không tràn ngang ở 375/1440; thứ tự Tab đúng và có focus ring; chưa test zoom 200% và touch |
@@ -139,11 +139,11 @@ Ngày kiểm tra: **2026-11-24**. Mỗi dòng ghi bằng chứng thật và tr�
 | ID | Yêu cầu | Trạng thái | Ghi chú |
 |---|---|---|---|
 | S01 | Rendering, status code, indexability | VERIFIED | **Sửa hôm nay:** slug không tồn tại trước trả 200, nay trả 404 (kể cả với Googlebot) |
-| S02 | Title, description, OG, canonical | VERIFIED | Canonical tuyệt đối nhờ `metadataBase` (sửa hôm nay); vẫn thiếu OG image |
+| S02 | Title, description, OG, canonical | VERIFIED | Canonical tuyệt đối; OG image: bìa khóa học cho trang khóa, `og-default.jpg` 1200×630 tĩnh cho trang khác; `summary_large_image` |
 | S03 | Sitemap, robots, noindex, chính sách filter/pagination | VERIFIED | Trang có filter → `noindex,follow`; trang phân trang canonical về chính nó; lastmod = ngày xuất bản |
 | S04 | Structured data | IMPLEMENTED_UNVERIFIED | Thêm hôm nay: Organization, WebSite, Course, BreadcrumbList. Chưa chạy Rich Results Test (cần URL public) |
 | S05 | Trang xem video, image SEO | BLOCKED | Chưa có media |
-| S06 | Internal link, breadcrumb, hub, redirect khi đổi slug | PARTIAL | Có breadcrumb JSON-LD; thiếu breadcrumb hiển thị, hub và lịch sử slug |
+| S06 | Internal link, breadcrumb, hub, redirect khi đổi slug | PARTIAL | Breadcrumb hiển thị + JSON-LD ở bài viết/hub; hub ↔ khóa ↔ bài viết; **slugHistory + 308** cho bài viết (INT); khóa học chưa có lịch sử slug |
 | S07 | Core Web Vitals | PARTIAL | Đã đo lab; chưa có dữ liệu field vì site chưa public |
 | S08 | Search Console | BLOCKED | Chưa có domain/deploy |
 | S09 | Cụm nội dung, tác giả, quy trình review | MISSING | |
