@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { ObjectId } from "mongodb";
 import { z } from "zod";
 import { AppError } from "@/lib/errors";
@@ -43,7 +43,7 @@ const category = defineAction(
   { auth: "admin", schema: z.object({ id: zId.optional(), name: zText(2, 60, "Tên chủ đề"), order: z.number().int().min(0).max(999), isActive: z.boolean() }), rate },
   async (i, { viewer }) => {
     await svc.upsertCategory(viewer, i.id ? new ObjectId(i.id) : null, { name: i.name, order: i.order, isActive: i.isActive });
-    revalidateTag(CATALOG_TAG, "max");
+    updateTag(CATALOG_TAG);
     revalidatePath("/admin/categories");
     return { ok: true };
   },

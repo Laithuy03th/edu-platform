@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Không dùng secret production. Test dùng MongoDB in-memory; email qua adapter file.
+    env:
+      NODE_ENV: test
+      AUTH_SECRET: ci-only-secret-ci-only-secret-0123456789
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - name: Cache MongoDB binary (mongodb-memory-server)
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/mongodb-binaries
+          key: mongodb-binaries-${{ runner.os }}-v1
+      - run: pnpm test
+      - name: Build
+        run: pnpm build
+        env:
+          NODE_ENV: production
+          APP_ENV: test
+          MAIL_TRANSPORT: file
+          APP_URL: http://localhost:3100
+      # E2E cần MongoDB đã seed + server; chạy thủ công/khi cấu hình môi trường riêng (TEST_PLAN §4).

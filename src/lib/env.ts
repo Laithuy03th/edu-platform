@@ -49,7 +49,6 @@ const schema = z.object({
   BUDGET_MONGODB_BYTES: int(300 * 1024 ** 2, 1),
   USAGE_STALE_AFTER_MINUTES: int(1440, 1),
 
-  FEATURE_PUBLIC_PROFILES: bool(false),
   ALLOW_ADMIN_BOOTSTRAP: bool(false),
 });
 

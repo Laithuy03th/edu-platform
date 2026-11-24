@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidateTag } from "next/cache";
+import { updateTag } from "next/cache";
 import { ObjectId } from "mongodb";
 import { z } from "zod";
 import { defineAction, zId, zText } from "@/server/action";
@@ -16,7 +16,7 @@ const upsert = defineAction(
   },
   async (i, { viewer }) => {
     await svc.upsertReview(viewer, new ObjectId(i.courseId), i.rating, i.comment);
-    revalidateTag(CATALOG_TAG, "max");
+    updateTag(CATALOG_TAG);
     return { message: "Đã lưu đánh giá." };
   },
 );
@@ -26,7 +26,7 @@ export async function upsertReviewAction(input: unknown) {
 
 const remove = defineAction({ schema: z.object({ courseId: zId }) }, async (i, { viewer }) => {
   await svc.deleteMyReview(viewer, new ObjectId(i.courseId));
-  revalidateTag(CATALOG_TAG, "max");
+  updateTag(CATALOG_TAG);
   return { message: "Đã xóa đánh giá." };
 });
 export async function deleteReviewAction(input: unknown) {
@@ -35,7 +35,7 @@ export async function deleteReviewAction(input: unknown) {
 
 const moderate = defineAction({ auth: "admin", schema: z.object({ reviewId: zId, action: z.enum(["hide", "unhide"]), reason: zText(5, 500, "Lý do") }) }, async (i, { viewer }) => {
   await svc.moderateReview(viewer, new ObjectId(i.reviewId), i.action, i.reason);
-  revalidateTag(CATALOG_TAG, "max");
+  updateTag(CATALOG_TAG);
   return { ok: true };
 });
 export async function moderateReviewAction(input: unknown) {

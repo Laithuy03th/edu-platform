@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { ObjectId } from "mongodb";
 import { z } from "zod";
 import { defineAction, zId, zText } from "@/server/action";
@@ -46,7 +46,7 @@ const save = defineAction(
   },
   async ({ pathId, ...input }, { viewer }) => {
     const r = await svc.savePath(viewer, pathId ? new ObjectId(pathId) : null, { ...input, items: input.items.map((it) => ({ ...it, refId: it.refId ? new ObjectId(it.refId) : null })) });
-    revalidateTag(svc.PATHS_TAG, "max");
+    updateTag(svc.PATHS_TAG);
     revalidatePath(`/paths/${r.slug}`);
     return r;
   },

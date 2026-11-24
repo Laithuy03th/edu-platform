@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { ObjectId } from "mongodb";
 import { z } from "zod";
 import { AppError } from "@/lib/errors";
@@ -23,7 +23,7 @@ const zOptId = z.union([zId, z.literal(""), z.null()]).optional().transform((v) 
 const authoringRate = (_i: unknown, ctx: { viewer: { idStr: string } }) => [[RULES.authoringUser, ctx.viewer.idStr]] as [typeof RULES.authoringUser, string][];
 
 function invalidateCourse(courseId?: string) {
-  revalidateTag(CATALOG_TAG, "max");
+  updateTag(CATALOG_TAG);
   if (courseId) revalidatePath(`/instructor/courses/${courseId}`);
 }
 

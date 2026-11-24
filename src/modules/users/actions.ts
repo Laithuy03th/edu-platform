@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { z } from "zod";
 import { RULES } from "@/server/rate-limit";
 import { defineAction, zHttpUrl, zText } from "@/server/action";
@@ -54,7 +54,7 @@ const publicProfile = defineAction(
   async (input, { viewer }) => {
     const before = await svc.getProfile(viewer.id);
     await svc.updatePublicProfile(viewer.id, input.enabled, input.handle);
-    for (const h of [before.publicProfile.handle, input.handle]) if (h) revalidateTag(`profile-handle:${h}`, "max");
+    for (const h of [before.publicProfile.handle, input.handle]) if (h) updateTag(`profile-handle:${h}`);
     return { message: input.enabled ? "Đã bật hồ sơ công khai." : "Hồ sơ công khai đang tắt." };
   },
 );
