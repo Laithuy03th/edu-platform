@@ -6,7 +6,7 @@ const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`)
 function layout(title: string, paragraphs: string[], action?: { label: string; url: string }) {
   const html = `<!doctype html><html lang="vi"><body style="font-family:Arial,sans-serif;line-height:1.6;color:#111">
 <h2>${esc(title)}</h2>${paragraphs.map((p) => `<p>${esc(p)}</p>`).join("")}
-${action ? `<p><a href="${esc(action.url)}" style="background:#2563eb;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none">${esc(action.label)}</a></p><p style="font-size:12px;color:#555">Hoặc mở liên kết: ${esc(action.url)}</p>` : ""}
+${action ? `<p><a href="${esc(action.url)}" style="background:#b91c1c;color:#fff;padding:10px 18px;border-radius:999px;font-weight:600;text-decoration:none">${esc(action.label)}</a></p><p style="font-size:12px;color:#555">Hoặc mở liên kết: ${esc(action.url)}</p>` : ""}
 <p style="font-size:12px;color:#555">Tự Học — email tự động, vui lòng không trả lời.</p></body></html>`;
   const text = [title, "", ...paragraphs, ...(action ? ["", `${action.label}: ${action.url}`] : [])].join("\n");
   return { html, text };

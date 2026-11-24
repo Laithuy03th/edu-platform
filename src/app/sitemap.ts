@@ -16,10 +16,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const c = await cols();
     const [courses, paths] = await Promise.all([
-      c.courses.find({ status: "published", published: { $ne: null } }).project<{ slug: string; updatedAt: Date }>({ slug: 1, updatedAt: 1 }).limit(1000).toArray(),
+      // lastmod = lần duyệt xuất bản gần nhất (sửa bản nháp không đổi nội dung công khai → không đổi lastmod).
+      c.courses.find({ status: "published", published: { $ne: null } }).project<{ slug: string; published: { publishedAt: Date } }>({ slug: 1, "published.publishedAt": 1 }).limit(1000).toArray(),
       c.learningPaths.find({ status: "published" }).project<{ slug: string; updatedAt: Date }>({ slug: 1, updatedAt: 1 }).limit(500).toArray(),
     ]);
-    for (const x of courses) items.push({ url: `${base}/courses/${x.slug}`, lastModified: x.updatedAt, changeFrequency: "weekly", priority: 0.8 });
+    for (const x of courses) items.push({ url: `${base}/courses/${x.slug}`, lastModified: x.published.publishedAt, changeFrequency: "weekly", priority: 0.8 });
     for (const x of paths) items.push({ url: `${base}/paths/${x.slug}`, lastModified: x.updatedAt, changeFrequency: "monthly", priority: 0.6 });
   } catch (err) {
     logger.error("sitemap.failed", { err });

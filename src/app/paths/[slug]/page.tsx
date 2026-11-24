@@ -6,11 +6,20 @@ import { formatMinutes } from "@/lib/text";
 import { IconBook, IconCheck, IconRoute, IconTarget } from "@/components/icons";
 import { Badge, Container, ProgressBar, buttonClass, cn } from "@/components/ui";
 import { PathEnrollButtons } from "./enroll";
+import { JsonLd, breadcrumbLd, pageOpenGraph, robotsUnless } from "@/lib/seo";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const d = await getPathDetail(slug, null).catch(() => null);
-  return d ? { title: d.path.title, description: d.path.goal } : { title: "Không tìm thấy lộ trình" };
+  if (!d) return { title: "Không tìm thấy lộ trình" };
+  const url = `/paths/${d.path.slug}`;
+  return {
+    title: d.path.title,
+    description: d.path.goal,
+    alternates: { canonical: url },
+    ...robotsUnless(d.path.status === "published"),
+    openGraph: pageOpenGraph({ title: d.path.title, description: d.path.goal, url }),
+  };
 }
 
 export default async function PathDetailPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -21,6 +30,7 @@ export default async function PathDetailPage({ params }: { params: Promise<{ slu
   const totalSeconds = d.items.filter((i) => i.required && i.available).reduce((s, i) => s + i.durationSeconds, 0);
   return (
     <div className="bg-grain-warm">
+      <JsonLd data={breadcrumbLd([{ name: "Lộ trình", path: "/paths" }, { name: d.path.title, path: `/paths/${d.path.slug}` }])} />
       <Container className="grid gap-10 py-10 sm:py-14 lg:grid-cols-[1fr_360px]">
         <div className="min-w-0">
           <Link href="/paths" className="text-sm font-semibold text-brand-700 hover:underline">

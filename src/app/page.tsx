@@ -7,6 +7,9 @@ import { IconArrowRight, IconCheck, IconClock, IconLeaf, IconNote, IconRepeat, I
 import { Container, EmptyState, Section, SectionHeading, buttonClass } from "@/components/ui";
 import { listCategories, listFeatured } from "@/modules/courses/catalog";
 import { listFeaturedPaths } from "@/modules/learning-paths/service";
+import { JsonLd, organizationLd, websiteLd } from "@/lib/seo";
+
+export const metadata = { alternates: { canonical: "/" } };
 
 const STEPS = [
   { icon: <IconTarget size={20} />, title: "Đánh giá đầu vào", body: "Bài kiểm tra ngắn gợi ý chương nên học trước và chương chỉ cần ôn nhanh — theo quy tắc rõ ràng." },
@@ -24,6 +27,7 @@ export default async function HomePage() {
   ]);
   return (
     <>
+      <JsonLd data={[organizationLd(), websiteLd()]} />
       {/* ---------------- HERO ---------------- */}
       <section className="bg-grain-warm relative overflow-hidden">
         <Container className="grid items-center gap-12 pb-16 pt-10 sm:pt-16 lg:grid-cols-[1.05fr_1fr] lg:gap-8 lg:pb-24">

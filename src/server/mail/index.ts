@@ -18,10 +18,15 @@ function smtp(): Transporter {
   transport = nodemailer.createTransport({
     host: requireEnv("SMTP_HOST", "Cần cấu hình SMTP để gửi email."),
     port: e.SMTP_PORT,
-    secure: e.SMTP_SECURE,
+    secure: e.smtpSecure,
     auth: e.SMTP_USER ? { user: e.SMTP_USER, pass: requireEnv("SMTP_PASSWORD") } : undefined,
   });
   return transport;
+}
+
+/** Kết nối + đăng nhập SMTP mà KHÔNG gửi thư (dùng cho `pnpm mail:check`). Ném lỗi của server SMTP nếu sai. */
+export async function verifySmtp(): Promise<void> {
+  await smtp().verify();
 }
 
 /** Adapter email (ADR-016). Thiếu cấu hình SMTP ở production → ném ConfigError, không giả lập thành công. */

@@ -16,6 +16,7 @@ import { Alert, Badge, Card, Container, ProgressBar, buttonClass } from "@/compo
 import { formatDuration, formatMinutes } from "@/lib/text";
 import { EnrollButton } from "./enroll-button";
 import { CourseReviews } from "./reviews";
+import { JsonLd, breadcrumbLd, courseLd, pageOpenGraph, robotsUnless } from "@/lib/seo";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -27,8 +28,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: c.title,
     description: c.shortDescription,
     alternates: { canonical: `/courses/${c.slug}` },
-    robots: c.status === "published" ? undefined : { index: false },
-    openGraph: { title: c.title, description: c.shortDescription, images: c.thumbnailUrl ? [c.thumbnailUrl] : undefined },
+    ...robotsUnless(c.status === "published"),
+    openGraph: pageOpenGraph({ title: c.title, description: c.shortDescription, url: `/courses/${c.slug}`, images: c.thumbnailUrl ? [c.thumbnailUrl] : undefined }),
   };
 }
 
@@ -72,6 +73,14 @@ export default async function CourseDetailPage({ params }: Props) {
 
   return (
     <div className="pb-24 lg:pb-0">
+      {course.status === "published" ? (
+        <JsonLd
+          data={[
+            courseLd({ ...course, level: LEVEL_LABEL[course.level] }),
+            breadcrumbLd([{ name: "Khóa học", path: "/courses" }, { name: course.title, path: `/courses/${course.slug}` }]),
+          ]}
+        />
+      ) : null}
       {/* ---- Hero ---- */}
       <section className="bg-grain-warm border-b border-line">
         <Container className="grid gap-10 py-10 lg:grid-cols-[1fr_380px] lg:py-14">

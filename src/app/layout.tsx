@@ -3,6 +3,8 @@ import { Be_Vietnam_Pro } from "next/font/google";
 import "./globals.css";
 import { SiteFooter, SiteHeader } from "@/components/site-header";
 import { Providers } from "@/components/providers";
+import { env } from "@/lib/env";
+import { SITE_NAME } from "@/lib/seo";
 
 // Font thiết kế cho tiếng Việt; next/font self-host lúc build → không request Google khi chạy.
 const beVietnam = Be_Vietnam_Pro({
@@ -12,10 +14,17 @@ const beVietnam = Be_Vietnam_Pro({
   variable: "--font-be-vietnam",
 });
 
+// metadataBase từ APP_URL → canonical/OG là URL tuyệt đối đúng origin của môi trường (SEO_AUDIT S02).
+// Môi trường không phải production: noindex toàn site để bản dev/preview không bị index như bản sao.
+const appEnv = env();
 export const metadata: Metadata = {
+  metadataBase: new URL(appEnv.appUrl),
   title: { default: "Tự Học — học lập trình theo lộ trình", template: "%s · Tự Học" },
   description: "Nền tảng học trực tuyến: bài đọc, video ngắn, quiz, bài tập dự án có rubric, ghi chú theo thời điểm video và ôn tập câu sai.",
-  applicationName: "Tự Học",
+  applicationName: SITE_NAME,
+  openGraph: { type: "website", siteName: SITE_NAME, locale: "vi_VN" },
+  twitter: { card: "summary" },
+  robots: appEnv.isProduction ? undefined : { index: false, follow: false },
 };
 
 export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#fffaf9" };

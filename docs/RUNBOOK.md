@@ -21,7 +21,9 @@ MONGODB_URI="mongodb://127.0.0.1:27027/?replicaSet=rs0" SEED_DEMO_PASSWORD="mat-
 MONGODB_URI="mongodb://127.0.0.1:27027/?replicaSet=rs0" pnpm dev
 ```
 
-Email ở development được ghi ra `.data/mail/*.json` (mở file để lấy link xác minh/đặt lại mật khẩu).
+Email ở development **khi chưa có `SMTP_HOST`** được ghi ra `.data/mail/*.json` (mở file để lấy link xác minh/đặt lại mật khẩu). Có `SMTP_HOST` thì gửi thật (xem §10).
+
+**Đổi DB giữa các lần chạy build production** (Atlas ↔ cục bộ): xóa `.next/cache` trước khi `next start`. `unstable_cache` của catalog được lưu ở đó và tồn tại qua các lần build. Nếu không xóa, trang có thể hiển thị ID của DB cũ, khiến các action báo "Không tìm thấy". Dev server dùng `.next/dev`, không bị ảnh hưởng.
 
 ## 3. Sắp hết ngân sách Cloudinary
 
@@ -67,3 +69,41 @@ Atlas Free không có backup tự động. Định kỳ dùng `mongodump` để 
 ## 9. Rollback release
 
 `git revert <commit>` rồi deploy lại. Các thay đổi schema hiện tại đều tương thích ngược (chỉ thêm field, có schemaVersion).
+
+## 10. Email thật bằng SMTP miễn phí
+
+Không gửi mật khẩu hay giá trị `.env` qua chat. Điền trực tiếp vào `.env`, rồi khởi động lại `pnpm dev`.
+
+**Cách A: Gmail (miễn phí, giới hạn gửi theo ngày của Google, hợp với demo)**
+
+1. Tài khoản Google → Bảo mật → bật **Xác minh 2 bước**.
+2. Vào https://myaccount.google.com/apppasswords → tạo App Password tên "Tu Hoc" → Google hiện 16 ký tự.
+3. Điền vào `.env`:
+   - `SMTP_HOST=smtp.gmail.com`
+   - `SMTP_PORT=465` (để `SMTP_SECURE` trống: port 465 tự bật TLS)
+   - `SMTP_USER=<địa chỉ Gmail của bạn>`
+   - `SMTP_PASSWORD=<16 ký tự, viết liền, bỏ dấu cách>`
+   - `MAIL_FROM=Tự Học <cùng địa chỉ Gmail>`. Gmail yêu cầu trùng `SMTP_USER`.
+
+**Cách B: Brevo (gói Free; xem giới hạn hiện hành trên trang Brevo)**
+
+- `SMTP_HOST=smtp-relay.brevo.com`, `SMTP_PORT=587`.
+- `SMTP_USER`/`SMTP_PASSWORD` lấy ở mục SMTP & API → SMTP.
+- `MAIL_FROM` phải là sender/domain đã xác minh trong Brevo.
+
+**Kiểm tra:**
+
+```bash
+pnpm mail:check                         # kiểm tra biến + kết nối/đăng nhập SMTP, KHÔNG gửi thư
+pnpm mail:check --send-to=ban@example.com   # gửi đúng 1 thư thử
+```
+
+Lệnh chỉ in tên biến, có/thiếu, host/port. Không in mật khẩu. Một số lỗi thường gặp:
+
+| Lỗi | Nguyên nhân và cách sửa |
+|---|---|
+| `EAUTH 535` | Sai user/password, hoặc dùng mật khẩu đăng nhập Gmail thay vì App Password |
+| `ESOCKET` / `ETIMEDOUT` | Sai port/secure, hoặc mạng chặn cổng SMTP. Thử 587 (STARTTLS) thay 465 |
+| Thư vào Spam | Bình thường với Gmail cá nhân khi gửi tự động. Domain riêng cần SPF/DKIM (làm khi deploy) |
+
+Khi production: `APP_ENV=production` bắt buộc dùng SMTP. Thiếu cấu hình thì gửi mail ném lỗi thiết lập rõ ràng, không giả lập thành công.

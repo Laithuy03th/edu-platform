@@ -4,7 +4,7 @@ import { Reveal } from "@/components/motion";
 import { IconArrowRight, IconRoute } from "@/components/icons";
 import { Container, EmptyState, PageHeader } from "@/components/ui";
 
-export const metadata = { title: "Lộ trình theo mục tiêu", description: "Các lộ trình học ghép khóa, chương và cột mốc theo thứ tự đề xuất." };
+export const metadata = { title: "Lộ trình theo mục tiêu", description: "Các lộ trình học ghép khóa, chương và cột mốc theo thứ tự đề xuất.", alternates: { canonical: "/paths" } };
 
 export default async function PathsPage() {
   const paths = await listPublishedPaths();

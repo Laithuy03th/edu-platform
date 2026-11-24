@@ -3,7 +3,7 @@
 ## Checkpoint (2026-11-24)
 
 - **Nhánh:** `main` (git cục bộ, chưa có remote). Commit mới nhất: xem `git log --oneline`.
-- **Trạng thái:** Phase 1–6 đã triển khai. Build production thành công, chạy được với MongoDB cục bộ. Còn các mục **cần tài khoản/hạ tầng thật** (mục "Chưa kiểm chứng").
+- **Trạng thái:** Phase 1–6 đã triển khai (LMS nền). **Đặc tả V2** (`PROMPT_CLAUDE_EDU_IT_V2.md`) đã audit 2026-11-24 — xem [FEATURE_AUDIT](FEATURE_AUDIT.md) (79 ID: 29 VERIFIED, 12 IMPLEMENTED_UNVERIFIED, 15 PARTIAL, 3 MOCK_ONLY, 6 BLOCKED, 13 MISSING, 1 DEFERRED), [MEDIA_AUDIT](MEDIA_AUDIT.md), [UI_AUDIT](UI_AUDIT.md), [SEO_AUDIT](SEO_AUDIT.md), [CONTENT_COVERAGE](CONTENT_COVERAGE.md). Việc tiếp theo: [REMAINING_WORK](REMAINING_WORK.md) (P0 cần chủ dự án: SMTP, ca thử video, xoay secret).
 - **Quyết định:** chủ dự án giao toàn quyền quyết định (2026-11-23) → 5 câu hỏi mở của Phase 0 chốt theo phương án đề xuất (ADR-002, ADR-010, ADR-016, ADR-018). Brief thiết kế đỏ nhạt + animation áp dụng toàn site (ADR-021); ô mật khẩu có nút hiện/ẩn (ADR-022).
 
 ## Ma trận feature (PRD §5) → màn hình / service / test
@@ -64,13 +64,23 @@
 | 2026-11-24 | `GET /courses` trên dev server của chủ dự án (:3000, Atlas) | HTTP 200, hiển thị 2 khóa |
 | 2026-11-24 | Cloudinary Usage API (1 lần) | thành công: Free, 25 credits, usage 0% |
 | 2026-11-24 | Screenshot QA 375/768/1440 | không tràn ngang sau khi sửa; không có lỗi JS |
+| 2026-11-24 | `GET /api/auth/providers` + POST `/api/auth/signin/google` trên dev :3000, theo redirect tới Google | provider `google` có mặt; Google trả 302 tới trang chọn tài khoản (client_id + redirect_uri `http://localhost:3000/api/auth/callback/google` hợp lệ). Client secret chỉ xác minh được khi đăng nhập thật. |
+| 2026-11-24 | Atlas: đếm `authAccounts` (chỉ đọc) | 1 tài khoản provider=google, user active + emailVerified (tạo 05:21) → callback Google + tạo user đã chạy thật |
+| 2026-11-24 | **Audit V2** (đọc `.env` chỉ có/thiếu) | SMTP_HOST/PORT/SECURE/USER/PASSWORD, MAIL_FROM: **trống cả 6**; `MAIL_TRANSPORT` không có dòng. Lỗi thiết kế: dev luôn ghi file kể cả khi đã điền SMTP → đã sửa |
+| 2026-11-24 | `pnpm mail:check` (cấu hình hiện tại) | exit 1: transport=file, thiếu SMTP — đúng thực trạng. Thử cấu hình giả: cổng đóng → ESOCKET có hướng dẫn; Gmail From≠User + mật khẩu có dấu cách → báo lỗi trước khi kết nối |
+| 2026-11-24 | curl status trang public (dev :3000, trước sửa) | **soft-404**: `/courses/khong-ton-tai`, `/paths/khong-co`, `/u/khong-co` → 200 (cả UA Googlebot) |
+| 2026-11-24 | Build production `APP_ENV=production` + `next start :3100` (Atlas, chỉ đọc), UA Googlebot | sau sửa: slug lạ → 404; canonical tuyệt đối; filter → noindex,follow; JSON-LD Course/Breadcrumb/Organization; sitemap lastmod = publishedAt |
+| 2026-11-24 | Lab perf (Playwright, mobile 375 CPU 4× ~1,6 Mbps) | LCP 1,0–1,9 s, CLS ≤ 0,02; TBT~ `/courses` 660 ms (cần xử lý). Desktop LCP ≤ 0,56 s |
+| 2026-11-24 | No-JS / reduced-motion / Tab (Playwright) | 0 phần tử chữ bị ẩn; 0 animation chạy khi reduce; focus ring ở mọi điểm dừng Tab |
+| 2026-11-24 | `pnpm typecheck` · `pnpm lint` · `pnpm test` | pass · 0 lỗi · **97/97** (10 file; thêm 5 test SEO/mail) |
+| 2026-11-24 | `pnpm build` + `pnpm test:e2e` (Mongo cục bộ) | build pass; lần 1: 9/10 (E2E-1 lỗi vì `.next/cache` còn dữ liệu Atlas từ lần chạy :3100 → ID khóa không khớp DB cục bộ); xóa `.next/cache` → **10/10 pass** |
 
 ## Chưa kiểm chứng / cần chủ dự án
 
 1. ~~**Atlas Network Access**~~ — đã xong 2026-11-24 (index + seed trên `tuhoc_dev`). Đổi mạng/IP thì phải thêm lại IP — [RUNBOOK §1](RUNBOOK.md). Tài khoản demo do seed tạo: đổi mật khẩu hoặc xóa trước khi công khai.
 2. **Xoay vòng secret:** một phần đầu của `AUTH_SECRET` và `RATE_LIMIT_SECRET` đã bị in ra log của trợ lý trong phiên 2026-11-24 → nên tạo giá trị mới (`openssl rand -base64 32`).
-3. **Google OAuth:** điền `AUTH_GOOGLE_ID/SECRET`, redirect URI `<APP_URL>/api/auth/callback/google`, thử các nhánh đăng nhập/liên kết.
-4. **SMTP:** điền `SMTP_*`, `MAIL_FROM` (bắt buộc khi production).
+3. **Google OAuth:** đã điền; đăng nhập mới qua Google chạy thật trên Atlas. Còn thử: liên kết/hủy liên kết, user bị khóa (REMAINING_WORK P0-4).
+4. **SMTP:** `.env` còn **trống** → điền theo [RUNBOOK §Email](RUNBOOK.md) rồi chạy `pnpm mail:check` (REMAINING_WORK P0-1).
 5. **Cloudinary thật:** upload 1 video nhỏ đo chi phí xử lý (FREE_TIER_BUDGET §3.2), thử signed URL, `pnpm media:cleanup` dry-run.
 6. **Deploy:** chưa làm (chỉ khi được yêu cầu) — [DEPLOYMENT](DEPLOYMENT.md).
 

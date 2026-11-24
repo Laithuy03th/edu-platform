@@ -4,13 +4,34 @@ import { Reveal } from "@/components/motion";
 import { Container, EmptyState, PageHeader, Pagination } from "@/components/ui";
 import { LEVELS, LEVEL_LABEL, listCatalog, listCategories, parseCatalogQuery, type CatalogQuery } from "@/modules/courses/catalog";
 import { CatalogFilters } from "./filters";
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { pageOpenGraph } from "@/lib/seo";
 
-export const metadata = { title: "Khóa học", description: "Danh sách khóa học đã xuất bản: tìm theo tên, lọc theo chủ đề và cấp độ." };
+/**
+ * Chính sách index của catalog (SEO_AUDIT S03):
+ * - /courses và /courses?page=N (không lọc): index, canonical về chính URL trang đó (không gom về page 1).
+ * - Có tìm kiếm/lọc/sắp xếp: noindex,follow — tránh sinh vô hạn URL indexable từ tổ hợp filter.
+ */
+export async function generateMetadata({ searchParams }: { searchParams: Promise<CatalogQuery> }): Promise<Metadata> {
+  const query = parseCatalogQuery(await searchParams);
+  const filtered = Boolean(query.q || query.category || query.level || query.instructor || query.sort !== "newest");
+  const description = "Danh sách khóa học đã xuất bản: tìm theo tên, lọc theo chủ đề và cấp độ.";
+  const url = query.page > 1 ? `/courses?page=${query.page}` : "/courses";
+  return {
+    title: query.page > 1 && !filtered ? `Khóa học — trang ${query.page}` : "Khóa học",
+    description,
+    ...(filtered ? { robots: { index: false, follow: true } } : { alternates: { canonical: url } }),
+    openGraph: pageOpenGraph({ title: "Khóa học", description, url }),
+  };
+}
 
 export default async function CatalogPage({ searchParams }: { searchParams: Promise<CatalogQuery> }) {
   const query = parseCatalogQuery(await searchParams);
   const [{ items, total }, categories] = await Promise.all([listCatalog(query), listCategories()]);
   const pages = Math.max(1, Math.ceil(total / query.pageSize));
+  // Trang vượt quá số trang thật → 404 (không soft-404 trang rỗng status 200).
+  if (query.page > pages) notFound();
   const pageHref = (p: number) => {
     const sp = new URLSearchParams();
     if (query.q) sp.set("q", query.q);

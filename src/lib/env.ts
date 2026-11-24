@@ -30,10 +30,12 @@ const schema = z.object({
   MAIL_TRANSPORT: opt(z.enum(["file", "smtp"]).optional()),
   SMTP_HOST: opt(z.string().optional()),
   SMTP_PORT: int(587, 1),
-  SMTP_SECURE: bool(false),
+  // Không đặt → tự suy từ port (465 = TLS ngay từ đầu, còn lại STARTTLS).
+  SMTP_SECURE: opt(z.enum(["true", "false", "1", "0"]).optional()),
   SMTP_USER: opt(z.string().optional()),
   SMTP_PASSWORD: opt(z.string().optional()),
-  MAIL_FROM: opt(z.string().optional()),
+  // "Tên <email@domain>" hoặc "email@domain".
+  MAIL_FROM: opt(z.string().regex(/^(?:[^<>]+<[^\s<>@]+@[^\s<>@]+>|[^\s<>@]+@[^\s<>@]+)$/, "MAIL_FROM phải là email hoặc dạng \"Tên <email@domain>\"").optional()),
 
   CLOUDINARY_CLOUD_NAME: opt(z.string().regex(/^[A-Za-z0-9_-]+$/).optional()),
   CLOUDINARY_API_KEY: opt(z.string().optional()),
@@ -63,7 +65,7 @@ function load() {
   const e = parsed.data;
   const appEnv = e.APP_ENV ?? (e.NODE_ENV === "production" ? "production" : e.NODE_ENV);
   const appUrl = (e.APP_URL ?? "http://localhost:3000").replace(/\/+$/, "");
-  const mailTransport = e.MAIL_TRANSPORT ?? (appEnv === "production" ? "smtp" : "file");
+  const { mailTransport, smtpSecure } = mailSettings(e, appEnv === "production");
   if (appEnv === "production" && mailTransport === "file") {
     throw new ConfigError("MAIL_TRANSPORT=file không được phép khi APP_ENV=production.");
   }
@@ -74,10 +76,24 @@ function load() {
     appOrigin: new URL(appUrl).origin,
     isProduction: appEnv === "production",
     mailTransport,
+    smtpSecure,
     mongoDbName: e.MONGODB_DB_NAME ?? `tuhoc_${appEnv === "production" ? "prod" : appEnv === "test" ? "test" : "dev"}`,
     googleEnabled: Boolean(e.AUTH_GOOGLE_ID && e.AUTH_GOOGLE_SECRET),
     cloudinaryEnabled: Boolean(e.CLOUDINARY_CLOUD_NAME && e.CLOUDINARY_API_KEY && e.CLOUDINARY_API_SECRET),
   };
+}
+
+/**
+ * Chọn transport email (ADR-016, O02): MAIL_TRANSPORT nếu đặt; không thì có SMTP_HOST hoặc production → smtp,
+ * còn lại (dev/test không cấu hình) → file outbox. SMTP_SECURE trống → suy từ port (465 = TLS ngay).
+ */
+export function mailSettings(
+  e: { MAIL_TRANSPORT?: "file" | "smtp"; SMTP_HOST?: string; SMTP_PORT: number; SMTP_SECURE?: string },
+  isProduction: boolean,
+): { mailTransport: "file" | "smtp"; smtpSecure: boolean } {
+  const mailTransport = e.MAIL_TRANSPORT ?? (isProduction || e.SMTP_HOST ? "smtp" : "file");
+  const smtpSecure = e.SMTP_SECURE === undefined ? e.SMTP_PORT === 465 : e.SMTP_SECURE === "true" || e.SMTP_SECURE === "1";
+  return { mailTransport, smtpSecure };
 }
 
 export class ConfigError extends Error {

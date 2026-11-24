@@ -186,6 +186,23 @@ Node.js: máy dev hiện có **v22.13.0**, pnpm **11.25.0**. Vercel hỗ trợ 2
 
 - `PasswordInput` (client): nút con mắt hiện/ẩn có `aria-label`/`aria-pressed`, cảnh báo Caps Lock, thước đo **độ dài** cho mật khẩu mới (≥ 12, khuyến khích cụm từ dài — theo NIST, không ép ký tự đặc biệt). Không trim/đổi giá trị. Áp dụng cho mọi ô mật khẩu (đăng nhập, đăng ký, đặt lại, đổi mật khẩu, xác thực lại khi liên kết Google).
 
+## ADR-023 — Chọn transport email theo cấu hình thật (V2 O02)
+
+- **Vấn đề:** `MAIL_TRANSPORT` mặc định là `file` mọi khi `APP_ENV` khác production. Hệ quả: chủ dự án điền SMTP ở môi trường dev mà email vẫn chỉ được ghi ra `.data/mail`, dễ tưởng nhầm là đã gửi.
+- **Chọn:** `MAIL_TRANSPORT` nếu đặt; nếu không thì có `SMTP_HOST` hoặc production → `smtp`, còn lại → `file`. `SMTP_SECURE` để trống thì suy từ port (465 → TLS ngay). `MAIL_FROM` được validate định dạng. Thêm `pnpm mail:check`: `verify()` kết nối + đăng nhập mà không gửi; `--send-to` gửi đúng 1 thư. Lệnh không in mật khẩu.
+- **Thay thế đã cân nhắc:** bắt buộc đặt `MAIL_TRANSPORT=smtp`. Không chọn vì đây là thêm một bước dễ quên.
+
+## ADR-024 — Status 404 thật và chính sách index (V2 S01–S04)
+
+- **Vấn đề:** `app/loading.tsx` ở root bọc mọi trang trong Suspense, nên response đã gửi status 200 trước khi `notFound()` chạy → soft-404, kể cả với Googlebot.
+- **Chọn:**
+  - `loading.tsx` chỉ đặt ở vùng riêng tư (`(student)`, `admin`, `instructor`); trang public không có loading boundary.
+  - `metadataBase = APP_URL`; canonical tuyệt đối cho mọi trang public.
+  - Catalog có filter → `noindex, follow`; trang phân trang thuần → canonical về chính nó.
+  - JSON-LD chỉ dùng dữ liệu đang hiển thị (không rating/giá/ngày giả).
+  - `APP_ENV` khác production → `noindex, nofollow` toàn site.
+- **Đánh đổi:** chuyển trang public không còn skeleton (catalog vẫn có trạng thái chờ của bộ lọc). Thời gian render server của các trang này đo được ~0,1–0,4 s.
+
 ## Kiểm chứng sau triển khai (2026-11-24)
 
 | Mục [KC] | Kết quả |
@@ -194,4 +211,4 @@ Node.js: máy dev hiện có **v22.13.0**, pnpm **11.25.0**. Vercel hỗ trợ 2
 | Cookie phiên | `__Secure-authjs.session-token` khi HTTPS, `authjs.session-token` khi HTTP; HttpOnly, SameSite=Lax. |
 | Checks Google | Mặc định chỉ `["pkce"]` (+`state`) → cấu hình thêm `nonce` trong `server/auth/nextauth.ts`. |
 | Cloudinary Usage API (tài khoản thật, 1 lần gọi) | Gói **Free**, có khối `credits {usage, limit: 25, used_percent}` → snapshot được đánh dấu `authoritative`; `media_limits`: video 104.857.600 byte (100 MB), ảnh 10.485.760 byte. |
-| Transaction trên Atlas | **Chưa kiểm được**: kết nối bị từ chối ở TLS (IP chưa được thêm vào Atlas Network Access). Transaction đã chạy thành công trên replica set cục bộ (mongodb 8.2.6) trong integration test. |
+| Transaction trên Atlas | Lần đầu bị từ chối ở TLS (IP chưa có trong Network Access). Sau khi chủ dự án thêm IP (2026-11-24): kết nối OK, transaction chạy được, `db:indexes`/`db:seed` pass. |

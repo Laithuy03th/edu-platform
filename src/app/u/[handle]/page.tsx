@@ -9,7 +9,8 @@ import { Container } from "@/components/ui";
 export async function generateMetadata({ params }: { params: Promise<{ handle: string }> }) {
   const { handle } = await params;
   const p = await getPublicProfile(handle).catch(() => null);
-  return p ? { title: `${p.displayName} — Hồ sơ thành quả` } : { title: "Không tìm thấy hồ sơ", robots: { index: false } };
+  // Không tìm thấy: notFound() đã tự thêm noindex — không khai báo lặp.
+  return p ? { title: `${p.displayName} — Hồ sơ thành quả`, alternates: { canonical: `/u/${handle}` } } : { title: "Không tìm thấy hồ sơ" };
 }
 
 /** Hồ sơ công khai: CHỈ mục người dùng chọn; không email, điểm chi tiết, ghi chú. */

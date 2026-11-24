@@ -22,6 +22,7 @@
     "admin:create": "tsx --conditions=react-server scripts/create-admin.ts",
     "media:cleanup": "tsx --conditions=react-server scripts/media-cleanup.ts",
     "media:reconcile": "tsx --conditions=react-server scripts/media-reconcile.ts",
+    "mail:check": "tsx --conditions=react-server scripts/mail-check.ts",
     "usage:sync": "tsx --conditions=react-server scripts/usage-sync.ts",
     "bench:argon2": "tsx --conditions=react-server scripts/bench-argon2.ts"
   },

@@ -5,11 +5,12 @@ Nền tảng học trực tuyến — Next.js 16 App Router + MongoDB Atlas + Cl
 ## Bắt đầu mỗi phiên
 
 1. Đọc `docs/PROGRESS.md` (checkpoint, câu hỏi mở, việc tiếp theo) rồi `git status`/`git diff`. Không scaffold lại.
+   Đặc tả hiện hành: `PROMPT_CLAUDE_EDU_IT_V2.md`. Trạng thái từng ID: `docs/FEATURE_AUDIT.md`; việc tiếp: `docs/REMAINING_WORK.md`. Không đánh VERIFIED nếu chưa chạy luồng thật.
 2. Chỉ đọc tài liệu chi tiết liên quan tới task: `docs/DATA_MODEL.md`, `docs/AUTH_SECURITY.md`, `docs/MEDIA_PIPELINE.md`, `docs/API_CONTRACTS.md`, `docs/TECH_DECISIONS.md`.
 
 ## Lệnh xác minh
 
-`pnpm lint` · `pnpm typecheck` · `pnpm test` · `pnpm build` · `pnpm test:e2e` (cần `pnpm dev:db` + seed) · `pnpm db:indexes` · `pnpm db:seed`
+`pnpm lint` · `pnpm typecheck` · `pnpm test` · `pnpm build` · `pnpm test:e2e` (cần `pnpm dev:db` + seed; đổi DB thì xóa `.next/cache`) · `pnpm db:indexes` · `pnpm db:seed` · `pnpm mail:check`
 
 Script ngoài Next chạy bằng `tsx --conditions=react-server` (đã cấu hình trong package.json). `.env` của chủ dự án chứa credentials thật: khi chạy thử cục bộ, truyền `MONGODB_URI` của DB cục bộ trên dòng lệnh, không tạo `.env.local`, không in giá trị secret.
 
