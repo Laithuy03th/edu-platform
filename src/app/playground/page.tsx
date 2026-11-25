@@ -1,35 +1,35 @@
 import type { Metadata } from "next";
+import { getViewer } from "@/server/auth";
+import { parseId } from "@/lib/ids";
 import { pageOpenGraph } from "@/lib/seo";
-import Link from "next/link";
+import { getSnippet } from "@/modules/playground/service";
 import { Container } from "@/components/ui";
-import { Playground } from "./playground";
+import { PlaygroundTabs } from "./shared";
+import { WebPlayground } from "./web-playground";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const title = "Playground HTML, CSS, JavaScript";
-  const description = "Viết và chạy thử HTML/CSS/JavaScript ngay trên trình duyệt, xem kết quả và console — code chạy trong khung cách ly, không gửi lên server.";
+  const title = "Playground HTML, CSS, JavaScript trực tuyến";
+  const description = "Viết và chạy HTML/CSS/JavaScript ngay trên trình duyệt: trình soạn có gợi ý code và Emmet, xem trước theo cỡ điện thoại/máy tính bảng, console, thử thách có chấm tự động — code chạy trong khung cách ly, không gửi lên server.";
   return { title, description, alternates: { canonical: "/playground" }, openGraph: pageOpenGraph({ title, description, url: "/playground" }) };
 }
 
-/** P05: playground cách ly. Trang này chỉ là khung; code chạy trong iframe sandbox origin opaque (/api/sandbox/runner). */
-export default function PlaygroundPage() {
+/** P05: playground web. Trang chỉ là khung; code chạy trong iframe sandbox origin opaque (/api/sandbox/runner). */
+export default async function PlaygroundPage({ searchParams }: { searchParams: Promise<{ s?: string }> }) {
+  const [viewer, sp] = await Promise.all([getViewer(), searchParams]);
+  const sid = parseId(sp.s);
+  // ?s=<id>: chỉ chủ bản lưu mở được (người khác → bỏ qua, không lộ tồn tại)
+  const snippet = viewer && sid ? await getSnippet(viewer, sid).catch(() => null) : null;
   return (
-    <Container className="py-8 sm:py-10">
-      <nav aria-label="Loại playground" className="mb-4 flex gap-2 text-sm">
-        <span aria-current="page" className="rounded-full border border-brand-700 bg-brand-700 px-4 py-1.5 font-semibold text-white">
-          HTML/CSS/JS
-        </span>
-        <Link href="/playground/sql" className="rounded-full border border-line bg-surface px-4 py-1.5 font-semibold text-ink-soft hover:border-brand-300">
-          SQL
-        </Link>
-      </nav>
-      <div className="mb-6 max-w-3xl">
-        <p className="text-caption text-brand-700">Thực hành</p>
-        <h1 className="mt-1 font-display text-[clamp(2rem,4vw,2.75rem)] font-extrabold tracking-tight text-ink">Playground HTML, CSS, JavaScript</h1>
-        <p className="mt-2 text-ink-soft">
-          Code chạy trong một khung cách ly trên chính trình duyệt của bạn: không đọc được tài khoản/cookie của trang, không gọi được mạng, không gửi lên server. Bản nháp tự lưu trên máy này.
-        </p>
+    <Container className="max-w-[1500px] py-6 sm:py-8">
+      <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
+        <div className="max-w-3xl">
+          <p className="text-caption text-brand-700">Thực hành</p>
+          <h1 className="mt-1 font-display text-[clamp(1.9rem,3.6vw,2.6rem)] font-extrabold tracking-tight text-ink">Playground HTML · CSS · JavaScript</h1>
+          <p className="mt-1.5 text-ink-soft">Gõ code, xem kết quả ngay. Thử thách có chấm tự động, lưu bản code vào tài khoản, chia sẻ bằng link.</p>
+        </div>
+        <PlaygroundTabs current="web" />
       </div>
-      <Playground />
+      <WebPlayground signedIn={Boolean(viewer)} initialSnippet={snippet && snippet.kind === "web" ? { id: snippet.id, title: snippet.title, files: snippet.files } : null} />
     </Container>
   );
 }

@@ -152,6 +152,7 @@ export function SiteFooter() {
           <Link href="/technologies" className="block text-ink-soft hover:text-brand-700">Học theo công nghệ</Link>
           <Link href="/huong-dan" className="block text-ink-soft hover:text-brand-700">Hướng dẫn &amp; tham khảo</Link>
           <Link href="/playground" className="block text-ink-soft hover:text-brand-700">Playground HTML/CSS/JS</Link>
+          <Link href="/playground/python" className="block text-ink-soft hover:text-brand-700">Playground Python &amp; SQL</Link>
           <Link href="/paths" className="block text-ink-soft hover:text-brand-700">Lộ trình theo mục tiêu</Link>
           <Link href="/register" className="block text-ink-soft hover:text-brand-700">Tạo tài khoản</Link>
         </nav>

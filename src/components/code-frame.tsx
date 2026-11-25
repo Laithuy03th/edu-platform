@@ -2,15 +2,24 @@
 
 import { useRef, useState, type ComponentProps } from "react";
 import { IconCheck, IconCopy, IconPlay, IconTerminal } from "@/components/icons";
-import { playgroundHref } from "@/app/playground/playground";
+import { playgroundHref, pythonPlaygroundHref, sqlPlaygroundHref } from "@/lib/playground-share";
 
-/** Ngôn ngữ chạy được trong playground (P05). */
-const RUNNABLE: Record<string, "html" | "css" | "js"> = {
+/** Ngôn ngữ chạy được trong playground (P05/P06): web, SQL (SQLite), Python (Pyodide). */
+type Target = "html" | "css" | "js" | "sql" | "python";
+const RUNNABLE: Record<string, Target> = {
   html: "html",
   css: "css",
   js: "js",
   javascript: "js",
+  sql: "sql",
+  python: "python",
+  py: "python",
 };
+function runHref(t: Target, code: string) {
+  if (t === "sql") return sqlPlaygroundHref(code);
+  if (t === "python") return pythonPlaygroundHref(code);
+  return playgroundHref({ [t]: code });
+}
 
 const LANG_LABEL: Record<string, string> = {
   js: "JavaScript",
@@ -88,7 +97,7 @@ export function CodeFrame({
                 type="button"
                 onClick={() =>
                   window.open(
-                    playgroundHref({ [RUNNABLE[lang]!]: ref.current?.innerText ?? "" }),
+                    runHref(RUNNABLE[lang]!, ref.current?.innerText ?? ""),
                     "_blank",
                     "noopener",
                   )

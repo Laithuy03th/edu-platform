@@ -354,6 +354,17 @@ export interface ArticleDoc {
   updatedAt: Date;
 }
 
+/** Bản lưu playground của người học (P05/P06) — RIÊNG TƯ theo chủ sở hữu, không có trang công khai. */
+export type SnippetKind = "web" | "sql" | "python";
+export interface PlaygroundSnippetDoc {
+  userId: ObjectId;
+  kind: SnippetKind;
+  title: string;
+  files: Record<string, string>;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 /** Bookmark (L10): mỗi người lưu một mục tối đa một lần (unique userId+targetType+targetId). */
 export interface BookmarkDoc {
   userId: ObjectId;
@@ -711,6 +722,7 @@ export async function cols() {
     lessonProgress: db.collection<LessonProgressDoc>("lessonProgress"),
     notes: db.collection<NoteDoc>("notes"),
     bookmarks: db.collection<BookmarkDoc>("bookmarks"),
+    playgroundSnippets: db.collection<PlaygroundSnippetDoc>("playgroundSnippets"),
     articles: db.collection<ArticleDoc>("articles"),
     codeExercises: db.collection<CodeExerciseDoc>("codeExercises"),
     exerciseAttempts: db.collection<ExerciseAttemptDoc>("exerciseAttempts"),

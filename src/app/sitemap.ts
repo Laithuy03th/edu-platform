@@ -18,6 +18,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/huong-dan`, changeFrequency: "weekly", priority: 0.7 },
     { url: `${base}/playground`, changeFrequency: "monthly", priority: 0.5 },
     { url: `${base}/playground/sql`, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${base}/playground/python`, changeFrequency: "monthly", priority: 0.5 },
   ];
   try {
     const c = await cols();

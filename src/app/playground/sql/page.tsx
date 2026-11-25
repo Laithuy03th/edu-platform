@@ -1,34 +1,36 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { getViewer } from "@/server/auth";
+import { parseId } from "@/lib/ids";
 import { pageOpenGraph } from "@/lib/seo";
+import { getSnippet } from "@/modules/playground/service";
 import { Container } from "@/components/ui";
+import { PlaygroundTabs } from "../shared";
 import { SqlPlayground } from "./sql-playground";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const title = "Playground SQL (SQLite trong trình duyệt)";
-  const description = "Viết và chạy câu lệnh SQL trên một cơ sở dữ liệu mẫu ngay trong trình duyệt — SQLite biên dịch sang WebAssembly, không gửi dữ liệu lên server.";
+  const title = "Playground SQL trực tuyến — luyện SQL với SQLite ngay trên trình duyệt";
+  const description =
+    "Viết và chạy SQL trên dữ liệu mẫu (khóa học, cửa hàng) ngay trong trình duyệt: gợi ý tên bảng/cột, sơ đồ dữ liệu, 12 thử thách chấm tự động, xuất CSV, mở tệp .sqlite của bạn — không gửi dữ liệu lên server.";
   return { title, description, alternates: { canonical: "/playground/sql" }, openGraph: pageOpenGraph({ title, description, url: "/playground/sql" }) };
 }
 
-/** P06: SQL chạy trong trình duyệt (sql.js/SQLite WASM ~750 KB, chỉ tải khi mở trang này). Python: roadmap. */
-export default function SqlPlaygroundPage() {
+/** P06: SQL chạy trong trình duyệt (sql.js/SQLite WASM ~750 KB, chỉ tải khi mở trang này, trong Web Worker). */
+export default async function SqlPlaygroundPage({ searchParams }: { searchParams: Promise<{ s?: string }> }) {
+  const [viewer, sp] = await Promise.all([getViewer(), searchParams]);
+  const sid = parseId(sp.s);
+  // ?s=<id>: chỉ chủ bản lưu mở được (người khác → bỏ qua, không lộ tồn tại)
+  const snippet = viewer && sid ? await getSnippet(viewer, sid).catch(() => null) : null;
   return (
-    <Container className="py-8 sm:py-10">
-      <nav aria-label="Loại playground" className="mb-4 flex gap-2 text-sm">
-        <Link href="/playground" className="rounded-full border border-line bg-surface px-4 py-1.5 font-semibold text-ink-soft hover:border-brand-300">
-          HTML/CSS/JS
-        </Link>
-        <span aria-current="page" className="rounded-full border border-brand-700 bg-brand-700 px-4 py-1.5 font-semibold text-white">
-          SQL
-        </span>
-      </nav>
-      <div className="mb-6 max-w-3xl">
-        <h1 className="font-display text-[clamp(2rem,4vw,2.75rem)] font-extrabold tracking-tight text-ink">Playground SQL</h1>
-        <p className="mt-2 text-ink-soft">
-          SQLite chạy ngay trong trình duyệt của bạn (WebAssembly, ~750 KB, chỉ tải khi mở trang này). Dữ liệu mẫu nằm trong bộ nhớ — tải lại trang là về ban đầu, không có gì gửi lên server.
-        </p>
+    <Container className="max-w-[1500px] py-6 sm:py-8">
+      <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
+        <div className="max-w-3xl">
+          <p className="text-caption text-brand-700">Thực hành</p>
+          <h1 className="mt-1 font-display text-[clamp(1.9rem,3.6vw,2.6rem)] font-extrabold tracking-tight text-ink">Playground SQL</h1>
+          <p className="mt-1.5 text-ink-soft">SQLite chạy ngay trong trình duyệt của bạn. Hai bộ dữ liệu mẫu, thử thách chấm tự động, lịch sử truy vấn, xuất CSV — không cần cài đặt gì.</p>
+        </div>
+        <PlaygroundTabs current="sql" />
       </div>
-      <SqlPlayground />
+      <SqlPlayground signedIn={Boolean(viewer)} initialSnippet={snippet && snippet.kind === "sql" ? { id: snippet.id, title: snippet.title, files: snippet.files } : null} />
     </Container>
   );
 }

@@ -65,7 +65,7 @@ export function ExercisesEditor({ courseId, lessonId, items }: { courseId: strin
                 variant="ghost"
                 onClick={async () => {
                   const c = await confirm({ title: "Xóa bài tập?", description: "Kết quả làm bài của người học cho bài tập này sẽ không còn hiển thị.", tone: "danger", confirmLabel: "Xóa" });
-                  if (!c) return;
+                  if (!c.ok) return; // người dùng bấm Hủy → không xóa
                   const r = await del.run({ courseId, lessonId, id: it.id });
                   if (r?.ok) router.refresh();
                 }}
