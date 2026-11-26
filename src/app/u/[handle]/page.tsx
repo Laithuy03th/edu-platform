@@ -4,13 +4,17 @@ import { getPublicProfile } from "@/modules/achievements/service";
 import { formatDate } from "@/lib/time";
 import { Avatar } from "@/components/avatar";
 import { IconCheck, IconSparkle } from "@/components/icons";
+import { JsonLd, pageOpenGraph, profilePageLd } from "@/lib/seo";
 import { Container } from "@/components/ui";
 
 export async function generateMetadata({ params }: { params: Promise<{ handle: string }> }) {
   const { handle } = await params;
   const p = await getPublicProfile(handle).catch(() => null);
   // Không tìm thấy: notFound() đã tự thêm noindex — không khai báo lặp.
-  return p ? { title: `${p.displayName} — Hồ sơ thành quả`, alternates: { canonical: `/u/${handle}` } } : { title: "Không tìm thấy hồ sơ" };
+  if (!p) return { title: "Không tìm thấy hồ sơ" };
+  const title = `${p.displayName} — Hồ sơ thành quả`;
+  const description = p.bio || `Kỹ năng, khóa học đã hoàn thành và dự án của ${p.displayName} trên Tự Học.`;
+  return { title, description, alternates: { canonical: `/u/${handle}` }, openGraph: pageOpenGraph({ title, description, url: `/u/${handle}` }) };
 }
 
 /** Hồ sơ công khai: CHỈ mục người dùng chọn; không email, điểm chi tiết, ghi chú. */
@@ -20,6 +24,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
   if (!p) notFound();
   return (
     <div className="bg-grain-warm">
+      <JsonLd data={profilePageLd({ handle, displayName: p.displayName, bio: p.bio })} />
       <Container className="max-w-4xl py-12 sm:py-16">
         <header className="flex animate-fade-up flex-col items-center text-center">
           <div className="rounded-full p-1.5 ring-4 ring-brand-100">

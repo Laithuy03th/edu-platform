@@ -3,7 +3,7 @@ import { formatDate } from "@/lib/time";
 import { requireViewer } from "@/server/auth";
 import { linkedProviders } from "@/modules/auth/service";
 import { Alert, Card } from "@/components/ui";
-import { ChangePasswordForm, LinkGoogleForm, LogoutAllForm, SetPasswordButton, UnlinkGoogleButton } from "./forms";
+import { ChangePasswordForm, DataPrivacyCard, LinkGoogleForm, LogoutAllForm, SetPasswordButton, UnlinkGoogleButton } from "./forms";
 
 export const metadata = { title: "Bảo mật" };
 
@@ -58,6 +58,10 @@ export default async function SecurityPage({ searchParams }: { searchParams: Pro
             Phiên hết hạn sau 8 giờ không hoạt động và tối đa 7 ngày kể từ lần đăng nhập. Đăng xuất tất cả thiết bị sẽ vô hiệu mọi phiên ngay ở lần truy cập kế tiếp.
           </p>
           <LogoutAllForm />
+        </Card>
+        <Card>
+          <h2 className="mb-2 text-lg font-semibold">Dữ liệu của bạn</h2>
+          <DataPrivacyCard hasPassword={viewer.hasPassword} canDelete={!viewer.roles.includes("admin") && !viewer.roles.includes("instructor")} />
         </Card>
       </div>
     </div>

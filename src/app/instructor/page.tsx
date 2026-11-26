@@ -40,6 +40,11 @@ export default async function InstructorHome() {
                   <Link href={`/instructor/courses/${c.id}`} className="font-semibold hover:text-brand-700">
                     {c.title}
                   </Link>
+                  {c.enrollments ? (
+                    <Link href={`/instructor/courses/${c.id}/analytics`} className="ml-2 text-xs font-semibold text-brand-700 hover:underline">
+                      Phân tích →
+                    </Link>
+                  ) : null}
                   {c.review.state === "rejected" && c.review.rejectReason ? <p className="mt-1 text-xs text-danger-700">Lý do từ chối: {c.review.rejectReason}</p> : null}
                 </Td>
                 <Td>

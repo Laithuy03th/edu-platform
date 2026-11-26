@@ -9,6 +9,7 @@ import { ThemeToggle } from "./theme-toggle";
 import { cookies } from "next/headers";
 import { parseTheme, THEME_COOKIE } from "@/lib/site-cookies";
 import { Container, buttonClass } from "./ui";
+import { INFO_PAGES } from "@/components/info-page";
 
 export async function SiteHeader() {
   const viewer = await getViewer();
@@ -166,7 +167,16 @@ export function SiteFooter() {
         </nav>
       </Container>
       <div className="border-t border-line">
-        <Container className="py-4 text-xs text-ink-faint">© {new Date().getFullYear()} Tự Học · Demo</Container>
+        <Container className="flex flex-col gap-3 py-4 text-xs text-ink-faint sm:flex-row sm:items-center sm:justify-between">
+          <span>© {new Date().getFullYear()} Tự Học · Demo</span>
+          <nav aria-label="Về Tự Học" className="flex flex-wrap gap-x-4 gap-y-1">
+            {INFO_PAGES.map((p) => (
+              <Link key={p.href} href={p.href} className="hover:text-brand-700">
+                {p.label}
+              </Link>
+            ))}
+          </nav>
+        </Container>
       </div>
     </footer>
   );

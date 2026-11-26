@@ -636,3 +636,17 @@ html[data-theme="dark"] img:not([src*=".svg"]) {
   .code-typing .line { clip-path: none; }
   .studio-tilt { transform: none; }
 }
+
+/* Thanh số liệu (trang phân tích khóa học): một sắc độ cho độ lớn; đã kiểm tra tương phản >= 3:1
+   với nền sáng (brand-600 trên #fff) và nền tối (brand-500 trên surface tối). Đầu thanh bo 4px, gốc vuông. */
+.dv-track {
+  background-color: color-mix(in oklab, var(--color-line) 60%, transparent);
+  border-radius: 4px;
+}
+.dv-bar {
+  background-color: var(--color-brand-600);
+  border-radius: 0 4px 4px 0;
+}
+html[data-theme="dark"] .dv-bar {
+  background-color: var(--color-brand-500);
+}

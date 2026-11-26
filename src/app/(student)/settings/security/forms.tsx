@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { deleteAccountAction } from "@/modules/users/actions";
 import {
   changePasswordAction,
   logoutAllAction,
@@ -10,9 +12,9 @@ import {
 } from "@/modules/auth/actions";
 import { FormError } from "@/components/form-error";
 import { PasswordInput } from "@/components/password-input";
-import { Alert, Button, Field } from "@/components/ui";
+import { Alert, Button, Field, Input } from "@/components/ui";
 import { formToObject, useAction } from "@/components/use-action";
-import { useConfirm } from "@/components/overlays";
+import { Dialog, useConfirm, useToast } from "@/components/overlays";
 
 export function ChangePasswordForm() {
   const a = useAction(changePasswordAction);
@@ -119,6 +121,76 @@ export function LogoutAllForm() {
       >
         Đăng xuất tất cả thiết bị
       </Button>
+    </div>
+  );
+}
+
+/** Quyền với dữ liệu cá nhân: tải toàn bộ dữ liệu (JSON) và tự xóa tài khoản. */
+export function DataPrivacyCard({ hasPassword, canDelete }: { hasPassword: boolean; canDelete: boolean }) {
+  const router = useRouter();
+  const a = useAction(deleteAccountAction);
+  const toast = useToast();
+  const [open, setOpen] = useState(false);
+  const fe = a.fieldErrors;
+  return (
+    <div className="space-y-4 text-sm">
+      <div>
+        <p className="text-ink-soft">Tải mọi dữ liệu gắn với tài khoản: hồ sơ, khóa đã đăng ký, tiến độ, ghi chú, kết quả quiz, bài nộp, bản lưu playground… (tệp JSON).</p>
+        <a href="/api/me/export" download className="mt-2 inline-flex h-10 items-center rounded-full border border-line-strong bg-surface px-4 font-semibold text-ink transition hover:border-brand-300 hover:text-brand-700">
+          Tải dữ liệu của tôi (.json)
+        </a>
+      </div>
+      <div className="border-t border-line pt-4">
+        <p className="font-semibold text-ink">Xóa tài khoản</p>
+        {canDelete ? (
+          <>
+            <p className="mt-1 text-ink-soft">Xóa vĩnh viễn ghi chú, tiến độ, kết quả quiz, bài nộp, bản lưu playground và liên kết đăng nhập. Đánh giá và hỏi đáp bạn đã đăng được giữ nhưng hiển thị là “Người dùng đã xóa”. Không hoàn tác được.</p>
+            <Button variant="danger" className="mt-3" onClick={() => setOpen(true)}>
+              Xóa tài khoản…
+            </Button>
+          </>
+        ) : (
+          <p className="mt-1 text-ink-soft">Tài khoản giảng viên/quản trị đang gắn với khóa học và quyền duyệt nên không tự xóa được — hãy liên hệ quản trị viên.</p>
+        )}
+      </div>
+      <Dialog open={open} onClose={() => setOpen(false)} title="Xóa vĩnh viễn tài khoản?" description="Nên tải dữ liệu của bạn trước khi xóa." size="sm">
+        <form
+          className="space-y-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            a.run(formToObject(e.currentTarget)).then((r) => {
+              if (r?.ok) {
+                setOpen(false);
+                toast({ tone: "success", message: "Tài khoản của bạn đã được xóa. Cảm ơn bạn đã học cùng Tự Học." });
+                router.replace("/");
+                router.refresh();
+              }
+            });
+          }}
+        >
+          <FormError error={a.error} />
+          {hasPassword ? (
+            <Field id="delete-password" label="Mật khẩu hiện tại" errors={fe.currentPassword}>
+              <PasswordInput id="delete-password" name="currentPassword" autoComplete="current-password" required />
+            </Field>
+          ) : (
+            <Field id="delete-email" label="Gõ email của tài khoản" errors={fe.confirmEmail}>
+              <Input id="delete-email" name="confirmEmail" type="email" autoComplete="off" required />
+            </Field>
+          )}
+          <Field id="delete-confirm" label="Gõ XÓA TÀI KHOẢN để xác nhận" errors={fe.confirmText}>
+            <Input id="delete-confirm" name="confirmText" autoComplete="off" required />
+          </Field>
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
+              Hủy
+            </Button>
+            <Button type="submit" variant="danger" pending={a.pending}>
+              Xóa vĩnh viễn
+            </Button>
+          </div>
+        </form>
+      </Dialog>
     </div>
   );
 }

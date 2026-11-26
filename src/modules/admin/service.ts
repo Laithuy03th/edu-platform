@@ -64,6 +64,8 @@ export async function setUserStatus(admin: Viewer, userId: ObjectId, status: "ac
   const c = await cols();
   const u = await c.users.findOne({ _id: userId });
   if (!u) throw notFound("Không tìm thấy người dùng");
+  // Tài khoản người dùng đã tự xóa (ẩn danh hóa) không được mở lại
+  if (u.status === "deleted") throw new AppError("INVALID_STATE", "Tài khoản này đã bị người dùng xóa.");
   if (status === "blocked" && u.roles.includes("admin") && (await adminCount()) <= 1) throw new AppError("FORBIDDEN", "Không thể khóa quản trị viên cuối cùng.");
   // Khóa → tăng authVersion để mọi phiên bị từ chối ngay (A7).
   await c.users.updateOne({ _id: userId }, { $set: { status, blockedReason: status === "blocked" ? reason : null, updatedAt: new Date() }, ...(status === "blocked" ? { $inc: { authVersion: 1 } } : {}) });

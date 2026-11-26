@@ -8,6 +8,7 @@ import { IconArrowRight, IconBook, IconCheck, IconClock, IconPlay, IconRubric, I
 import { Reveal } from "../motion";
 import { Badge, buttonClass } from "../ui";
 import type { GoalPanel } from "./goal-tabs";
+import { coverSrcSet } from "@/lib/images";
 
 type Tech = { slug: string; name: string; type: string; courseCount: number };
 
@@ -117,7 +118,7 @@ export function FeaturedEditorial({ courses }: { courses: CourseCardDto[] }) {
         <article className="group relative grid overflow-hidden rounded-[var(--radius-xl)] border border-line bg-surface shadow-md transition duration-500 hover:shadow-lg md:grid-cols-[1.15fr_1fr]">
           <div className="relative aspect-video overflow-hidden md:aspect-auto md:min-h-[340px]">
             {lead.thumbnailUrl ? (
-              <img src={lead.thumbnailUrl} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-[var(--ease-out-soft)] group-hover:scale-[1.04]" />
+              <img {...coverSrcSet(lead.thumbnailUrl)} sizes="(min-width: 1024px) 640px, 100vw" alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-[var(--ease-out-soft)] group-hover:scale-[1.04]" />
             ) : (
               <CourseCover title={lead.title} className="absolute inset-0 h-full w-full" />
             )}
@@ -177,7 +178,7 @@ function SmallCourse({ c }: { c: CourseCardDto }) {
   return (
     <article className="group relative flex overflow-hidden rounded-[var(--radius-lg)] border border-line bg-surface shadow-sm transition hover:-translate-y-1 hover:shadow-md">
       <div className="relative aspect-video w-full overflow-hidden">
-        {c.thumbnailUrl ? <img src={c.thumbnailUrl} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" /> : <CourseCover title={c.title} className="h-full w-full" />}
+        {c.thumbnailUrl ? <img {...coverSrcSet(c.thumbnailUrl)} sizes="(min-width: 1024px) 320px, 50vw" alt="" loading="lazy" decoding="async" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" /> : <CourseCover title={c.title} className="h-full w-full" />}
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4 pt-12 text-white">
           <p className="text-xs font-semibold opacity-90">{LEVEL_LABEL[c.level]} · {c.lessonCount} bài</p>
           <h3 className="mt-1 font-bold leading-snug">

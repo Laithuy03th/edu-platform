@@ -10,7 +10,7 @@ import { WebPlayground } from "./web-playground";
 export async function generateMetadata(): Promise<Metadata> {
   const title = "Playground HTML, CSS, JavaScript trực tuyến";
   const description = "Viết và chạy HTML/CSS/JavaScript ngay trên trình duyệt: trình soạn có gợi ý code và Emmet, xem trước theo cỡ điện thoại/máy tính bảng, console, thử thách có chấm tự động — code chạy trong khung cách ly, không gửi lên server.";
-  return { title, description, alternates: { canonical: "/playground" }, openGraph: pageOpenGraph({ title, description, url: "/playground" }) };
+  return { title, description, alternates: { canonical: "/playground" }, openGraph: pageOpenGraph({ title, description, url: "/playground", images: "file" }) };
 }
 
 /** P05: playground web. Trang chỉ là khung; code chạy trong iframe sandbox origin opaque (/api/sandbox/runner). */

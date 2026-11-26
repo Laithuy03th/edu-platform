@@ -19,15 +19,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/playground`, changeFrequency: "monthly", priority: 0.5 },
     { url: `${base}/playground/sql`, changeFrequency: "monthly", priority: 0.5 },
     { url: `${base}/playground/python`, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${base}/gioi-thieu`, changeFrequency: "yearly", priority: 0.3 },
+    { url: `${base}/chinh-sach-bao-mat`, changeFrequency: "yearly", priority: 0.2 },
+    { url: `${base}/dieu-khoan-su-dung`, changeFrequency: "yearly", priority: 0.2 },
+    { url: `${base}/lien-he`, changeFrequency: "yearly", priority: 0.2 },
   ];
   try {
     const c = await cols();
     const [courses, paths] = await Promise.all([
       // lastmod = lần duyệt gần nhất làm đổi nội dung công khai (sửa bản nháp chưa duyệt không đổi lastmod).
-      c.courses.find({ status: "published", published: { $ne: null } }).project<{ slug: string; published: { publishedAt: Date; contentUpdatedAt?: Date } }>({ slug: 1, "published.publishedAt": 1, "published.contentUpdatedAt": 1 }).limit(1000).toArray(),
+      c.courses.find({ status: "published", published: { $ne: null } }).project<{ slug: string; published: { publishedAt: Date; contentUpdatedAt?: Date; thumbnailUrl?: string | null } }>({ slug: 1, "published.publishedAt": 1, "published.contentUpdatedAt": 1, "published.thumbnailUrl": 1 }).limit(1000).toArray(),
       c.learningPaths.find({ status: "published" }).project<{ slug: string; updatedAt: Date }>({ slug: 1, updatedAt: 1 }).limit(500).toArray(),
     ]);
-    for (const x of courses) items.push({ url: `${base}/courses/${x.slug}`, lastModified: x.published.contentUpdatedAt ?? x.published.publishedAt, changeFrequency: "weekly", priority: 0.8 });
+    // S05: ảnh bìa khóa (Cloudinary, công khai) vào image sitemap
+    for (const x of courses) items.push({ url: `${base}/courses/${x.slug}`, lastModified: x.published.contentUpdatedAt ?? x.published.publishedAt, changeFrequency: "weekly", priority: 0.8, ...(x.published.thumbnailUrl ? { images: [x.published.thumbnailUrl] } : {}) });
     // Chỉ hub có khóa đã xuất bản (không đưa công nghệ "planned"/rỗng vào sitemap).
     for (const h of await listHubSlugs()) items.push({ url: `${base}/technologies/${h.slug}`, lastModified: h.lastModified, changeFrequency: "weekly", priority: 0.7 });
     for (const a of await listArticleSitemap()) items.push({ url: `${base}/huong-dan/${a.slug}`, lastModified: a.published.contentUpdatedAt, changeFrequency: "monthly", priority: 0.6 });

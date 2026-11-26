@@ -274,7 +274,9 @@ export function Skeleton({ className }: { className?: string }) {
 }
 
 export function Container({ className, ...props }: ComponentProps<"div">) {
-  return <div className={cn("mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8", className)} {...props} />;
+  // cn = clsx (không gộp class xung đột): trang tự đặt max-w-* thì bỏ max-w-7xl mặc định, nếu không 7xl luôn thắng
+  const customWidth = /(^|\s)max-w-/.test(className ?? "");
+  return <div className={cn("mx-auto w-full px-4 sm:px-6 lg:px-8", !customWidth && "max-w-7xl", className)} {...props} />;
 }
 
 export function Section({ className, ...props }: ComponentProps<"section">) {

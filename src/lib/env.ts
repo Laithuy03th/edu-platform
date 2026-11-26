@@ -52,6 +52,12 @@ const schema = z.object({
   USAGE_STALE_AFTER_MINUTES: int(1440, 1),
 
   ALLOW_ADMIN_BOOTSTRAP: bool(false),
+
+  // Mã xác minh quyền sở hữu site (chỉ phần "content" của thẻ meta, không phải secret) — S08
+  GOOGLE_SITE_VERIFICATION: opt(z.string().regex(/^[A-Za-z0-9_-]{10,100}$/).optional()),
+  BING_SITE_VERIFICATION: opt(z.string().regex(/^[A-Za-z0-9]{10,100}$/).optional()),
+  // Email liên hệ CÔNG KHAI hiển thị ở trang Liên hệ/Chính sách (để trống → chỉ hướng dẫn kênh trong ứng dụng)
+  CONTACT_EMAIL: opt(z.email().optional()),
 });
 
 export type ServerEnv = ReturnType<typeof load>;

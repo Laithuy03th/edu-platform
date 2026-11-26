@@ -6,7 +6,7 @@ import { LEVELS, LEVEL_LABEL, listCatalog, listCategories, parseCatalogQuery, ty
 import { CatalogFilters } from "./filters";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { pageOpenGraph } from "@/lib/seo";
+import { JsonLd, itemListLd, pageOpenGraph } from "@/lib/seo";
 
 /**
  * Chính sách index của catalog (SEO_AUDIT S03):
@@ -45,6 +45,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
   };
   return (
     <div className="bg-grain-warm">
+      {!query.q && !query.category && !query.level && !query.instructor && !query.tech && items.length ? <JsonLd data={itemListLd("Khóa học trên Tự Học", items.map((c) => `/courses/${c.slug}`))} /> : null}
       <Container className="py-10 sm:py-14">
         <PageHeader eyebrow="Thư viện" title="Khóa học" description="Chọn khóa phù hợp với mục tiêu. Bài có nhãn “Học thử” xem được trước khi đăng ký." />
         <CatalogFilters

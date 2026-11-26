@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useId, useRef, useState, type KeyboardEvent } from "react";
 import { IconArrowRight, IconBook, IconClock } from "../icons";
+import { coverSrcSet } from "@/lib/images";
 
 export type GoalPanel = {
   key: string;
@@ -90,7 +91,7 @@ export function GoalTabs({ goals }: { goals: GoalPanel[] }) {
                     style={{ animationDelay: `${j * 60}ms` }}
                   >
                     <span className="relative aspect-video w-32 shrink-0 overflow-hidden rounded-[var(--radius-md)] bg-brand-100 sm:w-40">
-                      {c.thumbnailUrl ? <img src={c.thumbnailUrl} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" /> : null}
+                      {c.thumbnailUrl ? <img {...coverSrcSet(c.thumbnailUrl)} sizes="(min-width: 1024px) 320px, 50vw" alt="" loading="lazy" decoding="async" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" /> : null}
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="text-caption text-brand-700">{c.level}</span>

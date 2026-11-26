@@ -28,6 +28,11 @@ export const metadata: Metadata = {
   openGraph: { type: "website", siteName: SITE_NAME, locale: "vi_VN", images: [DEFAULT_OG_IMAGE] },
   twitter: { card: "summary_large_image" },
   robots: appEnv.isProduction ? undefined : { index: false, follow: false },
+  // S08: xác minh Google Search Console / Bing Webmaster bằng thẻ meta (đặt biến môi trường khi deploy)
+  verification: {
+    ...(appEnv.GOOGLE_SITE_VERIFICATION ? { google: appEnv.GOOGLE_SITE_VERIFICATION } : {}),
+    ...(appEnv.BING_SITE_VERIFICATION ? { other: { "msvalidate.01": appEnv.BING_SITE_VERIFICATION } } : {}),
+  },
 };
 
 export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#fffaf9" };

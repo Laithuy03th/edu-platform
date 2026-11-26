@@ -4,6 +4,7 @@ import { LEVEL_LABEL } from "@/modules/courses/catalog";
 import { formatMinutes } from "@/lib/text";
 import { IconBook, IconClock, IconUser } from "./icons";
 import { Badge } from "./ui";
+import { coverSrcSet } from "@/lib/images";
 
 export function Stars({ value, count }: { value: number; count: number }) {
   if (count === 0) return <span className="text-xs text-ink-faint">Chưa có đánh giá</span>;
@@ -48,7 +49,7 @@ export function CourseCard({ course }: { course: CourseCardDto }) {
     <article className="group relative flex h-full flex-col overflow-hidden rounded-[var(--radius-lg)] border border-line bg-surface shadow-sm transition duration-[var(--duration-ui)] ease-[var(--ease-out-soft)] hover:-translate-y-1 hover:border-brand-200 hover:shadow-md">
       <div className="relative aspect-[16/9] overflow-hidden">
         {course.thumbnailUrl ? (
-          <img src={course.thumbnailUrl} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover transition-transform duration-500 ease-[var(--ease-out-soft)] group-hover:scale-[1.04]" />
+          <img {...coverSrcSet(course.thumbnailUrl)} sizes="(min-width: 1024px) 360px, (min-width: 640px) 50vw, 100vw" alt="" loading="lazy" decoding="async" className="h-full w-full object-cover transition-transform duration-500 ease-[var(--ease-out-soft)] group-hover:scale-[1.04]" />
         ) : (
           <CourseCover title={course.title} className="h-full w-full transition-transform duration-500 ease-[var(--ease-out-soft)] group-hover:scale-[1.04]" />
         )}

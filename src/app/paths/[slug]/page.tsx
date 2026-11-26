@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     description: d.path.goal,
     alternates: { canonical: url },
     ...robotsUnless(d.path.status === "published"),
-    openGraph: pageOpenGraph({ title: d.path.title, description: d.path.goal, url }),
+    openGraph: pageOpenGraph({ title: d.path.title, description: d.path.goal, url, images: "file" }),
   };
 }
 

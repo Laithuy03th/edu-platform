@@ -22,7 +22,9 @@ import { isBookmarked } from "@/modules/bookmarks/service";
 import { listPublicArticles } from "@/modules/articles/service";
 import { safeLoad } from "@/components/safe-load";
 import { CourseReviews } from "./reviews";
-import { JsonLd, breadcrumbLd, courseLd, pageOpenGraph, robotsUnless } from "@/lib/seo";
+import { JsonLd, breadcrumbLd, courseLd, pageOpenGraph, robotsUnless, videoLd } from "@/lib/seo";
+import { coverSrcSet } from "@/lib/images";
+import { getCoursePreviewVideo } from "@/modules/media/delivery";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -67,11 +69,14 @@ export default async function CourseDetailPage({ params }: Props) {
   const enrollment = viewer ? await getEnrollment(viewer.id, courseId) : null;
   if (course.status === "archived" && !enrollment && !isOwner && !isAdmin) notFound();
   const progress = viewer && enrollment?.status === "active" ? await courseProgressFor(viewer.id, courseId) : null;
-  const [reviews, myReview, reviewAllowed] = await Promise.all([
+  const [reviews, myReview, reviewAllowed, preview] = await Promise.all([
     listCourseReviews(courseId, 1),
     viewer ? myCourseReview(viewer.id, courseId) : null,
     viewer ? canReviewCourse(viewer, courseId) : false,
+    // S05: video học thử công khai (nếu có) — nhúng ở khối đăng ký + VideoObject
+    course.status === "published" ? safeLoad(() => getCoursePreviewVideo(course.id), null) : null,
   ]);
+  const cover = coverSrcSet(course.thumbnailUrl);
   const firstLesson = course.chapters[0]?.lessons[0]?.id;
   const previewCount = course.chapters.reduce((n, ch) => n + ch.lessons.filter((l) => l.isPreview).length, 0);
   const firstPreview = course.chapters.flatMap((ch) => ch.lessons).find((l) => l.isPreview);
@@ -92,6 +97,9 @@ export default async function CourseDetailPage({ params }: Props) {
           data={[
             courseLd({ ...course, level: LEVEL_LABEL[course.level] }),
             breadcrumbLd([{ name: "Khóa học", path: "/courses" }, { name: course.title, path: `/courses/${course.slug}` }]),
+            ...(preview?.posterUrl && preview.durationSeconds
+              ? [videoLd({ name: `${course.title} — ${preview.lessonTitle}`, description: course.shortDescription, contentUrl: preview.url, thumbnailUrl: preview.posterUrl, uploadDate: preview.uploadDate, durationSeconds: preview.durationSeconds })]
+              : []),
           ]}
         />
       ) : null}
@@ -181,7 +189,22 @@ export default async function CourseDetailPage({ params }: Props) {
           <aside className="lg:row-span-2">
             <Card className="animate-scale-in space-y-5 p-0 sm:p-0 lg:sticky lg:top-24">
               <div className="overflow-hidden rounded-t-[var(--radius-lg)]">
-                {course.thumbnailUrl ? <img src={course.thumbnailUrl} alt="" className="aspect-video w-full object-cover" /> : <CourseCover title={course.title} className="aspect-video w-full" />}
+                {preview ? (
+                  // preload="none": không tải byte video nào cho tới khi người xem bấm phát (tiết kiệm băng thông Cloudinary)
+                  <figure>
+                    <video controls preload="none" playsInline poster={cover?.src ?? preview.posterUrl ?? undefined} className="aspect-video w-full bg-black object-cover" aria-label={`Video học thử: ${preview.lessonTitle}`}>
+                      <source src={preview.url} type={`video/${preview.format}`} />
+                    </video>
+                    <figcaption className="px-5 pt-3 text-xs leading-5 text-ink-soft sm:px-6">
+                      <span className="font-semibold text-brand-700">▶ Xem thử:</span> <span className="font-semibold text-ink">{preview.lessonTitle}</span>
+                      {preview.durationSeconds ? <span className="text-ink-faint"> · {formatDuration(preview.durationSeconds)}</span> : null}
+                    </figcaption>
+                  </figure>
+                ) : cover ? (
+                  <img src={cover.src} srcSet={cover.srcSet} sizes="(min-width: 1024px) 380px, 100vw" alt={`Ảnh bìa khóa học ${course.title}`} fetchPriority="high" className="aspect-video w-full object-cover" />
+                ) : (
+                  <CourseCover title={course.title} className="aspect-video w-full" />
+                )}
               </div>
               <div className="space-y-4 px-5 pb-5 sm:px-6 sm:pb-6">
                 {enrollment?.status === "active" && progress ? (

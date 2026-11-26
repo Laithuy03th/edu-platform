@@ -20,7 +20,9 @@ export interface UserDoc {
   learningGoal: string;
   avatar: { kind: "initials" } | { kind: "google"; url: string };
   roles: Role[];
-  status: "active" | "blocked";
+  /** deleted: người dùng tự xóa tài khoản (đã ẩn danh hóa, không đăng nhập được) */
+  status: "active" | "blocked" | "deleted";
+  deletedAt?: Date | null;
   blockedReason: string | null;
   authVersion: number;
   dataSaver: boolean;

@@ -46,6 +46,7 @@ export const RULES = {
   adminUser: { name: "admin:user", limit: 300, windowSec: 3600 },
   usageRefresh: { name: "usage-refresh:global", limit: 1, windowSec: 900 },
   exportNotes: { name: "export-notes:user", limit: 10, windowSec: 3600 },
+  exportData: { name: "export-data:user", limit: 5, windowSec: 3600 },
   health: { name: "health:ip", limit: 60, windowSec: 60 },
 } satisfies Record<string, RateRule>;
 

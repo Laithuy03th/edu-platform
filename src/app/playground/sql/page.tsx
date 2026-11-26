@@ -11,7 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const title = "Playground SQL trực tuyến — luyện SQL với SQLite ngay trên trình duyệt";
   const description =
     "Viết và chạy SQL trên dữ liệu mẫu (khóa học, cửa hàng) ngay trong trình duyệt: gợi ý tên bảng/cột, sơ đồ dữ liệu, 12 thử thách chấm tự động, xuất CSV, mở tệp .sqlite của bạn — không gửi dữ liệu lên server.";
-  return { title, description, alternates: { canonical: "/playground/sql" }, openGraph: pageOpenGraph({ title, description, url: "/playground/sql" }) };
+  return { title, description, alternates: { canonical: "/playground/sql" }, openGraph: pageOpenGraph({ title, description, url: "/playground/sql", images: "file" }) };
 }
 
 /** P06: SQL chạy trong trình duyệt (sql.js/SQLite WASM ~750 KB, chỉ tải khi mở trang này, trong Web Worker). */

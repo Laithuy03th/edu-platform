@@ -18,7 +18,40 @@ export function JsonLd({ data }: { data: Record<string, unknown> | Record<string
 }
 
 export function organizationLd() {
-  return { "@context": "https://schema.org", "@type": "Organization", name: SITE_NAME, url: absoluteUrl("/") };
+  // logo: PNG 512×512 dựng từ app/icon.tsx (Google cần ảnh ≥ 112×112, crawl được)
+  return { "@context": "https://schema.org", "@type": "Organization", name: SITE_NAME, url: absoluteUrl("/"), logo: absoluteUrl("/icon/512") };
+}
+
+/** ItemList cho trang danh sách (khóa học, hub): thứ tự + URL thật của các mục đang hiển thị. */
+export function itemListLd(name: string, paths: string[]) {
+  return { "@context": "https://schema.org", "@type": "ItemList", name, numberOfItems: paths.length, itemListElement: paths.map((p, i) => ({ "@type": "ListItem", position: i + 1, url: absoluteUrl(p) })) };
+}
+
+/** Hồ sơ công khai (ProfilePage + Person): chỉ những gì người dùng chọn công khai — không email, không dữ liệu học riêng tư. */
+export function profilePageLd(p: { handle: string; displayName: string; bio: string; createdAt?: string }) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    url: absoluteUrl(`/u/${p.handle}`),
+    ...(p.createdAt ? { dateCreated: p.createdAt } : {}),
+    mainEntity: { "@type": "Person", name: p.displayName, alternateName: p.handle, ...(p.bio ? { description: p.bio } : {}), url: absoluteUrl(`/u/${p.handle}`) },
+  };
+}
+
+/** VideoObject cho video học thử công khai (S05): chỉ khi có URL video, ảnh poster, ngày tải lên và thời lượng thật. */
+export function videoLd(v: { name: string; description: string; contentUrl: string; thumbnailUrl: string; uploadDate: string; durationSeconds: number }) {
+  const s = Math.max(1, Math.round(v.durationSeconds));
+  return {
+    "@context": "https://schema.org",
+    "@type": "VideoObject",
+    name: v.name,
+    description: v.description,
+    contentUrl: v.contentUrl,
+    thumbnailUrl: [v.thumbnailUrl],
+    uploadDate: v.uploadDate,
+    duration: `PT${Math.floor(s / 60)}M${s % 60}S`,
+    inLanguage: "vi",
+  };
 }
 
 export function websiteLd() {
@@ -54,10 +87,13 @@ export function courseLd(c: { slug: string; title: string; shortDescription: str
 
 /** Open Graph đầy đủ cho trang con (Next gộp metadata NÔNG: openGraph của trang thay toàn bộ của layout). */
 export const DEFAULT_OG_IMAGE = { url: "/og-default.jpg", width: 1200, height: 630, alt: "Tự Học — học lập trình tiếng Việt" };
-export function pageOpenGraph(og: { title: string; description: string; url: string; images?: string[] }) {
-  // Không có ảnh riêng (bìa khóa học) → ảnh mặc định 1200×630 tĩnh (không render động theo query).
+export function pageOpenGraph(og: { title: string; description: string; url: string; images?: string[] | "file" }) {
+  // "file": route có opengraph-image.tsx (ảnh dựng từ dữ liệu thật) → KHÔNG khai báo images, nếu không metadata
+  // của trang sẽ đè ảnh đó. Không có ảnh riêng → ảnh mặc định 1200×630 tĩnh (không render động theo query).
   const { images, ...rest } = og;
-  return { type: "website" as const, siteName: SITE_NAME, locale: "vi_VN", ...rest, images: images?.length ? images : [DEFAULT_OG_IMAGE] };
+  const base = { type: "website" as const, siteName: SITE_NAME, locale: "vi_VN", ...rest };
+  if (images === "file") return base;
+  return { ...base, images: images?.length ? images : [DEFAULT_OG_IMAGE] };
 }
 
 /** Chỉ thêm key robots khi cần chặn index — để trống thì kế thừa chính sách theo môi trường từ layout. */

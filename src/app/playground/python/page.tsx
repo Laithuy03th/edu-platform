@@ -11,7 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const title = "Playground Python trực tuyến — chạy Python 3 ngay trên trình duyệt";
   const description =
     "Viết và chạy Python 3 miễn phí ngay trên trình duyệt, không cần cài đặt: input(), numpy, pandas, vẽ biểu đồ matplotlib, thử thách chấm tự động, lưu và chia sẻ code — chạy trong khung cách ly an toàn.";
-  return { title, description, alternates: { canonical: "/playground/python" }, openGraph: pageOpenGraph({ title, description, url: "/playground/python" }) };
+  return { title, description, alternates: { canonical: "/playground/python" }, openGraph: pageOpenGraph({ title, description, url: "/playground/python", images: "file" }) };
 }
 
 /** P06 phần Python: Pyodide (CPython → WebAssembly) chạy trong Web Worker của khung cách ly /api/sandbox/python. */

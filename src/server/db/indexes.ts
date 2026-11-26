@@ -69,10 +69,13 @@ export const INDEXES: Record<string, IndexDescription[]> = {
   quizAttempts: [
     { key: { userId: 1, submissionId: 1 }, name: "uniq_submission", unique: true },
     { key: { userId: 1, quizId: 1, submittedAt: -1 }, name: "user_quiz_time" },
+    // Phân tích khóa: tỉ lệ đúng từng câu theo quiz
+    { key: { courseId: 1, quizId: 1 }, name: "course_quiz" },
   ],
   quizResults: [
     { key: { userId: 1, quizId: 1 }, name: "uniq_user_quiz", unique: true },
     { key: { userId: 1, courseId: 1 }, name: "user_course" },
+    { key: { courseId: 1, quizId: 1 }, name: "course_quiz" },
   ],
   enrollments: [
     { key: { userId: 1, courseId: 1 }, name: "uniq_user_course", unique: true },
@@ -82,6 +85,8 @@ export const INDEXES: Record<string, IndexDescription[]> = {
   lessonProgress: [
     { key: { userId: 1, lessonId: 1 }, name: "uniq_user_lesson", unique: true },
     { key: { userId: 1, courseId: 1 }, name: "user_course" },
+    // Phân tích khóa (giảng viên): số người hoàn thành từng bài
+    { key: { courseId: 1, lessonId: 1 }, name: "course_lesson", partialFilterExpression: { completedAt: { $type: "date" } } },
     {
       key: { userId: 1, understanding: 1, understandingUpdatedAt: -1 },
       name: "needs_review",

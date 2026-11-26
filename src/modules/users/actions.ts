@@ -5,6 +5,8 @@ import { z } from "zod";
 import { RULES } from "@/server/rate-limit";
 import { defineAction, zHttpUrl, zText } from "@/server/action";
 import * as svc from "./service";
+import { deleteMyAccount } from "./privacy";
+import { endSession } from "@/server/auth";
 
 const zBool = z.union([z.boolean(), z.enum(["on", "true", "false", ""])]).transform((v) => v === true || v === "on" || v === "true");
 
@@ -80,4 +82,29 @@ const apply = defineAction(
 );
 export async function applyInstructorAction(input: unknown) {
   return apply(input);
+}
+
+const deleteAccount = defineAction(
+  {
+    schema: z.object({
+      currentPassword: z.string().max(200).default(""),
+      confirmEmail: z.string().max(320).default(""),
+      confirmText: z
+        .string()
+        .trim()
+        .refine((v) => v.toUpperCase() === "XÓA TÀI KHOẢN", "Gõ đúng cụm XÓA TÀI KHOẢN để xác nhận"),
+    }),
+  },
+  async (input, { viewer }) => {
+    const { previousHandle } = await deleteMyAccount(viewer, { currentPassword: input.currentPassword, confirmEmail: input.confirmEmail });
+    if (previousHandle) updateTag(`profile-handle:${previousHandle}`);
+    revalidatePath("/", "layout");
+    // Phiên đã mất hiệu lực (authVersion tăng); xóa luôn cookie trên thiết bị này
+    await endSession();
+    return { message: "Tài khoản của bạn đã được xóa." };
+  },
+);
+/** Người dùng tự xóa tài khoản (xác thực lại bằng mật khẩu hoặc email nếu chỉ dùng Google). */
+export async function deleteAccountAction(input: unknown) {
+  return deleteAccount(input);
 }

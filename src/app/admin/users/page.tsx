@@ -57,9 +57,12 @@ export default async function AdminUsers({ searchParams }: { searchParams: Promi
                     <Badge>Học viên</Badge>
                   </span>
                 </Td>
-                <Td>{u.status === "blocked" ? <Badge tone="danger">Bị khóa</Badge> : <Badge tone="success">Hoạt động</Badge>}</Td>
+                <Td>{u.status === "blocked" ? <Badge tone="danger">Bị khóa</Badge> : u.status === "deleted" ? <Badge>Đã xóa</Badge> : <Badge tone="success">Hoạt động</Badge>}</Td>
                 <Td className="text-ink-soft">{formatDate(u.createdAt, admin.timezone)}</Td>
                 <Td className="text-right">
+                  {u.status === "deleted" ? (
+                    <span className="text-xs text-ink-faint">Người dùng đã tự xóa tài khoản</span>
+                  ) : (
                   <span className="inline-flex flex-wrap justify-end gap-1">
                     <AdminAction
                       variant="ghost"
@@ -77,6 +80,7 @@ export default async function AdminUsers({ searchParams }: { searchParams: Promi
                       )
                     ) : null}
                   </span>
+                  )}
                 </Td>
               </Tr>
             );

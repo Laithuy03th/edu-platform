@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!hub || "redirectTo" in hub) return {};
   const title = `${hub.name} — học ${TYPE_LABEL[hub.type].toLowerCase()} ${hub.name}`;
   const description = hub.description || `Khóa học và lộ trình về ${hub.name}, ghi rõ phiên bản đã kiểm thử.`;
-  return { title, description, alternates: { canonical: `/technologies/${hub.slug}` }, openGraph: pageOpenGraph({ title, description, url: `/technologies/${hub.slug}` }) };
+  return { title, description, alternates: { canonical: `/technologies/${hub.slug}` }, openGraph: pageOpenGraph({ title, description, url: `/technologies/${hub.slug}`, images: "file" }) };
 }
 
 /** Hub công nghệ (T02): chỉ tồn tại khi có khóa đã xuất bản; alias → 308 về slug chuẩn. */

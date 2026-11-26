@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: a.title,
     description: a.summary,
     alternates: { canonical: `/huong-dan/${a.slug}` },
-    openGraph: { ...pageOpenGraph({ title: a.title, description: a.summary, url: `/huong-dan/${a.slug}` }), type: "article", publishedTime: a.publishedAt, modifiedTime: a.contentUpdatedAt },
+    openGraph: { ...pageOpenGraph({ title: a.title, description: a.summary, url: `/huong-dan/${a.slug}`, images: "file" }), type: "article", publishedTime: a.publishedAt, modifiedTime: a.contentUpdatedAt },
     ...(a.archived ? { robots: { index: false, follow: true } } : {}),
   };
 }

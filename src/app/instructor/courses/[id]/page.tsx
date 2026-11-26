@@ -36,6 +36,9 @@ export default async function CourseEditorPage({ params }: { params: Promise<{ i
         description={<CourseStatusBadges status={course.status} review={course.review} hasChanges={course.publishedVersion > 0 && course.review.state === "none"} />}
         actions={
           <>
+            <Link href={`/instructor/courses/${id}/analytics`} className={buttonClass("outline", undefined, "sm")}>
+              Phân tích
+            </Link>
             <Link href={`/instructor/courses/${id}/media`} className={buttonClass("outline", undefined, "sm")}>
               Thư viện media
             </Link>
