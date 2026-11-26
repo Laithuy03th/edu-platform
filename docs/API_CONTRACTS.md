@@ -50,6 +50,8 @@ Ký hiệu cột Auth: **P** public, **U** đã đăng nhập, **V** đã xác m
 | `updateProfileAction` | displayName, bio, timezone, learningGoal, dataSaver | ProfileDto | U | 30/giờ | có | 422 | **allowlist field**, bỏ qua roles/status/email/authVersion |
 | `updatePublicProfileAction` | enabled, handle | ProfileDto | V | 10/giờ | có | `ALREADY_EXISTS` handle | revalidate `profile:<id>` |
 | `applyInstructorAction` | motivation, sampleUrl? | ApplicationDto | V | 3/ngày | unique partial pending | 409 | tạo đơn |
+| `GET /api/me/export` | — | JSON (attachment `tuhoc-du-lieu-cua-toi-<ngày>.json`, `no-store`) | U | 5/giờ | GET không đổi trạng thái | 401 | không — chỉ dữ liệu của viewer, không băm mật khẩu/token |
+| `deleteAccountAction` | currentPassword (nếu có mật khẩu) \| confirmEmail (Google-only), confirmText = "XÓA TÀI KHOẢN" | `{ message }` | U | password 5/15 phút | — | 422 sai mật khẩu/email, 403 giảng viên/admin | ẩn danh hóa user, xóa dữ liệu riêng tư, `$inc authVersion`, xóa cookie, audit `user.self_delete` |
 
 ## 3. Catalog, authoring, duyệt, enrollment (Phase 2)
 
@@ -124,3 +126,20 @@ Ký hiệu cột Auth: **P** public, **U** đã đăng nhập, **V** đã xác m
 ## 7. Ghi chú về `POST /api/progress`
 
 `navigator.sendBeacon` gửi cookie same-origin; dùng khi `visibilitychange → hidden`/`pagehide`. Là **best effort**: response bị bỏ qua, có thể không tới server. Server áp dụng cùng validation/quy tắc event cũ như `saveProgressAction`. Không dùng beacon cho thao tác cần xác nhận (hoàn thành bài, nộp quiz).
+
+## 8. Playground (P05/P06, 2026-11-25)
+
+| Tên | Input | Output | Auth | RL | Ghi chú |
+|---|---|---|---|---|---|
+| `GET /api/sandbox/runner` | — | HTML tĩnh | P | — | Nhúng bằng `<iframe sandbox="allow-scripts">` (origin opaque). CSP riêng: `connect-src 'none'`, `frame-ancestors 'self'`. Code gửi qua postMessage, không qua server |
+| `GET /api/sandbox/python` | — | HTML tĩnh | P | — | Như trên; Pyodide từ `cdn.jsdelivr.net` (CSP chỉ cho CDN này), chạy trong Web Worker. Giao thức: ready → loaded/fatal; run → stdout/stderr/system/image/test/tests-done/error/done; stop → stopped |
+| `saveSnippetAction` | {id: string\|null, snippet: {kind, title, files}} | SnippetDto | U | 120/giờ | id = null → tạo mới (≤ 100/người); id của người khác → NOT_FOUND |
+| `listSnippetsAction` | {kind} | [{id, kind, title, updatedAt}] | U | 120/giờ | chỉ của viewer |
+| `getSnippetAction` | {id} | SnippetDto | U | 120/giờ | chỉ của viewer |
+| `deleteSnippetAction` | {id} | — | U | 120/giờ | chỉ của viewer |
+
+## 9. Phân tích & SEO (2026-11-25)
+
+- `/instructor/courses/[id]/analytics` (page, không có API riêng): `getCourseAnalytics(viewer, courseId)` — kiểm tra chủ khóa/admin trước, rồi đọc số liệu tổng hợp cache 10 phút theo khóa. Không trả id/email/tên học viên; nhóm < 3 người ẩn điểm quiz/tỉ lệ đúng.
+- `/admin/seo` (page): `seoAudit(admin)` — chỉ đọc.
+- Ảnh OG dựng động: `/<route>/opengraph-image` cho bài hướng dẫn, hub công nghệ, lộ trình (đọc dữ liệu đã xuất bản theo slug, revalidate 1 giờ) và playground (tĩnh). Không nhận chữ tùy ý từ query string.

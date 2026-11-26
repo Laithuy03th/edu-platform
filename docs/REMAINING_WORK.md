@@ -1,6 +1,6 @@
 # REMAINING_WORK — việc còn lại theo ưu tiên (PROMPT V2 §41)
 
-Cập nhật: 2026-11-24, sau đợt audit (FEATURE/MEDIA/UI/SEO/CONTENT).
+Cập nhật: 2026-11-25 (playground, SEO, quyền riêng tư, phân tích giảng viên). Lần trước: 2026-11-24 sau đợt audit (FEATURE/MEDIA/UI/SEO/CONTENT).
 
 - **P0:** chặn tính đúng, an toàn hoặc khả năng chạy thật.
 - **P1:** phạm vi sản phẩm chính.
@@ -60,14 +60,18 @@ Cập nhật: 2026-11-24, sau đợt audit (FEATURE/MEDIA/UI/SEO/CONTENT).
 | ID | Việc |
 |---|---|
 | ~~P2-1 (P05)~~ ✅ 2026-11-24 | Playground HTML/CSS/JS cách ly: sandbox iframe với origin riêng, CSP, không có cookie; có nút stop/reset. Chỉ làm sau khi có thiết kế |
-| P2-2 (P06) | Python/SQL WASM (roadmap; chỉ tải khi người học mở) |
+| ~~P2-2 (P06)~~ ✅ 2026-11-25 | Python (Pyodide trong khung cách ly) + SQL (2 bộ dữ liệu, thử thách) — chỉ tải khi mở trang |
 | ~~P2-3 (U07)~~ ✅ | Dark theme |
 | ~~P2-4 (L12)~~ ✅ | Mục tiêu tuần do người học tự đặt, không gây áp lực |
-| P2-5 (S05) | Trang xem video public và VideoObject, khi có video thật và đã tính ngân sách băng thông |
+| ~~P2-5 (S05)~~ ✅ 2026-11-25 | Video học thử trên trang khóa (`preload="none"`, chỉ tải khi bấm phát) + VideoObject; image sitemap |
+| P2-6 | Rich Results Test, PageSpeed Insights trên URL public (S04/S05/S07) — sau deploy |
+| P2-7 | Đo và giảm TBT trang /courses trên mobile (S07) — chỉ có số liệu lab; cần dữ liệu field sau deploy |
+| P2-8 | Mở rộng thử thách playground (hiện 10 web / 12 SQL / 8 Python) theo từng khóa; gắn thử thách vào bài học |
 
 ## Cần chủ dự án quyết định
 
 1. ~~Mở bài đọc ra public~~ — đã làm theo yêu cầu "đủ tính năng V2" (2026-11-24): `/huong-dan` có 3 bài, ghi rõ "Chưa review chuyên môn".
 2. **Reviewer chuyên môn** cho nội dung đợt 1 là ai? Không có reviewer thì bài chỉ được để ở trạng thái nháp.
 3. **Ca thử video (P0-3):** có cho phép không, và file video nào được dùng?
-4. **Deploy/domain:** chưa làm. Chỉ chuẩn bị khi có yêu cầu (DEPLOYMENT.md).
+4. **Deploy/domain:** chưa làm. Chỉ chuẩn bị khi có yêu cầu (DEPLOYMENT.md). Sau deploy làm theo [SEARCH_CONSOLE.md](SEARCH_CONSOLE.md) (S08, S10).
+5. **Email liên hệ công khai** (`CONTACT_EMAIL`) và rà lại Chính sách bảo mật/Điều khoản trước khi công khai (bản mẫu, không phải tư vấn pháp lý).

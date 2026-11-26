@@ -211,6 +211,26 @@ Node.js: máy dev hiện có **v22.13.0**, pnpm **11.25.0**. Vercel hỗ trợ 2
 - **Review chuyên môn ≠ duyệt xuất bản:** admin ghi tên người review thật, gắn với publishedVersion để tự phát hiện nội dung đã đổi.
 - **Code:** shiki 4.6.0 + @shikijs/rehype qua `MarkdownAsync` (react-markdown 10) chạy ở server component → HTML đã tô màu, client chỉ nhận nút sao chép. Theme github-dark-default; ngôn ngữ nạp lazy, không rõ → text. Nội dung người dùng (ghi chú/hỏi đáp) vẫn dùng renderer đồng bộ, không tô màu.
 
+## ADR-026 — Playground nâng cấp: CodeMirror tải lười, SQLite worker riêng, Python bằng Pyodide trong khung cách ly (V2 P05/P06)
+
+- **Editor:** CodeMirror 6 (+ Emmet, lang-html/css/js/sql/python, lint cú pháp từ cây Lezer), Prettier standalone và sql-formatter — đều `import()` khi cần, không vào bundle trang khác. Monaco bị loại vì nặng (> 2 MB) và cần worker riêng.
+- **Sandbox web:** giữ thiết kế P05 (iframe `sandbox="allow-scripts"` origin opaque, CSP `connect-src 'none'`). Test thử thách chạy trong cùng khung, bọc trong IIFE để không đụng biến toàn cục của người học.
+- **SQL:** sql.js 1.17 với worker của dự án (`public/vendor/sqljs/tuhoc-sql-worker.js`) thay worker mặc định để có tên cột cả khi 0 dòng, số dòng bị đổi theo từng câu (`total_changes()`), sơ đồ bảng. Khóa ngoại bật cho dữ liệu mẫu. Chấm thử thách: chạy lời giải trên dữ liệu mới nạp rồi so giá trị theo vị trí cột (so thứ tự chỉ khi đề yêu cầu sắp xếp).
+- **Python:** Pyodide 314.0.8 (Python 3.14) từ jsDelivr, **không** tự host (~6 MB lõi; numpy/pandas/matplotlib tải khi import; băng thông do CDN miễn phí chịu, không qua Next/Atlas/Cloudinary). Chạy trong Web Worker tạo từ blob bên trong iframe origin opaque: code Python không đọc được cookie/API của site, link chia sẻ độc hại vô hại. Chromium chặn worker *module* từ blob trong origin opaque, còn Pyodide 314 từ chối worker "classic" bằng phép thử `importScripts("data:")` → dùng worker thường + `import()` động; CSP của khung **không** cho `data:` trong script-src nên phép thử thất bại đúng như ý. Dừng = terminate worker rồi nạp lại (~1–2 s, không cần SharedArrayBuffer/COOP-COEP). `input()` đọc từ ô stdin điền trước.
+- **Bản lưu:** collection `playgroundSnippets` (riêng tư, ≤ 100/người, ≤ 120 KB). Chia sẻ công khai dùng `#code=` trong URL (không lưu server → domain không thành nơi host nội dung người khác).
+
+## ADR-027 — SEO bổ sung: ảnh OG từ dữ liệu thật, video học thử, không analytics bên thứ ba (V2 S02/S04/S05/S08/S10)
+
+- Ảnh OG bằng `next/og` + font Be Vietnam Pro (OFL, `src/assets/fonts`) chỉ cho route có dữ liệu thật (bài viết, hub, lộ trình, playground); không có endpoint nhận chữ từ query. Trang có `opengraph-image` gọi `pageOpenGraph({ images: "file" })` để metadata của trang không đè ảnh.
+- Video học thử (delivery `upload`, vốn công khai) được nhúng ở trang khóa với `preload="none"` (không tốn băng thông Cloudinary tới khi bấm phát) + VideoObject; video bài thường (authenticated) không bao giờ xuất hiện ở trang công khai.
+- Xác minh Search Console/Bing bằng biến môi trường; đo organic bằng Search Console thay vì gắn analytics/cookie theo dõi (khớp chính sách bảo mật).
+
+## ADR-028 — Quyền với dữ liệu cá nhân và phân tích cho giảng viên
+
+- Tải dữ liệu: JSON đầy đủ của chính người dùng (`/api/me/export`), không kèm băm mật khẩu/token.
+- Xóa tài khoản: ẩn danh hóa + xóa dữ liệu riêng tư thay vì xóa cứng user (giữ toàn vẹn đánh giá/hỏi đáp và số liệu tổng hợp). Giảng viên/admin không tự xóa (đang sở hữu nội dung/quyền duyệt).
+- Phân tích của giảng viên chỉ ở dạng tổng hợp theo khóa (đặc tả §8.3), ẩn chỉ số khi nhóm < 3 người, cache 10 phút để không aggregate lại mỗi lần tải trang trên Atlas Free.
+
 ## Kiểm chứng sau triển khai (2026-11-24)
 
 | Mục [KC] | Kết quả |

@@ -1,5 +1,10 @@
 # Tiến độ
 
+## Checkpoint (2026-11-25)
+
+- **Mới trong phiên 2026-11-25:** playground nâng cấp toàn diện (web: CodeMirror + 10 thử thách chấm tự động; SQL: 2 bộ dữ liệu + 12 thử thách; Python: Pyodide trong khung cách ly + 8 thử thách; lưu bản code vào tài khoản); SEO (ảnh OG dựng từ dữ liệu thật, icon/manifest, video học thử + VideoObject, image sitemap, ItemList/ProfilePage, mã xác minh Search Console qua biến môi trường, [SEARCH_CONSOLE.md](SEARCH_CONSOLE.md)); trang Giới thiệu/Chính sách bảo mật/Điều khoản/Liên hệ; học viên tải dữ liệu & tự xóa tài khoản; giảng viên có trang phân tích khóa (tổng hợp); admin có `/admin/seo`. FEATURE_AUDIT: 71 VERIFIED, 2 IMPLEMENTED_UNVERIFIED, 3 PARTIAL, 2 BLOCKED, 1 DEFERRED.
+- **CORS:** frontend và API cùng origin (Next.js) nên không cần và không bật CORS; Server Action kiểm tra Origin (chống CSRF). Chỉ cần CORS nếu sau này có client khác domain (app di động/web khác) gọi Route Handler.
+
 ## Checkpoint (2026-11-24)
 
 - **Nhánh:** `main` (git cục bộ, chưa có remote). Commit mới nhất: xem `git log --oneline`.
@@ -109,6 +114,20 @@
 | 2026-11-24 | `pnpm test:e2e` (DB cục bộ) | **13/13** (36,2 s) |
 | 2026-11-24 | Mật khẩu admin/giảng viên demo trên Atlas đã được đổi lúc 21:14/21:18 (không do trợ lý) | Trợ lý không đăng nhập/không đặt lại; bài "Server Component và Client Component" (chèn sơ đồ) đang CHỜ DUYỆT ở /admin/courses |
 | 2026-11-24 | Quét tràn ngang 34 trang × 5 độ rộng (build production, DB cục bộ, admin) | 0 tràn ngang |
+| 2026-11-25 | `pnpm add sql-formatter`; thêm CodeMirror/Emmet/Prettier (tải lười) | Chỉ tải ở trang playground |
+| 2026-11-25 | Playground web trên dev :3000 (Atlas) | Ví dụ chạy, lỗi `main.js:3` nhảy dòng, Prettier, Emmet, xem trước 375px, thử thách JS + DOM ✓; sửa lỗi test trùng biến (bọc IIFE) |
+| 2026-11-25 | Playground SQL (dev :3000) | Worker riêng: cột khi 0 dòng, số dòng bị đổi theo từng câu; khóa ngoại; CTE vô hạn dừng sau ~4,5 s rồi nạp lại; định dạng; 2 bộ dữ liệu; thử thách đúng/sai; lịch sử; 375px không tràn |
+| 2026-11-25 | Pyodide 314.0.8 trong iframe sandbox | Worker dạng module từ blob bị Chromium chặn trong origin opaque → dùng worker thường + `import()` động; Python sẵn sàng ~6 s lần đầu; input(), traceback gọn, Dừng + khởi động lại ~1,3 s, matplotlib ra ảnh, pandas; fetch về site bị chặn |
+| 2026-11-25 | `pnpm test tests/integration/{playground,privacy,analytics}.test.ts` | 3/3 · 3/3 · 2/2 |
+| 2026-11-25 | E2E playground (Playwright, :3000 Atlas, `E2E_PORT=3000`) | 4/4 (bản lưu thử đã xóa sau test) |
+| 2026-11-25 | Ảnh OG/icon/manifest trên dev :3000 | 200 image/png; `og:image` của bài viết/hub/lộ trình/playground trỏ đúng ảnh động (trước đó metadata trang đè ảnh — đã sửa `pageOpenGraph(images: "file")`) |
+| 2026-11-25 | Trang khóa (dev :3000, Cloudinary thật) | Video học thử `preload="none"` + VideoObject (PT1M15S); `<image:loc>` trong sitemap; ItemList ở /courses |
+| 2026-11-25 | `pnpm lint` · `pnpm typecheck` · `pnpm test` | exit 0 · pass · **143/143** (23 file) |
+| 2026-11-25 | `pnpm db:indexes` + `pnpm db:seed` (Mongo cục bộ) → `pnpm build` (MONGODB_URI cục bộ, APP_URL :3100, đã xóa `.next/cache`) | build pass |
+| 2026-11-25 | `pnpm test:e2e` (build production, DB cục bộ) | 17 test: 16 pass, 1 lỗi bộ chọn của test (`name: "Về Tự Học"` khớp cả nav trong trang) → `exact: true` → chạy lại `roles-privacy.spec.ts` **3/3** |
+| 2026-11-25 | `pnpm seo:check --base=http://localhost:3100` | 25 URL sitemap; 2 cảnh báo chỉ ở khóa do E2E tạo (mô tả ngắn cố ý); 3 URL lạ → 404 |
+| 2026-11-25 | `pnpm db:indexes` (Atlas, theo .env) | Tạo index mới cho playgroundSnippets, lessonProgress/quizAttempts/quizResults (phân tích); không xóa index nào |
+| 2026-11-25 | Lỗi có sẵn phát hiện khi làm | `Container` luôn giữ `max-w-7xl` (clsx không gộp class) → trang quiz/hồ sơ/thông tin rộng sai; đã sửa. `exercises-editor` bấm Hủy vẫn xóa (`if (!c)` trên object) → `c.ok` |
 
 ## Chưa kiểm chứng / cần chủ dự án
 
@@ -118,6 +137,8 @@
 4. **SMTP:** đã cấu hình Gmail; đăng nhập + gửi thử OK (2026-11-24). Còn: chạy luồng đăng ký → xác minh → quên mật khẩu bằng email thật (REMAINING_WORK P0-2).
 5. ~~**Cloudinary thật**~~ — đã có 13 video + 2 ảnh bìa thật (2026-11-24, [MEDIA_AUDIT](MEDIA_AUDIT.md)). Còn: thử nút upload trên trình duyệt với 1 file thật, data saver, webhook (cần URL công khai).
 6. **Deploy:** chưa làm (chỉ khi được yêu cầu) — [DEPLOYMENT](DEPLOYMENT.md).
+7. **SEO sau deploy:** đặt `APP_ENV=production`, `APP_URL` https, xác minh Search Console (DNS hoặc `GOOGLE_SITE_VERIFICATION`), gửi sitemap — [SEARCH_CONSOLE](SEARCH_CONSOLE.md). Tùy chọn `CONTACT_EMAIL` (email liên hệ công khai).
+8. **Pháp lý:** nội dung Chính sách bảo mật/Điều khoản mô tả đúng cách hệ thống xử lý dữ liệu nhưng là bản mẫu — chủ dự án nên rà lại trước khi công khai (không phải tư vấn pháp lý).
 
 ## Giới hạn đã biết
 

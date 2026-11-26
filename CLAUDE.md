@@ -6,7 +6,7 @@ Nền tảng học trực tuyến — Next.js 16 App Router + MongoDB Atlas + Cl
 
 1. Đọc `docs/PROGRESS.md` (checkpoint, câu hỏi mở, việc tiếp theo) rồi `git status`/`git diff`. Không scaffold lại.
    Đặc tả hiện hành: `PROMPT_CLAUDE_EDU_IT_V2.md`. Trạng thái từng ID: `docs/FEATURE_AUDIT.md`; việc tiếp: `docs/REMAINING_WORK.md`; sức chứa/giới hạn Atlas Free: `docs/CAPACITY.md`. Không đánh VERIFIED nếu chưa chạy luồng thật.
-2. Chỉ đọc tài liệu chi tiết liên quan tới task: `docs/DATA_MODEL.md`, `docs/AUTH_SECURITY.md`, `docs/MEDIA_PIPELINE.md`, `docs/API_CONTRACTS.md`, `docs/TECH_DECISIONS.md`.
+2. Chỉ đọc tài liệu chi tiết liên quan tới task: `docs/DATA_MODEL.md`, `docs/AUTH_SECURITY.md`, `docs/MEDIA_PIPELINE.md`, `docs/API_CONTRACTS.md`, `docs/TECH_DECISIONS.md`, `docs/SEARCH_CONSOLE.md` (SEO sau deploy).
 
 ## Lệnh xác minh
 

@@ -26,6 +26,7 @@
 | Tương tác | `questions`, `answers`, `courseReviews`, `contentReports` | |
 | Media/quota | `mediaAssets`, `uploadReservations`, `quotaCounters`, `usageSnapshots` | |
 | Hệ thống | `appSettings`, `auditLogs`, `rateLimitBuckets` | |
+| Playground | `playgroundSnippets` | bản code người học chủ động lưu (§6.7) |
 
 ---
 
@@ -46,7 +47,8 @@
 | learningGoal | string | | "" | ≤ 200 |
 | avatar | `{kind:'initials'} \| {kind:'google', url}` | R | initials | url chỉ host `lh3.googleusercontent.com` |
 | roles | `('student'\|'instructor'\|'admin')[]` | R | ['student'] | chỉ đổi qua admin service + audit |
-| status | 'active' \| 'blocked' | R | 'active' | |
+| status | 'active' \| 'blocked' \| 'deleted' | R | 'active' | 'deleted' = người dùng tự xóa (ẩn danh hóa, không đăng nhập được, admin không mở lại được) |
+| deletedAt | Date \| null | | | chỉ khi status = 'deleted' |
 | blockedReason | string \| null | | null | |
 | authVersion | int | R | 1 | tăng khi đổi/reset mật khẩu, logout-all, block |
 | dataSaver | boolean | R | false | |
@@ -54,7 +56,7 @@
 | lastLoginAt | Date \| null | | null | |
 
 - Index: `{emailNormalized:1}` **U**; `{ "publicProfile.handle": 1 }` **U partial** (`handle` là string); `{roles:1, createdAt:-1}` (admin lọc giảng viên).
-- Retention: vĩnh viễn khi còn tài khoản. Xóa tài khoản là phạm vi sau (ghi backlog).
+- Retention: vĩnh viễn khi còn tài khoản. **Tự xóa tài khoản** (`modules/users/privacy.ts`, 2026-11-25): đặt status 'deleted', email → `deleted-<id>@deleted.invalid`, xóa băm mật khẩu/tên/bio, `$inc authVersion`; xóa `authAccounts`, `authTokens`, `notes`, `bookmarks`, `playgroundSnippets`, `lessonProgress`, `quizAttempts`, `quizResults`, `exerciseAttempts`, `reviewItems`, `pathEnrollments`, `projectSubmissions`, `instructorApplications`; giữ `enrollments` (số liệu tổng hợp), `courseReviews`, `questions`/`answers`, `contentIssues`/`contentReports` (hiện "Người dùng đã xóa"). Giảng viên/admin không tự xóa được.
 - 🔒: passwordHash, email (không lộ trong DTO public).
 
 ### 2.2 `authAccounts` (liên kết OAuth)
@@ -237,7 +239,7 @@
 | understandingUpdatedAt | Date \| null | | |
 | lastSavedAt | Date | R | |
 
-- Index: `{userId:1, lessonId:1}` **U**; `{userId:1, courseId:1}` (tính tiến độ); `{userId:1, understanding:1, understandingUpdatedAt:-1}` partial (`understanding ∈ {needs_review, not_understood}`) cho dashboard "cần ôn".
+- Index: `{userId:1, lessonId:1}` **U**; `{userId:1, courseId:1}` (tính tiến độ); `{courseId:1, lessonId:1}` partial `completedAt` là Date (phân tích khóa của giảng viên — số người hoàn thành từng bài); `{userId:1, understanding:1, understandingUpdatedAt:-1}` partial (`understanding ∈ {needs_review, not_understood}`) cho dashboard "cần ôn".
 - Cập nhật vị trí: `updateOne({userId, lessonId, $or: [{lastPositionClientAt: {$lt: clientAt}}, ...]}, {$set: {lastPositionSeconds, lastPositionClientAt}, $max: {furthestPositionSeconds}})` — event cũ hơn bị bỏ qua (không lỗi). `clientAt` bị kẹp vào `[now - 1h, now + 1 phút]` để chống giá trị bịa.
 - Không lưu lịch sử event.
 
@@ -325,6 +327,20 @@
 - Chuyển trạng thái chỉ qua service với điều kiện trạng thái hiện tại (`findOneAndUpdate({_id, status: <expected>})`).
 
 ---
+
+### 6.7 `playgroundSnippets` (bản lưu playground, P05/P06)
+
+| Field | Type | R | Ghi chú |
+|---|---|---|---|
+| userId | ObjectId | R | chủ sở hữu — mọi truy vấn lọc theo userId (người khác → NOT_FOUND) |
+| kind | 'web' \| 'sql' \| 'python' | R | |
+| title | string | R | 1–80 ký tự |
+| files | Record<string,string> | R | khóa theo loại: web {html, css, js}; sql {sql, dataset}; python {py, stdin}; tổng ≤ 120 KB |
+| createdAt, updatedAt | Date | R | |
+
+- Index: `{userId:1, kind:1, updatedAt:-1}`. Tối đa 100 bản lưu/người. Server chỉ lưu văn bản, không bao giờ chạy code.
+- Link chia sẻ KHÔNG dùng collection này: code nằm trong `#code=` (base64url) của URL.
+- Phân tích khóa: thêm index `quizAttempts {courseId:1, quizId:1}` và `quizResults {courseId:1, quizId:1}`.
 
 ## 7. Tương tác
 

@@ -61,14 +61,23 @@ Phương pháp:
 
 | Việc | Mức |
 |---|---|
-| OG image mặc định 1200×630 (tĩnh, không render theo query) | P1 |
-| Breadcrumb hiển thị (HTML), không chỉ JSON-LD | P1 |
-| Hub công nghệ/chủ đề có nội dung thật (`/cong-nghe/[slug]`) và liên kết nội bộ hub → bài → dự án | P1 (phụ thuộc T01/T02) |
-| Lịch sử slug và redirect 308 khi đổi slug | P1 |
+| ~~OG image mặc định 1200×630~~ ✅; 2026-11-25: thêm ảnh OG dựng từ dữ liệu thật (bài viết, hub, lộ trình, playground) | xong |
+| ~~Breadcrumb hiển thị (HTML), không chỉ JSON-LD~~ ✅ | xong |
+| ~~Hub công nghệ có nội dung thật (`/technologies/[slug]`) + liên kết nội bộ~~ ✅ | xong |
+| ~~Lịch sử slug và redirect 308 khi đổi slug~~ ✅ | xong |
 | Chạy Rich Results Test và Schema validator (cần URL public) | khi deploy |
 | Search Console: xác minh domain, gửi sitemap, theo dõi index/CWV | khi có domain; chủ domain thực hiện |
 | Chia sitemap theo nhóm khi số URL lớn | khi > vài nghìn URL |
-| Không có VideoObject vì chưa có video public | P2 |
+| ~~VideoObject~~ ✅ 2026-11-25: video học thử công khai trên trang khóa (`preload="none"`) + image sitemap + srcset ảnh bìa | xong |
+
+## 4b. Bổ sung 2026-11-25
+
+- Icon PNG 32/192/512, apple-icon, `manifest.webmanifest`; Organization có `logo`.
+- JSON-LD thêm ItemList (/courses), ProfilePage/Person (/u/…), VideoObject (trang khóa có video học thử).
+- Trang Giới thiệu / Chính sách bảo mật / Điều khoản / Liên hệ (tín hiệu tin cậy, có trong sitemap + footer).
+- `/admin/seo`: kiểm tra cấu hình (index, HTTPS, mã xác minh, email liên hệ, Cloudinary) và metadata từng khóa/bài (độ dài tiêu đề/mô tả, ảnh bìa, video học thử, công nghệ, review, độ mới).
+- Biến `GOOGLE_SITE_VERIFICATION`, `BING_SITE_VERIFICATION`; hướng dẫn đầy đủ: [SEARCH_CONSOLE.md](SEARCH_CONSOLE.md).
+- `pnpm seo:check --base=http://localhost:3100` (build production, DB cục bộ): 25 URL sitemap đạt trừ 2 khóa do E2E tạo (mô tả ngắn cố ý); 3 URL lạ → 404.
 
 ## 5. Kế hoạch đo lường (khi đã public)
 

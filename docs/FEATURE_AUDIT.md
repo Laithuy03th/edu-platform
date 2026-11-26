@@ -1,6 +1,6 @@
-| DEFERRED | 1 | O08 (deploy chỉ khi chủ dự án yêu cầu) |
+# FEATURE_AUDIT — trạng thái tính năng theo ID (đặc tả V2)
 
-Ngày kiểm tra: **2026-11-24**. Mỗi dòng ghi bằng chứng thật và trạng thái theo §31.1. Một tính năng không được ghi VERIFIED chỉ vì đã có UI, mock, seed hoặc API key.
+Ngày kiểm tra: **2026-11-25** (cập nhật playground, SEO, quyền riêng tư). Mỗi dòng ghi bằng chứng thật và trạng thái theo §31.1. Một tính năng không được ghi VERIFIED chỉ vì đã có UI, mock, seed hoặc API key.
 
 ## Cách đọc bảng
 
@@ -8,8 +8,8 @@ Ngày kiểm tra: **2026-11-24**. Mỗi dòng ghi bằng chứng thật và tr�
 
 | Ký hiệu | Nguồn | Kết quả lần chạy này |
 |---|---|---|
-| **INT** | Vitest + MongoDB in-memory replica set 8.2.6 (thật, không mock DB) | `pnpm test` **117/117 pass** (17 file; cập nhật 2026-11-24 tối) |
-| **E2E** | Playwright trên build production + MongoDB **cục bộ** đã seed | `pnpm test:e2e` **13/13 pass** (36,2 s, 2026-11-24 tối) |
+| **INT** | Vitest + MongoDB in-memory replica set 8.2.6 (thật, không mock DB) | `pnpm test` **143/143 pass** (23 file; 2026-11-25) |
+| **E2E** | Playwright trên build production + MongoDB **cục bộ** đã seed | `pnpm test:e2e` 17 test (2026-11-25): 16 pass + 1 lỗi bộ chọn của chính test (nhãn nav trùng) → sửa test → chạy lại spec đó **3/3 pass** |
 | **ATLAS** | Quan sát trực tiếp trên Atlas `tuhoc_dev` (đếm/đọc, không ghi) | |
 | **LIVE** | HTTP thật tới dev :3000 (Atlas) hoặc build production :3100 (Atlas, chỉ đọc) | |
 | **MOCK** | Test có provider giả (Cloudinary) | |
@@ -23,11 +23,11 @@ Ngày kiểm tra: **2026-11-24**. Mỗi dòng ghi bằng chứng thật và tr�
 
 | Trạng thái | Số ID | Danh sách |
 |---|---|---|
-| VERIFIED | 69 | A01, A02, A03, A04, A06, A07, A08, A09, C01, C02, C03, C04, C05, C06, L01, L02, L03, L04, L05, L06, L07, L08, L09, L10, L11, L12, P01, P02, P03, P04, P05, D01, D02, D03, M01, M03, M04, M05, M06, M07, M08, M09, T01, T02, T03, T04, T05, T06, T07, T08, T09, U01, U02, U03, U04, U05, U06, U07, S01, S02, S03, S04, S06, O01, O03, O04, O05, O06, O07 |
+| VERIFIED | 71 | A01, A02, A03, A04, A06, A07, A08, A09, C01, C02, C03, C04, C05, C06, L01, L02, L03, L04, L05, L06, L07, L08, L09, L10, L11, L12, P01, P02, P03, P04, P05, P06, D01, D02, D03, M01, M03, M04, M05, M06, M07, M08, M09, T01, T02, T03, T04, T05, T06, T07, T08, T09, U01, U02, U03, U04, U05, U06, U07, S01, S02, S03, S04, S05, S06, O01, O03, O04, O05, O06, O07 |
 | IMPLEMENTED_UNVERIFIED | 2 | A05, O02 (cần chủ dự án: liên kết Google thật, luồng email thật) |
-| PARTIAL | 4 | P06, M02, S07, S09 |
+| PARTIAL | 3 | M02, S07, S09 |
 | MOCK_ONLY | 0 | — |
-| BLOCKED | 3 | S05, S08, S10 (cần URL public/Search Console/dữ liệu tìm kiếm thật) |
+| BLOCKED | 2 | S08, S10 (cần domain public/Search Console/dữ liệu tìm kiếm thật — đã chuẩn bị sẵn công cụ) |
 | MISSING | 0 | — |
 | DEFERRED | 1 | O08 (deploy chỉ khi chủ dự án yêu cầu) |
 
@@ -83,8 +83,8 @@ Ngày kiểm tra: **2026-11-24**. Mỗi dòng ghi bằng chứng thật và tr�
 | P02 | Nộp bài, tự đánh giá, nộp lại, phản hồi | `/projects/[id]`, `/instructor/submissions` | INT D6 (các vòng nộp, chấm rubric, người lạ không xem được) | VERIFIED | — | — |
 | P03 | Hồ sơ thành quả opt-in | `/achievements`, `/u/[handle]` | INT D7; LIVE `/u/khong-co` → 404 | VERIFIED | — | — |
 | P04 | Đọc code, tìm lỗi, hints, lời giải có version | `modules/exercises`, khối "Luyện đọc code" ở trang học, soạn trong trình soạn bài | INT `exercises.test.ts`: payload không chứa đáp án/giải thích trước khi giải, chấm server, gợi ý từng mức, sửa → version mới; **UI thật trên Atlas**: sai → gợi ý → đúng → lời giải (không lộ trước khi nộp) | VERIFIED | ✓ 4 bài tập | Thêm bài tập cho các bài còn lại |
-| P05 | Playground HTML/CSS/JS cách ly | — | — | VERIFIED | — | P2, sau khi có thiết kế sandbox | `/playground` + runner sandbox (origin opaque, CSP riêng); E2E `playground-theme.spec.ts`: cookie/parent → SecurityError, fetch bị chặn, while(true) tự dừng; nút "Chạy thử" ở khối code |
-| P06 | Python/SQL chạy trên trình duyệt | — | — | PARTIAL | — | SQL: `/playground/sql` — SQLite WASM (sql.js 1.17, ~750 KB, chỉ tải khi mở trang) trong Web Worker, dữ liệu mẫu trong bộ nhớ, truy vấn > 3 s bị hủy và tạo lại DB; UI thật + E2E. Python (Pyodide > 10 MB): roadmap, chưa làm |
+| P05 | Playground HTML/CSS/JS cách ly | `/playground`, `app/api/sandbox/runner`, `components/code-editor.tsx` | E2E `playground-theme.spec.ts` (2026-11-25): cookie/parent → SecurityError, fetch bị chặn, while(true) tự dừng, lỗi runtime → nút `main.js:3` nhảy đúng dòng, thử thách `?thu-thach=tong-mang` chấm ✓; LIVE dev :3000: Prettier, Emmet `ul>li*3`, xem trước 375px, console.table, thử thách DOM (todo) | VERIFIED | ✓ lưu/mở/xóa bản lưu (E2E trên :3000, đã xóa dữ liệu thử) | CodeMirror 6 tải lười, 8 ví dụ, 10 thử thách, chia sẻ `#code=`, lưu vào tài khoản (`playgroundSnippets`, INT 3 ca), tải .html, nút "Chạy thử" ở khối code |
+| P06 | Python/SQL chạy trên trình duyệt | `/playground/sql` (`public/vendor/sqljs/tuhoc-sql-worker.js`), `/playground/python` (`app/api/sandbox/python`) | E2E SQL: truy vấn, lỗi cú pháp + gợi ý tiếng Việt, khóa ngoại, CTE vô hạn dừng sau 4 s, thử thách sai số cột → đúng, lưu/mở/xóa bản lưu; E2E Python: input(), IndexError → `main.py:3`, fetch về site bị chặn, while True → Dừng → chạy tiếp, thử thách; LIVE: matplotlib ra ảnh, pandas | VERIFIED | ✓ bản lưu SQL (E2E trên :3000) | SQL: 2 bộ dữ liệu, 12 thử thách, lịch sử, CSV, mở/tải .sqlite. Python: Pyodide 314 (Python 3.14) từ jsDelivr trong worker của iframe origin opaque; 8 thử thách |
 
 ## D — Thảo luận và đánh giá
 
@@ -139,15 +139,25 @@ Ngày kiểm tra: **2026-11-24**. Mỗi dòng ghi bằng chứng thật và tr�
 | ID | Yêu cầu | Trạng thái | Ghi chú |
 |---|---|---|---|
 | S01 | Rendering, status code, indexability | VERIFIED | **Sửa hôm nay:** slug không tồn tại trước trả 200, nay trả 404 (kể cả với Googlebot) |
-| S02 | Title, description, OG, canonical | VERIFIED | Canonical tuyệt đối; OG image: bìa khóa học cho trang khóa, `og-default.jpg` 1200×630 tĩnh cho trang khác; `summary_large_image` |
+| S02 | Title, description, OG, canonical | VERIFIED | Canonical tuyệt đối; OG image: bìa khóa học cho trang khóa; **ảnh OG dựng từ dữ liệu thật** (next/og, font Be Vietnam Pro OFL) cho bài hướng dẫn, hub công nghệ, lộ trình, 3 playground — kiểm tra thẻ `og:image` trỏ đúng; `og-default.jpg` cho trang còn lại; icon PNG 32/192/512 + apple-icon + `manifest.webmanifest` |
 | S03 | Sitemap, robots, noindex, chính sách filter/pagination | VERIFIED | Trang có filter → `noindex,follow`; trang phân trang canonical về chính nó; lastmod = ngày xuất bản |
-| S04 | Structured data | VERIFIED | Organization, WebSite, Course, TechArticle, BreadcrumbList; `pnpm seo:check` trên :3200: 17 URL sitemap đạt (JSON-LD parse + trường bắt buộc + không rating/giá giả + canonical tuyệt đối), 3 URL lạ → 404. Google Rich Results Test cần URL public (sau deploy) |
-| S05 | Trang xem video, image SEO | BLOCKED | Chưa có media |
+| S04 | Structured data | VERIFIED | Organization (+ logo `/icon/512`), WebSite, Course, TechArticle, BreadcrumbList, **ItemList** (/courses), **ProfilePage/Person** (/u/…), **VideoObject** (video học thử); `pnpm seo:check --base=:3100` (build production, DB cục bộ, 2026-11-25): 25 URL sitemap, chỉ 2 cảnh báo ở khóa do E2E tạo (mô tả ngắn cố ý); 3 URL lạ → 404. Google Rich Results Test cần URL public |
+| S05 | Trang xem video, image SEO | VERIFIED | Trang khóa nhúng video học thử công khai (`preload="none"`, poster = ảnh bìa) + JSON-LD VideoObject (contentUrl, thumbnail, uploadDate, duration thật) — LIVE dev :3000 với video Cloudinary thật; image sitemap (`<image:loc>` ảnh bìa); ảnh bìa có `srcset` 320/640/960 + alt. Chưa: Google Rich Results Test (cần URL public) |
 | S06 | Internal link, breadcrumb, hub, redirect khi đổi slug | VERIFIED | Breadcrumb hiển thị + JSON-LD ở bài viết/hub; hub ↔ khóa ↔ bài viết; **slugHistory + 308** cho bài viết (INT); khóa học chưa có lịch sử slug | slugHistory + 308 cho khóa học (trang khóa + trang học) và bài viết; INT chặn trùng slug/slug cũ; breadcrumb hiển thị + JSON-LD |
 | S07 | Core Web Vitals | PARTIAL | Đã đo lab; chưa có dữ liệu field vì site chưa public |
-| S08 | Search Console | BLOCKED | Chưa có domain/deploy |
+| S08 | Search Console | BLOCKED | Chưa có domain/deploy. Đã chuẩn bị: biến `GOOGLE_SITE_VERIFICATION` / `BING_SITE_VERIFICATION` (thẻ meta), hướng dẫn [SEARCH_CONSOLE.md](SEARCH_CONSOLE.md), trang `/admin/seo` kiểm tra cấu hình + metadata (E2E) |
 | S09 | Cụm nội dung, tác giả, quy trình review | PARTIAL | Có công cụ: review chuyên môn theo phiên bản, hàng đợi cần review/cập nhật (/admin/coverage), báo lỗi nội dung. Còn: cần reviewer thật và cụm nội dung lớn hơn |
-| S10 | Đo lường organic | BLOCKED | Chưa public |
+| S10 | Đo lường organic | BLOCKED | Chưa public. Chính sách: không gắn analytics bên thứ ba; số liệu organic lấy từ Search Console ([SEARCH_CONSOLE.md §4](SEARCH_CONSOLE.md)) |
+
+## X — Bổ sung ngoài danh sách ID (2026-11-25)
+
+| Tính năng | Trạng thái | Bằng chứng |
+|---|---|---|
+| Học viên tải toàn bộ dữ liệu (JSON) | VERIFIED | INT `privacy.test.ts` (đủ dữ liệu, không có băm mật khẩu/token, người khác không thấy); E2E tải qua `/api/me/export` |
+| Học viên tự xóa tài khoản | VERIFIED | INT: sai mật khẩu bị từ chối, ẩn danh hóa + xóa dữ liệu riêng tư + phiên mất hiệu lực, giữ đánh giá ẩn danh, Google-only xác nhận bằng email, giảng viên/admin bị chặn; E2E: xóa → không đăng nhập lại được |
+| Phân tích khóa học cho giảng viên (tổng hợp) | VERIFIED | INT `analytics.test.ts` (phễu, tỉ lệ từng bài, quiz ẩn điểm khi < 3 người, không chứa id/email học viên, giảng viên khác → NOT_FOUND); E2E mở trang |
+| Kiểm tra SEO cho admin (`/admin/seo`) | VERIFIED | E2E (admin demo, DB cục bộ) |
+| Trang Giới thiệu / Chính sách bảo mật / Điều khoản / Liên hệ | VERIFIED | E2E: link footer, h1, canonical, có trong sitemap; nội dung đối chiếu mã nguồn (cookie, Argon2id, HMAC IP, xóa tài khoản) |
 
 ## O — Vận hành
 
